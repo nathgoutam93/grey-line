@@ -30,6 +30,8 @@ func _ready():
 	if not is_remote:
 		get_node("Camera2D").enabled = true
 
+		skeletal_character.material = null
+
 	if is_remote:
 		movement_component.set_process(false)
 		movement_component.set_physics_process(false)

@@ -19,6 +19,7 @@ config/icon="uid://b656ppaqmcoi2"
 
 SmokeSpawner="*res://scenes/smoke/_scripts/smoke_spawner.gd"
 ImpactSpawner="*res://scenes/impact/_scripts/impact_spawner.gd"
+FowOccluderSync="*res://scripts/fow_occluder_sync.gd"
 
 [display]
 

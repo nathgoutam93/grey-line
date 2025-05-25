@@ -6,6 +6,6 @@ void fragment() {
     if (brightness < 0.5) {
 		discard;
     } else {
-        COLOR =  vec4(0, 0, 0, 0.4);
+        COLOR =  vec4(0, 0, 0, .5);
 	}
 }

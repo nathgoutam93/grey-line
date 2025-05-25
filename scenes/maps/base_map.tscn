@@ -64,11 +64,10 @@ script = ExtResource("5_qngx7")
 [node name="Level" type="Node2D" parent="MaskView"]
 material = SubResource("ShaderMaterial_oo5k0")
 
-[node name="line_of_sight" type="PointLight2D" parent="MaskView" node_paths=PackedStringArray("player_character")]
+[node name="line_of_sight" type="PointLight2D" parent="MaskView"]
 position = Vector2(291, -1802)
 texture = ExtResource("7_fv8dc")
 script = ExtResource("8_sbfu0")
-player_character = NodePath("../../Player")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 

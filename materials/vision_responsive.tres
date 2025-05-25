@@ -1,7 +1,0 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://v7ixu036vbv1"]
-
-[ext_resource type="Shader" uid="uid://bxmd2y1c0rgf7" path="res://shaders/vision_responsive.gdshader" id="1_8dk84"]
-
-[resource]
-shader = ExtResource("1_8dk84")
-shader_parameter/screen_size = Vector2(0, 0)
