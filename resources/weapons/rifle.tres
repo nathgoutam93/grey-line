@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=9 format=3 uid="uid://bc18r0r4gbkx3"]
+
+[ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_0lkds"]
+[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_sbf7q"]
+[ext_resource type="AudioStream" uid="uid://cdjgbvnegkgkh" path="res://assets/sounds/rifle-shoot.mp3" id="2_p2jh4"]
+[ext_resource type="AudioStream" uid="uid://b101cpd0hbkcx" path="res://assets/sounds/rifle-reload.mp3" id="4_dggia"]
+[ext_resource type="AudioStream" uid="uid://dfppdypofdlfm" path="res://assets/sounds/rifle-equip.mp3" id="4_p2jh4"]
+[ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="5_ys2y7"]
+
+[sub_resource type="Resource" id="Resource_p2jh4"]
+script = ExtResource("1_0lkds")
+name = "burst"
+cooldown = 0.1
+burst_count = 3
+is_auto = false
+sound = ExtResource("2_p2jh4")
+animation = ""
+metadata/_custom_type_script = "uid://ds6mffk8bhugv"
+
+[sub_resource type="Resource" id="Resource_c4qrx"]
+script = ExtResource("5_ys2y7")
+equip_sound = ExtResource("4_p2jh4")
+shoot_sound = ExtResource("2_p2jh4")
+reload_sound = ExtResource("4_dggia")
+metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
+
+[resource]
+script = ExtResource("1_sbf7q")
+name = "rifle"
+damage = 80
+mag_size = 25
+uses_ammo = true
+is_reloadable = true
+reload_duration = 1.4
+equip_duration = 0.5
+speed_multiplier = 0.7
+camera_shake_strength = 5.0
+mode = SubResource("Resource_p2jh4")
+animations = {
+"attack": "rifle_shoot",
+"equip": "rifle_equip",
+"idle": "rifle_idle",
+"move": "rifle_move",
+"reload": "rifle_reload"
+}
+sounds = SubResource("Resource_c4qrx")

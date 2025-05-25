@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://cmutx5620veot"]
+
+[ext_resource type="Texture2D" uid="uid://o3djqpfqvq8w" path="res://assets/sprites/knife.png" id="1_cy3ne"]
+
+[node name="Knife" type="Node2D"]
+z_index = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-20, 0)
+texture = ExtResource("1_cy3ne")
+offset = Vector2(20, 0)

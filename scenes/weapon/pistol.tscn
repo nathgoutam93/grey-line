@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bq5cot73krdnm"]
+
+[ext_resource type="Texture2D" uid="uid://bvk3d81x52p7d" path="res://assets/sprites/pistol.png" id="1_70cis"]
+[ext_resource type="Texture2D" uid="uid://ctjmwgpl5udrb" path="res://assets/sprites/muzzle_flash_01.png" id="2_gpfw8"]
+
+[node name="Pistol" type="Node2D"]
+z_index = 5
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_70cis")
+
+[node name="MuzzleFlash" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(34, 2)
+scale = Vector2(0.05, 0.05)
+texture = ExtResource("2_gpfw8")

@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://nd4o8asmrbkd"]
+
+[ext_resource type="Script" uid="uid://0wje8nwkrxe8" path="res://scenes/smoke/_scripts/smoke.gd" id="1_guac5"]
+[ext_resource type="Texture2D" uid="uid://bgl6nqv82dial" path="res://scenes/smoke/_assets/smoke.png" id="2_sslj1"]
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kywrl"]
+polygon = PackedVector2Array(-172, -19, -131, -114, -55, -152, 67, -149, 141, -80, 170, 7, 158, 94, 99, 164, 6, 188, -109, 160, -161, 92)
+
+[node name="Smoke" type="Node2D"]
+scale = Vector2(0.5, 0.5)
+script = ExtResource("1_guac5")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_sslj1")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_kywrl")

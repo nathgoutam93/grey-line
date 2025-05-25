@@ -1,0 +1,128 @@
+[gd_scene load_steps=17 format=3 uid="uid://ca4sffa83rp24"]
+
+[ext_resource type="Script" uid="uid://btqbhqr7k5cc5" path="res://scenes/player/player_controller.gd" id="1_cedje"]
+[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="2_y5qpa"]
+[ext_resource type="AudioStream" uid="uid://ugquajnor6qk" path="res://assets/sounds/concrete-footsteps.mp3" id="3_m8vw7"]
+[ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/hand_gun.tres" id="4_qpvka"]
+[ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
+[ext_resource type="PackedScene" uid="uid://ci5lructfyjfs" path="res://components/VisionResponsive/VisionResponsive.tscn" id="10_gx1jg"]
+[ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="10_h17s1"]
+[ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="10_je7p5"]
+[ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
+[ext_resource type="PackedScene" uid="uid://c6bubi5tu41qm" path="res://components/skeletal_mesh/character_skeletal.tscn" id="13_u5how"]
+[ext_resource type="PackedScene" uid="uid://bdyn3d05wtfee" path="res://components/camera_shake/camera_shake.tscn" id="181_ooe3s"]
+[ext_resource type="PackedScene" uid="uid://dt3c830kdvwu6" path="res://components/sound_pool/sound_pool.tscn" id="187_ooe3s"]
+[ext_resource type="Script" uid="uid://mm1vvtgplxa3" path="res://scenes/player/hud.gd" id="201_5o5no"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5i508"]
+radius = 18.0
+height = 54.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_m8vw7"]
+radius = 17.0
+height = 52.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_je7p5"]
+font_size = 8
+
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("skeletal_character", "movement_component", "health_component", "sound_pool", "footstep_player", "camera_shake")]
+script = ExtResource("1_cedje")
+default_weapons = Array[ExtResource("2_y5qpa")]([ExtResource("4_qpvka")])
+skeletal_character = NodePath("PlayerMesh")
+movement_component = NodePath("MovementComponent")
+health_component = NodePath("Health")
+sound_pool = NodePath("SoundPool")
+footstep_player = NodePath("Footsteps")
+camera_shake = NodePath("Camera2D/CameraShake")
+
+[node name="HitBox" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_5i508")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(6, 0)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_m8vw7")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+visible = false
+enabled = false
+zoom = Vector2(0.5, 0.5)
+rotation_smoothing_enabled = true
+
+[node name="CameraShake" parent="Camera2D" instance=ExtResource("181_ooe3s")]
+
+[node name="AudioListener2D" type="AudioListener2D" parent="Camera2D"]
+current = true
+
+[node name="Health" parent="." instance=ExtResource("5_fm80t")]
+
+[node name="PlayerMesh" parent="." instance=ExtResource("13_u5how")]
+position = Vector2(-5, 0)
+scale = Vector2(0.32, 0.32)
+
+[node name="VisionResponsive" parent="PlayerMesh" instance=ExtResource("10_gx1jg")]
+
+[node name="MovementComponent" parent="." instance=ExtResource("12_hoixd")]
+
+[node name="Footsteps" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_m8vw7")
+volume_db = -20.0
+
+[node name="SoundPool" parent="." instance=ExtResource("187_ooe3s")]
+pool_size = 3
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("201_5o5no")
+
+[node name="Control" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -79.0
+offset_right = 150.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="weapon_name" type="Label" parent="HUD/Control/HBoxContainer"]
+layout_mode = 2
+text = "Weapon Name"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control/HBoxContainer"]
+layout_mode = 2
+
+[node name="ammo_left" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "12"
+
+[node name="Label" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "/"
+
+[node name="mag_size" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "36"
+
+[node name="FpsCounter" parent="HUD/Control" instance=ExtResource("10_je7p5")]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 6.0
+offset_right = 61.0
+offset_bottom = 29.0
+text = "FPS: 60"
+label_settings = SubResource("LabelSettings_je7p5")
+
+[node name="crosshair" parent="HUD" instance=ExtResource("10_h17s1")]

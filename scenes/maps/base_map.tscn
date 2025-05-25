@@ -1,0 +1,80 @@
+[gd_scene load_steps=16 format=3 uid="uid://wam2r36aynrt"]
+
+[ext_resource type="Script" uid="uid://btcrhcyjs8bhq" path="res://scenes/maps/_scripts/base_map.gd" id="1_y42xl"]
+[ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="2_rbkgq"]
+[ext_resource type="Shader" uid="uid://c8erbyo4slq4o" path="res://shaders/fov_visualize.gdshader" id="3_4au65"]
+[ext_resource type="Shader" uid="uid://rtaoevdgh74" path="res://shaders/player_fov_mask.gdshader" id="4_rblr7"]
+[ext_resource type="Script" uid="uid://cn0nbsf4jbfxl" path="res://scenes/maps/_scripts/viewport_controller.gd" id="5_qngx7"]
+[ext_resource type="Shader" uid="uid://4ekinhjl833f" path="res://shaders/all_white.gdshader" id="6_8rvf5"]
+[ext_resource type="Texture2D" uid="uid://dbtbinrdktucj" path="res://assets/textures/160_deg_cone.png" id="7_fv8dc"]
+[ext_resource type="Script" uid="uid://bnncn8hudjp0e" path="res://scenes/maps/_scripts/player_los.gd" id="8_sbfu0"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ikklr"]
+shader = ExtResource("3_4au65")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_34b7u"]
+viewport_path = NodePath("MaskView")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_kx140"]
+viewport_path = NodePath("MaskView")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_58ug7"]
+resource_local_to_scene = true
+shader = ExtResource("4_rblr7")
+shader_parameter/visibility_mask = SubResource("ViewportTexture_kx140")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_sabc6"]
+viewport_path = NodePath("FieldOfView")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oo5k0"]
+shader = ExtResource("6_8rvf5")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_58ug7"]
+viewport_path = NodePath("FieldOfView")
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_y42xl")
+
+[node name="Level" type="Node2D" parent="."]
+scale = Vector2(1.5, 1.5)
+
+[node name="Player" parent="." instance=ExtResource("2_rbkgq")]
+position = Vector2(308, -1920)
+
+[node name="FogOfWar" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_ikklr")
+texture = SubResource("ViewportTexture_34b7u")
+
+[node name="FovRenderView" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_58ug7")
+texture = SubResource("ViewportTexture_sabc6")
+
+[node name="FieldOfView" type="SubViewport" parent="."]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("5_qngx7")
+
+[node name="MaskView" type="SubViewport" parent="."]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("5_qngx7")
+
+[node name="Level" type="Node2D" parent="MaskView"]
+material = SubResource("ShaderMaterial_oo5k0")
+
+[node name="line_of_sight" type="PointLight2D" parent="MaskView" node_paths=PackedStringArray("player_character")]
+position = Vector2(291, -1802)
+texture = ExtResource("7_fv8dc")
+script = ExtResource("8_sbfu0")
+player_character = NodePath("../../Player")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="FOVDebugView" type="Sprite2D" parent="CanvasLayer"]
+visible = false
+position = Vector2(0, 159)
+scale = Vector2(0.2, 0.2)
+texture = SubResource("ViewportTexture_58ug7")
+centered = false

@@ -1,0 +1,1551 @@
+[gd_scene load_steps=162 format=3 uid="uid://dyyv6g2s66fwh"]
+
+[ext_resource type="Script" uid="uid://btcrhcyjs8bhq" path="res://scenes/maps/_scripts/base_map.gd" id="1_tyo1y"]
+[ext_resource type="Texture2D" uid="uid://bc24o2a1i3x6k" path="res://scenes/maps/counter_strike/_assets/map.png" id="2_3iwqa"]
+[ext_resource type="Script" uid="uid://dcvdgg2588plj" path="res://scenes/maps/counter_strike/deathmatch.gd" id="2_jondw"]
+[ext_resource type="PackedScene" uid="uid://c44afg3fumb4" path="res://scenes/props/car/car.tscn" id="3_2nbmb"]
+[ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="3_b3xq6"]
+[ext_resource type="Script" uid="uid://cn0nbsf4jbfxl" path="res://scenes/maps/_scripts/viewport_controller.gd" id="4_2nbmb"]
+[ext_resource type="PackedScene" uid="uid://b1wihqlewmt7" path="res://scenes/props/container/container.tscn" id="4_h4vp2"]
+[ext_resource type="PackedScene" uid="uid://drl1y3lb8tswy" path="res://scenes/props/crates/crate.tscn" id="5_2nbmb"]
+[ext_resource type="Shader" uid="uid://4ekinhjl833f" path="res://shaders/all_white.gdshader" id="5_h4vp2"]
+[ext_resource type="PackedScene" uid="uid://bwtobiuw50ude" path="res://scenes/props/crates/sci_fi_crate.tscn" id="6_h4vp2"]
+[ext_resource type="Script" uid="uid://bnncn8hudjp0e" path="res://scenes/maps/_scripts/player_los.gd" id="7_k00yj"]
+[ext_resource type="PackedScene" uid="uid://socdrphm8n2i" path="res://scenes/props/truck/truck.tscn" id="7_mflnu"]
+[ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
+[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="9_jondw"]
+[ext_resource type="Shader" uid="uid://c8erbyo4slq4o" path="res://shaders/fov_visualize.gdshader" id="9_rq4m3"]
+[ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/hand_gun.tres" id="10_ichad"]
+[ext_resource type="Shader" uid="uid://rtaoevdgh74" path="res://shaders/player_fov_mask.gdshader" id="10_jondw"]
+[ext_resource type="Resource" uid="uid://hai2ryfmmjjp" path="res://resources/weapons/knife.tres" id="11_g4tve"]
+[ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
+[ext_resource type="PackedScene" uid="uid://ci5lructfyjfs" path="res://components/VisionResponsive/VisionResponsive.tscn" id="14_g4tve"]
+[ext_resource type="Texture2D" uid="uid://wngyceerep68" path="res://scenes/props/car/car.png" id="17_ichad"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pslmq"]
+size = Vector2(31.25, 45)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_li4ch"]
+size = Vector2(23.25, 148.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4ftj6"]
+size = Vector2(438, 369)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slwnu"]
+size = Vector2(690, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xoxjw"]
+size = Vector2(25, 56)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_crem8"]
+size = Vector2(23, 70)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ef0tw"]
+size = Vector2(23, 23)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_37pbp"]
+size = Vector2(24, 58.5001)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_63lqt"]
+size = Vector2(23, 324)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6kvlp"]
+size = Vector2(57.625, 51.25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wftvi"]
+size = Vector2(130, 28)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p2eoo"]
+size = Vector2(20, 291)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cji2n"]
+size = Vector2(20, 79)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7yndo"]
+size = Vector2(20, 366.75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_he210"]
+size = Vector2(20, 147)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gpbfy"]
+size = Vector2(20, 284.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v6mw4"]
+size = Vector2(20, 186.25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_d3xj4"]
+size = Vector2(20, 137.125)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kvq5t"]
+size = Vector2(20, 311)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ohl27"]
+size = Vector2(20, 561.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aavx7"]
+size = Vector2(20, 260.217)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6i28l"]
+size = Vector2(20, 292.108)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kq5kv"]
+size = Vector2(20, 212.054)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fgbny"]
+size = Vector2(20, 200.027)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_flvw0"]
+size = Vector2(20, 916.014)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_das80"]
+size = Vector2(23, 748.007)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_24nji"]
+size = Vector2(21, 262.503)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tckb6"]
+size = Vector2(21, 481.252)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_reb65"]
+size = Vector2(20, 238.514)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_in6m2"]
+size = Vector2(20, 175.527)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xu5fu"]
+size = Vector2(23, 110.764)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pk6ct"]
+size = Vector2(20, 262.382)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xy2gi"]
+size = Vector2(20, 407)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_a7nqi"]
+size = Vector2(20, 506.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u0td1"]
+size = Vector2(16, 1501.25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_oxux0"]
+size = Vector2(20, 872.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w4c6u"]
+size = Vector2(19.7599, 532.52)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xsrw1"]
+size = Vector2(20, 449.25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_m6748"]
+size = Vector2(25, 109.562)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pwlac"]
+size = Vector2(25, 206.391)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bfbmp"]
+size = Vector2(20, 853.125)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7cq6y"]
+size = Vector2(20, 818.562)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lk1od"]
+size = Vector2(20, 837.281)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0seti"]
+size = Vector2(20, 52.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bkmrn"]
+size = Vector2(20, 77)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wvoyx"]
+size = Vector2(19.8116, 128)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dm6by"]
+size = Vector2(19.8116, 458)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_x7gwx"]
+size = Vector2(19.8116, 576)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ctidc"]
+size = Vector2(19.8116, 227)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hh82a"]
+size = Vector2(19.8116, 298.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_45v53"]
+size = Vector2(19.8116, 451)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8vg3x"]
+size = Vector2(19.8116, 976.75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xds0o"]
+size = Vector2(19.8116, 263.25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sc8hg"]
+size = Vector2(19.8116, 88.625)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0rq0o"]
+size = Vector2(19.8116, 247.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lybj1"]
+size = Vector2(19.8116, 1469.75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2g2m0"]
+size = Vector2(20.9058, 371)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4ngsd"]
+size = Vector2(125, 397)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_48ias"]
+size = Vector2(21, 389)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_65ugt"]
+size = Vector2(62.5, 28)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rxr32"]
+size = Vector2(729, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ge0pw"]
+size = Vector2(147.25, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_68vxq"]
+size = Vector2(108.625, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vtr88"]
+size = Vector2(23, 84)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mflnu"]
+shader = ExtResource("5_h4vp2")
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h4vp2"]
+polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mflnu"]
+polygon = PackedVector2Array(-15.625, -22.5, 15.625, -22.5, 15.625, 22.5, -15.625, 22.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k00yj"]
+polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kifs8"]
+polygon = PackedVector2Array(-11.625, -74.25, 11.625, -74.25, 11.625, 74.25, -11.625, 74.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rq4m3"]
+polygon = PackedVector2Array(-219, -184.5, 219, -184.5, 219, 184.5, -219, 184.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jondw"]
+polygon = PackedVector2Array(-345, -12, 345, -12, 345, 12, -345, 12)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ichad"]
+polygon = PackedVector2Array(-12.5, -28, 12.5, -28, 12.5, 28, -12.5, 28)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_g4tve"]
+polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uncyb"]
+polygon = PackedVector2Array(-11.5, -35, 11.5, -35, 11.5, 35, -11.5, 35)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tinfn"]
+polygon = PackedVector2Array(-11.5, -11.5, 11.5, -11.5, 11.5, 11.5, -11.5, 11.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h4lhr"]
+polygon = PackedVector2Array(-12, -29.25, 12, -29.25, 12, 29.25, -12, 29.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sbvmh"]
+polygon = PackedVector2Array(-11.5, -162, 11.5, -162, 11.5, 162, -11.5, 162)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ka43b"]
+polygon = PackedVector2Array(-28.8125, -25.625, 28.8125, -25.625, 28.8125, 25.625, -28.8125, 25.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2de0w"]
+polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ptkua"]
+polygon = PackedVector2Array(-65, -14, 65, -14, 65, 14, -65, 14)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qqk3m"]
+polygon = PackedVector2Array(-10, -145.5, 10, -145.5, 10, 145.5, -10, 145.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uvnb0"]
+polygon = PackedVector2Array(-10, -39.5, 10, -39.5, 10, 39.5, -10, 39.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_835bh"]
+polygon = PackedVector2Array(-10, -183.375, 10, -183.375, 10, 183.375, -10, 183.375)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_n8cx0"]
+polygon = PackedVector2Array(-10, -73.5, 10, -73.5, 10, 73.5, -10, 73.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7khml"]
+polygon = PackedVector2Array(-10, -142.25, 10, -142.25, 10, 142.25, -10, 142.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cc434"]
+polygon = PackedVector2Array(-10, -93.125, 10, -93.125, 10, 93.125, -10, 93.125)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xg4g0"]
+polygon = PackedVector2Array(-10, -68.5625, 10, -68.5625, 10, 68.5625, -10, 68.5625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_o4ktb"]
+polygon = PackedVector2Array(-10, -155.5, 10, -155.5, 10, 155.5, -10, 155.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kdj1p"]
+polygon = PackedVector2Array(-10, -280.75, 10, -280.75, 10, 280.75, -10, 280.75)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ink4q"]
+polygon = PackedVector2Array(-10, -130.109, 10, -130.109, 10, 130.109, -10, 130.109)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_loviv"]
+polygon = PackedVector2Array(-10, -146.054, 10, -146.054, 10, 146.054, -10, 146.054)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_r7ov6"]
+polygon = PackedVector2Array(-10, -106.027, 10, -106.027, 10, 106.027, -10, 106.027)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_l0dc6"]
+polygon = PackedVector2Array(-10, -100.013, 10, -100.013, 10, 100.013, -10, 100.013)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cophk"]
+polygon = PackedVector2Array(-10, -458.007, 10, -458.007, 10, 458.007, -10, 458.007)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_skb8d"]
+polygon = PackedVector2Array(-11.5, -374.004, 11.5, -374.004, 11.5, 374.004, -11.5, 374.004)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uliox"]
+polygon = PackedVector2Array(-10.5, -131.251, 10.5, -131.251, 10.5, 131.251, -10.5, 131.251)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_pqvfp"]
+polygon = PackedVector2Array(-10.5, -240.626, 10.5, -240.626, 10.5, 240.626, -10.5, 240.626)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_c7gyd"]
+polygon = PackedVector2Array(-10, -119.257, 10, -119.257, 10, 119.257, -10, 119.257)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wdpgy"]
+polygon = PackedVector2Array(-10, -87.7635, 10, -87.7635, 10, 87.7635, -10, 87.7635)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_c4h8n"]
+polygon = PackedVector2Array(-11.5, -55.382, 11.5, -55.382, 11.5, 55.382, -11.5, 55.382)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q0um5"]
+polygon = PackedVector2Array(-10, -131.191, 10, -131.191, 10, 131.191, -10, 131.191)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ltmgd"]
+polygon = PackedVector2Array(-10, -203.5, 10, -203.5, 10, 203.5, -10, 203.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_j701p"]
+polygon = PackedVector2Array(-10, -253.25, 10, -253.25, 10, 253.25, -10, 253.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_08gw2"]
+polygon = PackedVector2Array(-8, -750.625, 8, -750.625, 8, 750.625, -8, 750.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_dchsu"]
+polygon = PackedVector2Array(-10, -436.25, 10, -436.25, 10, 436.25, -10, 436.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_22a6t"]
+polygon = PackedVector2Array(-9.87995, -266.26, 9.87995, -266.26, 9.87995, 266.26, -9.87995, 266.26)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k2m3x"]
+polygon = PackedVector2Array(-10, -224.625, 10, -224.625, 10, 224.625, -10, 224.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_gnh4e"]
+polygon = PackedVector2Array(-12.5, -54.781, 12.5, -54.781, 12.5, 54.781, -12.5, 54.781)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tatvb"]
+polygon = PackedVector2Array(-12.5, -103.196, 12.5, -103.196, 12.5, 103.196, -12.5, 103.196)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wx1lu"]
+polygon = PackedVector2Array(-10, -426.562, 10, -426.562, 10, 426.562, -10, 426.562)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ta1ll"]
+polygon = PackedVector2Array(-10, -409.281, 10, -409.281, 10, 409.281, -10, 409.281)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ok1nd"]
+polygon = PackedVector2Array(-10, -418.641, 10, -418.641, 10, 418.641, -10, 418.641)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ikblw"]
+polygon = PackedVector2Array(-10, -26.25, 10, -26.25, 10, 26.25, -10, 26.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bnibe"]
+polygon = PackedVector2Array(-10, -38.5, 10, -38.5, 10, 38.5, -10, 38.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k6cr8"]
+polygon = PackedVector2Array(-9.9058, -64, 9.9058, -64, 9.9058, 64, -9.9058, 64)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_txj3c"]
+polygon = PackedVector2Array(-9.9058, -229, 9.9058, -229, 9.9058, 229, -9.9058, 229)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nlnrp"]
+polygon = PackedVector2Array(-9.9058, -288, 9.9058, -288, 9.9058, 288, -9.9058, 288)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_0u1v0"]
+polygon = PackedVector2Array(-9.9058, -113.5, 9.9058, -113.5, 9.9058, 113.5, -9.9058, 113.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mx6q1"]
+polygon = PackedVector2Array(-9.9058, -149.25, 9.9058, -149.25, 9.9058, 149.25, -9.9058, 149.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rvb3r"]
+polygon = PackedVector2Array(-9.9058, -225.5, 9.9058, -225.5, 9.9058, 225.5, -9.9058, 225.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fhpgn"]
+polygon = PackedVector2Array(-9.9058, -488.375, 9.9058, -488.375, 9.9058, 488.375, -9.9058, 488.375)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xebxt"]
+polygon = PackedVector2Array(-9.9058, -131.625, 9.9058, -131.625, 9.9058, 131.625, -9.9058, 131.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7kb4p"]
+polygon = PackedVector2Array(-9.9058, -44.3125, 9.9058, -44.3125, 9.9058, 44.3125, -9.9058, 44.3125)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_4cfhr"]
+polygon = PackedVector2Array(-9.9058, -123.75, 9.9058, -123.75, 9.9058, 123.75, -9.9058, 123.75)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vpq5f"]
+polygon = PackedVector2Array(-9.9058, -734.875, 9.9058, -734.875, 9.9058, 734.875, -9.9058, 734.875)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q8pgy"]
+polygon = PackedVector2Array(-10.4529, -185.5, 10.4529, -185.5, 10.4529, 185.5, -10.4529, 185.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tx0vd"]
+polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rd1d6"]
+polygon = PackedVector2Array(-62.5, -198.5, 62.5, -198.5, 62.5, 198.5, -62.5, 198.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6mrm1"]
+polygon = PackedVector2Array(-10.5, -194.5, 10.5, -194.5, 10.5, 194.5, -10.5, 194.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yo5oa"]
+polygon = PackedVector2Array(-31.25, -14, 31.25, -14, 31.25, 14, -31.25, 14)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_y6kca"]
+polygon = PackedVector2Array(-364.5, -10, 364.5, -10, 364.5, 10, -364.5, 10)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bb0qr"]
+polygon = PackedVector2Array(-73.625, -10, 73.625, -10, 73.625, 10, -73.625, 10)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q3y0l"]
+polygon = PackedVector2Array(-54.3125, -10, 54.3125, -10, 54.3125, 10, -54.3125, 10)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yrm6k"]
+polygon = PackedVector2Array(-11.5, -42, 11.5, -42, 11.5, 42, -11.5, 42)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_ikklr"]
+viewport_path = NodePath("MaskView")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_in6m2"]
+resource_local_to_scene = true
+shader = ExtResource("10_jondw")
+shader_parameter/visibility_mask = SubResource("ViewportTexture_ikklr")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_pk6ct"]
+viewport_path = NodePath("FieldOfView")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6i28l"]
+shader = ExtResource("9_rq4m3")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_kq5kv"]
+viewport_path = NodePath("MaskView")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_xy2gi"]
+viewport_path = NodePath("FieldOfView")
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_tyo1y")
+
+[node name="GameMode" type="Node" parent="."]
+script = ExtResource("2_jondw")
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="sp_1" type="Node2D" parent="SpawnPoints"]
+position = Vector2(-542, -68)
+
+[node name="sp_2" type="Node2D" parent="SpawnPoints"]
+position = Vector2(277, 8)
+
+[node name="sp_3" type="Node2D" parent="SpawnPoints"]
+position = Vector2(-124, 1424)
+
+[node name="sp_4" type="Node2D" parent="SpawnPoints"]
+position = Vector2(-1078, -36)
+
+[node name="sp_5" type="Node2D" parent="SpawnPoints"]
+position = Vector2(-1261, 1702)
+
+[node name="Level" type="Node2D" parent="."]
+
+[node name="Map" type="Sprite2D" parent="Level"]
+scale = Vector2(5, 5)
+texture = ExtResource("2_3iwqa")
+
+[node name="building_1" type="StaticBody2D" parent="Level"]
+position = Vector2(-493, 688)
+scale = Vector2(0.8, 0.8)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Level/building_1"]
+polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/building_1"]
+position = Vector2(369.375, -383.75)
+shape = SubResource("RectangleShape2D_pslmq")
+
+[node name="building_2" type="StaticBody2D" parent="Level"]
+position = Vector2(1178, 59)
+scale = Vector2(0.8, 0.8)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Level/building_2"]
+position = Vector2(1025, 228.75)
+polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
+
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Level/building_2"]
+position = Vector2(-1169.06, -140.781)
+rotation = 1.5708
+scale = Vector2(1.25, 1.25)
+shape = SubResource("RectangleShape2D_li4ch")
+
+[node name="building_3" type="StaticBody2D" parent="Level"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/building_3"]
+position = Vector2(-197, 16.5)
+shape = SubResource("RectangleShape2D_4ftj6")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Level/building_3"]
+position = Vector2(-96, -180)
+shape = SubResource("RectangleShape2D_slwnu")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Level/building_3"]
+position = Vector2(-195.5, 228)
+shape = SubResource("RectangleShape2D_xoxjw")
+
+[node name="building_4" type="StaticBody2D" parent="Level"]
+position = Vector2(-858, -895)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Level/building_4"]
+polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/building_4"]
+position = Vector2(498.5, 33)
+shape = SubResource("RectangleShape2D_crem8")
+
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Level/building_4"]
+position = Vector2(-500, 224.5)
+shape = SubResource("RectangleShape2D_ef0tw")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="Level/building_4"]
+position = Vector2(538.75, -266)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_37pbp")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Level/building_4"]
+position = Vector2(661, -114)
+shape = SubResource("RectangleShape2D_63lqt")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Level/building_4"]
+position = Vector2(481.188, -252.375)
+shape = SubResource("RectangleShape2D_6kvlp")
+
+[node name="building_5" type="StaticBody2D" parent="Level"]
+position = Vector2(778, -861)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Level/building_5"]
+polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/building_5"]
+position = Vector2(488, -761)
+shape = SubResource("RectangleShape2D_wftvi")
+
+[node name="boundary_walls" type="StaticBody2D" parent="Level"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1996, -1716.5)
+shape = SubResource("RectangleShape2D_p2eoo")
+
+[node name="CollisionShape2D7" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-971, -1728.5)
+shape = SubResource("RectangleShape2D_cji2n")
+
+[node name="CollisionShape2D8" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-601, -1507.62)
+shape = SubResource("RectangleShape2D_7yndo")
+
+[node name="CollisionShape2D10" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-376, -1414)
+shape = SubResource("RectangleShape2D_he210")
+
+[node name="CollisionShape2D14" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(1660, -1679.25)
+shape = SubResource("RectangleShape2D_gpbfy")
+
+[node name="CollisionShape2D16" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(1956, -1443)
+shape = SubResource("RectangleShape2D_v6mw4")
+
+[node name="CollisionShape2D24" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(728, 1074.56)
+shape = SubResource("RectangleShape2D_d3xj4")
+
+[node name="CollisionShape2D27" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(561, 829.5)
+shape = SubResource("RectangleShape2D_kvq5t")
+
+[node name="CollisionShape2D29" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(121, 973.25)
+shape = SubResource("RectangleShape2D_ohl27")
+
+[node name="CollisionShape2D31" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(192, 1355)
+rotation = -0.628319
+shape = SubResource("RectangleShape2D_aavx7")
+
+[node name="CollisionShape2D32" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-333, 1706)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_6i28l")
+
+[node name="CollisionShape2D36" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1243.03, 1389)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_kq5kv")
+
+[node name="CollisionShape2D41" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1039.01, -106)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_fgbny")
+
+[node name="CollisionShape2D43" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1412.99, -344)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_flvw0")
+
+[node name="CollisionShape2D44" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1858, -720)
+shape = SubResource("RectangleShape2D_das80")
+
+[node name="CollisionShape2D45" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1995, -1084)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_24nji")
+
+[node name="CollisionShape2D46" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-2118, -1332.63)
+shape = SubResource("RectangleShape2D_tckb6")
+
+[node name="CollisionShape2D42" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-949, -234)
+shape = SubResource("RectangleShape2D_reb65")
+
+[node name="CollisionShape2D37" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-818.764, 1384)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_in6m2")
+
+[node name="CollisionShape2D39" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-741, 1446)
+shape = SubResource("RectangleShape2D_xu5fu")
+
+[node name="CollisionShape2D38" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-622.809, 1507)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_pk6ct")
+
+[node name="CollisionShape2D33" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-485, 1697.5)
+shape = SubResource("RectangleShape2D_xy2gi")
+
+[node name="CollisionShape2D35" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1352, 1629.25)
+shape = SubResource("RectangleShape2D_a7nqi")
+
+[node name="CollisionShape2D40" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1145, 630.625)
+shape = SubResource("RectangleShape2D_u0td1")
+
+[node name="CollisionShape2D34" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-927.25, 1890)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_oxux0")
+
+[node name="CollisionShape2D30" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(43, 1580)
+rotation = 1.06465
+shape = SubResource("RectangleShape2D_w4c6u")
+
+[node name="CollisionShape2D28" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(332.625, 687)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_xsrw1")
+
+[node name="CollisionShape2D25" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(946.5, 1088.78)
+shape = SubResource("RectangleShape2D_m6748")
+
+[node name="CollisionShape2D26" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(656, 997)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_pwlac")
+
+[node name="CollisionShape2D18" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(2221, -925.562)
+shape = SubResource("RectangleShape2D_bfbmp")
+
+[node name="CollisionShape2D20" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(2155, -90.2812)
+shape = SubResource("RectangleShape2D_7cq6y")
+
+[node name="CollisionShape2D22" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(1705, 735.641)
+shape = SubResource("RectangleShape2D_lk1od")
+
+[node name="CollisionShape2D12" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-132, -1508.75)
+shape = SubResource("RectangleShape2D_0seti")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1544, -1805.5)
+shape = SubResource("RectangleShape2D_bkmrn")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-2065, -1581)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_wvoyx")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1761, -1853)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_dm6by")
+
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-1249, -1777)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_x7gwx")
+
+[node name="CollisionShape2D9" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-479.5, -1335)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_ctidc")
+
+[node name="CollisionShape2D15" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(1816.75, -1546)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_hh82a")
+
+[node name="CollisionShape2D21" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(1921.5, 307)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_45v53")
+
+[node name="CollisionShape2D23" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(1207.38, 1149)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_8vg3x")
+
+[node name="CollisionShape2D17" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(2097.38, -1360)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_xds0o")
+
+[node name="CollisionShape2D19" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(2189, -505)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_sc8hg")
+
+[node name="CollisionShape2D11" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-245, -1475)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_0rq0o")
+
+[node name="CollisionShape2D13" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(933.125, -1828)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_lybj1")
+
+[node name="CollisionShape2D6" type="CollisionShape2D" parent="Level/boundary_walls"]
+position = Vector2(-776, -1700)
+rotation = -1.5708
+shape = SubResource("RectangleShape2D_2g2m0")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Level/boundary_walls"]
+position = Vector2(9, -1523)
+polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
+
+[node name="Wall" type="StaticBody2D" parent="Level"]
+position = Vector2(-693, 96)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Wall"]
+position = Vector2(0.5, -18.5)
+shape = SubResource("RectangleShape2D_4ngsd")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Level/Wall"]
+position = Vector2(47.5, -404.5)
+shape = SubResource("RectangleShape2D_48ias")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Level/Wall"]
+position = Vector2(87.75, -274)
+shape = SubResource("RectangleShape2D_65ugt")
+
+[node name="Wall2" type="StaticBody2D" parent="Level"]
+position = Vector2(1141, 846)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Wall2"]
+position = Vector2(193.5, 3)
+shape = SubResource("RectangleShape2D_rxr32")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Level/Wall2"]
+position = Vector2(-243.375, -8)
+shape = SubResource("RectangleShape2D_ge0pw")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Level/Wall2"]
+position = Vector2(-306, -70.3125)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_68vxq")
+
+[node name="Wall3" type="StaticBody2D" parent="Level"]
+position = Vector2(-363, -652)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Wall3"]
+position = Vector2(-1.5, 2)
+shape = SubResource("RectangleShape2D_vtr88")
+
+[node name="props" type="Node" parent="Level"]
+
+[node name="Car" parent="Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(-1947, -1258)
+rotation = 0.785398
+scale = Vector2(0.4, 0.4)
+
+[node name="Car2" parent="Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(-1836, -1735)
+scale = Vector2(0.4, 0.4)
+
+[node name="Container" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(-1425, -1623)
+scale = Vector2(0.6, 0.6)
+
+[node name="Crate" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-1265, -987)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate4" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-1163, -1087)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate2" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-1162, -987)
+scale = Vector2(0.2, 0.2)
+
+[node name="Container2" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(-1426, -1495)
+scale = Vector2(0.6, 0.6)
+
+[node name="Crate3" parent="Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(-1538, -590)
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate5" parent="Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(-57, -941)
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate6" parent="Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(618, -1502)
+rotation = -1.5708
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate7" parent="Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(374, -1110)
+rotation = -0.785398
+scale = Vector2(0.5, 0.5)
+
+[node name="Truck" parent="Level/props" instance=ExtResource("7_mflnu")]
+position = Vector2(-996, 534)
+scale = Vector2(2.5, 2.5)
+
+[node name="Crate8" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(821, -449)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate9" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(923, -537)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate10" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(923, -437)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate16" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1384, -121)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate17" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1643, 787)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate18" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1643, 687)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate19" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1540, 787)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate20" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(788, 1090)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate21" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(885, 1090)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate11" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-455, -1169)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate12" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-553, -1169)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate13" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1924, -1039)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate14" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1924, -938)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate15" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(2027, -976)
+scale = Vector2(0.2, 0.2)
+
+[node name="Container3" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(1324, -1043)
+rotation = 1.5708
+scale = Vector2(0.6, 0.6)
+
+[node name="Container5" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(2138, -666)
+rotation = 1.5708
+scale = Vector2(0.6, 0.6)
+
+[node name="Container4" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(1684, 88)
+scale = Vector2(0.6, 0.6)
+
+[node name="Crate22" parent="Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(1588, 999)
+rotation = 1.5708
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate23" parent="Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(-1263, 1504)
+rotation = 1.5708
+scale = Vector2(0.4, 0.4)
+
+[node name="Crate24" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-547, 1569)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate25" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-650, 1569)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate26" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-548, 1670)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate27" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(198, -245)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate28" parent="Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(94, -245)
+scale = Vector2(0.2, 0.2)
+
+[node name="Car3" parent="Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(1232, 490)
+scale = Vector2(0.4, 0.4)
+
+[node name="Car4" parent="Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(987, 488)
+scale = Vector2(0.4, 0.4)
+
+[node name="Car5" parent="Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(-316, -290)
+scale = Vector2(0.4, 0.4)
+
+[node name="Container6" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(-214, 1343)
+rotation = -0.785398
+scale = Vector2(0.6, 0.6)
+
+[node name="Container7" parent="Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(112, 433)
+rotation = 0.785398
+scale = Vector2(0.6, 0.6)
+
+[node name="Player" parent="." instance=ExtResource("3_b3xq6")]
+position = Vector2(-970, 1645)
+default_weapons = Array[ExtResource("9_jondw")]([ExtResource("10_ichad"), ExtResource("11_g4tve")])
+
+[node name="Player2" parent="." instance=ExtResource("3_b3xq6")]
+position = Vector2(-643, 1411)
+default_weapons = Array[ExtResource("9_jondw")]([ExtResource("10_ichad"), ExtResource("11_g4tve")])
+is_remote = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-521, 1212)
+texture = ExtResource("17_ichad")
+
+[node name="VisionResponsive" parent="Sprite2D" instance=ExtResource("14_g4tve")]
+
+[node name="MaskView" type="SubViewport" parent="."]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("4_2nbmb")
+
+[node name="Level" type="Node2D" parent="MaskView"]
+material = SubResource("ShaderMaterial_mflnu")
+
+[node name="Map" type="Sprite2D" parent="MaskView/Level"]
+use_parent_material = true
+scale = Vector2(5, 5)
+texture = ExtResource("2_3iwqa")
+
+[node name="building_1" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(-493, 688)
+scale = Vector2(0.8, 0.8)
+
+[node name="@LightOccluder2D@184967" type="LightOccluder2D" parent="MaskView/Level/building_1"]
+occluder = SubResource("OccluderPolygon2D_h4vp2")
+
+[node name="@LightOccluder2D@184968" type="LightOccluder2D" parent="MaskView/Level/building_1"]
+position = Vector2(369.375, -383.75)
+occluder = SubResource("OccluderPolygon2D_mflnu")
+
+[node name="building_2" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(1178, 59)
+scale = Vector2(0.8, 0.8)
+
+[node name="@LightOccluder2D@185418" type="LightOccluder2D" parent="MaskView/Level/building_2"]
+position = Vector2(1025, 228.75)
+occluder = SubResource("OccluderPolygon2D_k00yj")
+
+[node name="@LightOccluder2D@185419" type="LightOccluder2D" parent="MaskView/Level/building_2"]
+position = Vector2(-1169.06, -140.781)
+rotation = 1.5708
+scale = Vector2(1.25, 1.25)
+occluder = SubResource("OccluderPolygon2D_kifs8")
+
+[node name="building_3" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+
+[node name="@LightOccluder2D@185868" type="LightOccluder2D" parent="MaskView/Level/building_3"]
+position = Vector2(-197, 16.5)
+occluder = SubResource("OccluderPolygon2D_rq4m3")
+
+[node name="@LightOccluder2D@185869" type="LightOccluder2D" parent="MaskView/Level/building_3"]
+position = Vector2(-96, -180)
+occluder = SubResource("OccluderPolygon2D_jondw")
+
+[node name="@LightOccluder2D@185870" type="LightOccluder2D" parent="MaskView/Level/building_3"]
+position = Vector2(-195.5, 228)
+occluder = SubResource("OccluderPolygon2D_ichad")
+
+[node name="building_4" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(-858, -895)
+
+[node name="@LightOccluder2D@186323" type="LightOccluder2D" parent="MaskView/Level/building_4"]
+occluder = SubResource("OccluderPolygon2D_g4tve")
+
+[node name="@LightOccluder2D@186324" type="LightOccluder2D" parent="MaskView/Level/building_4"]
+position = Vector2(498.5, 33)
+occluder = SubResource("OccluderPolygon2D_uncyb")
+
+[node name="@LightOccluder2D@186325" type="LightOccluder2D" parent="MaskView/Level/building_4"]
+position = Vector2(-500, 224.5)
+occluder = SubResource("OccluderPolygon2D_tinfn")
+
+[node name="@LightOccluder2D@186326" type="LightOccluder2D" parent="MaskView/Level/building_4"]
+position = Vector2(538.75, -266)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_h4lhr")
+
+[node name="@LightOccluder2D@186327" type="LightOccluder2D" parent="MaskView/Level/building_4"]
+position = Vector2(661, -114)
+occluder = SubResource("OccluderPolygon2D_sbvmh")
+
+[node name="@LightOccluder2D@186328" type="LightOccluder2D" parent="MaskView/Level/building_4"]
+position = Vector2(481.188, -252.375)
+occluder = SubResource("OccluderPolygon2D_ka43b")
+
+[node name="building_5" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(778, -861)
+
+[node name="@LightOccluder2D@186778" type="LightOccluder2D" parent="MaskView/Level/building_5"]
+occluder = SubResource("OccluderPolygon2D_2de0w")
+
+[node name="@LightOccluder2D@186779" type="LightOccluder2D" parent="MaskView/Level/building_5"]
+position = Vector2(488, -761)
+occluder = SubResource("OccluderPolygon2D_ptkua")
+
+[node name="boundary_walls" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+
+[node name="@LightOccluder2D@187524" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1996, -1716.5)
+occluder = SubResource("OccluderPolygon2D_qqk3m")
+
+[node name="@LightOccluder2D@187525" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-971, -1728.5)
+occluder = SubResource("OccluderPolygon2D_uvnb0")
+
+[node name="@LightOccluder2D@187526" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-601, -1507.62)
+occluder = SubResource("OccluderPolygon2D_835bh")
+
+[node name="@LightOccluder2D@187527" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-376, -1414)
+occluder = SubResource("OccluderPolygon2D_n8cx0")
+
+[node name="@LightOccluder2D@187528" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(1660, -1679.25)
+occluder = SubResource("OccluderPolygon2D_7khml")
+
+[node name="@LightOccluder2D@187529" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(1956, -1443)
+occluder = SubResource("OccluderPolygon2D_cc434")
+
+[node name="@LightOccluder2D@187530" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(728, 1074.56)
+occluder = SubResource("OccluderPolygon2D_xg4g0")
+
+[node name="@LightOccluder2D@187531" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(561, 829.5)
+occluder = SubResource("OccluderPolygon2D_o4ktb")
+
+[node name="@LightOccluder2D@187532" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(121, 973.25)
+occluder = SubResource("OccluderPolygon2D_kdj1p")
+
+[node name="@LightOccluder2D@187533" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(192, 1355)
+rotation = -0.628319
+occluder = SubResource("OccluderPolygon2D_ink4q")
+
+[node name="@LightOccluder2D@187534" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-333, 1706)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_loviv")
+
+[node name="@LightOccluder2D@187535" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1243.03, 1389)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_r7ov6")
+
+[node name="@LightOccluder2D@187536" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1039.01, -106)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_l0dc6")
+
+[node name="@LightOccluder2D@187537" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1412.99, -344)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_cophk")
+
+[node name="@LightOccluder2D@187538" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1858, -720)
+occluder = SubResource("OccluderPolygon2D_skb8d")
+
+[node name="@LightOccluder2D@187539" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1995, -1084)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_uliox")
+
+[node name="@LightOccluder2D@187540" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-2118, -1332.63)
+occluder = SubResource("OccluderPolygon2D_pqvfp")
+
+[node name="@LightOccluder2D@187541" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-949, -234)
+occluder = SubResource("OccluderPolygon2D_c7gyd")
+
+[node name="@LightOccluder2D@187542" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-818.764, 1384)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_wdpgy")
+
+[node name="@LightOccluder2D@187543" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-741, 1446)
+occluder = SubResource("OccluderPolygon2D_c4h8n")
+
+[node name="@LightOccluder2D@187544" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-622.809, 1507)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_q0um5")
+
+[node name="@LightOccluder2D@187545" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-485, 1697.5)
+occluder = SubResource("OccluderPolygon2D_ltmgd")
+
+[node name="@LightOccluder2D@187546" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1352, 1629.25)
+occluder = SubResource("OccluderPolygon2D_j701p")
+
+[node name="@LightOccluder2D@187547" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1145, 630.625)
+occluder = SubResource("OccluderPolygon2D_08gw2")
+
+[node name="@LightOccluder2D@187548" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-927.25, 1890)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_dchsu")
+
+[node name="@LightOccluder2D@187549" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(43, 1580)
+rotation = 1.06465
+occluder = SubResource("OccluderPolygon2D_22a6t")
+
+[node name="@LightOccluder2D@187550" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(332.625, 687)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_k2m3x")
+
+[node name="@LightOccluder2D@187551" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(946.5, 1088.78)
+occluder = SubResource("OccluderPolygon2D_gnh4e")
+
+[node name="@LightOccluder2D@187552" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(656, 997)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_tatvb")
+
+[node name="@LightOccluder2D@187553" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(2221, -925.562)
+occluder = SubResource("OccluderPolygon2D_wx1lu")
+
+[node name="@LightOccluder2D@187554" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(2155, -90.2812)
+occluder = SubResource("OccluderPolygon2D_ta1ll")
+
+[node name="@LightOccluder2D@187555" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(1705, 735.641)
+occluder = SubResource("OccluderPolygon2D_ok1nd")
+
+[node name="@LightOccluder2D@187556" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-132, -1508.75)
+occluder = SubResource("OccluderPolygon2D_ikblw")
+
+[node name="@LightOccluder2D@187557" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1544, -1805.5)
+occluder = SubResource("OccluderPolygon2D_bnibe")
+
+[node name="@LightOccluder2D@187558" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-2065, -1581)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_k6cr8")
+
+[node name="@LightOccluder2D@187559" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1761, -1853)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_txj3c")
+
+[node name="@LightOccluder2D@187560" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-1249, -1777)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_nlnrp")
+
+[node name="@LightOccluder2D@187561" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-479.5, -1335)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_0u1v0")
+
+[node name="@LightOccluder2D@187562" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(1816.75, -1546)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_mx6q1")
+
+[node name="@LightOccluder2D@187563" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(1921.5, 307)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_rvb3r")
+
+[node name="@LightOccluder2D@187564" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(1207.38, 1149)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_fhpgn")
+
+[node name="@LightOccluder2D@187565" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(2097.38, -1360)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_xebxt")
+
+[node name="@LightOccluder2D@187566" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(2189, -505)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_7kb4p")
+
+[node name="@LightOccluder2D@187567" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-245, -1475)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_4cfhr")
+
+[node name="@LightOccluder2D@187568" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(933.125, -1828)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_vpq5f")
+
+[node name="@LightOccluder2D@187569" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(-776, -1700)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_q8pgy")
+
+[node name="@LightOccluder2D@187570" type="LightOccluder2D" parent="MaskView/Level/boundary_walls"]
+position = Vector2(9, -1523)
+occluder = SubResource("OccluderPolygon2D_tx0vd")
+
+[node name="Wall" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(-693, 96)
+
+[node name="@LightOccluder2D@188019" type="LightOccluder2D" parent="MaskView/Level/Wall"]
+position = Vector2(0.5, -18.5)
+occluder = SubResource("OccluderPolygon2D_rd1d6")
+
+[node name="@LightOccluder2D@188020" type="LightOccluder2D" parent="MaskView/Level/Wall"]
+position = Vector2(47.5, -404.5)
+occluder = SubResource("OccluderPolygon2D_6mrm1")
+
+[node name="@LightOccluder2D@188021" type="LightOccluder2D" parent="MaskView/Level/Wall"]
+position = Vector2(87.75, -274)
+occluder = SubResource("OccluderPolygon2D_yo5oa")
+
+[node name="Wall2" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(1141, 846)
+
+[node name="@LightOccluder2D@188470" type="LightOccluder2D" parent="MaskView/Level/Wall2"]
+position = Vector2(193.5, 3)
+occluder = SubResource("OccluderPolygon2D_y6kca")
+
+[node name="@LightOccluder2D@188471" type="LightOccluder2D" parent="MaskView/Level/Wall2"]
+position = Vector2(-243.375, -8)
+occluder = SubResource("OccluderPolygon2D_bb0qr")
+
+[node name="@LightOccluder2D@188472" type="LightOccluder2D" parent="MaskView/Level/Wall2"]
+position = Vector2(-306, -70.3125)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_q3y0l")
+
+[node name="Wall3" type="Node2D" parent="MaskView/Level"]
+use_parent_material = true
+position = Vector2(-363, -652)
+
+[node name="@LightOccluder2D@188698" type="LightOccluder2D" parent="MaskView/Level/Wall3"]
+position = Vector2(-1.5, 2)
+occluder = SubResource("OccluderPolygon2D_yrm6k")
+
+[node name="props" type="Node" parent="MaskView/Level"]
+
+[node name="Car" parent="MaskView/Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(-1947, -1258)
+rotation = 0.785398
+scale = Vector2(0.4, 0.4)
+
+[node name="Car2" parent="MaskView/Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(-1836, -1735)
+scale = Vector2(0.4, 0.4)
+
+[node name="Container" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(-1425, -1645)
+scale = Vector2(0.6, 0.6)
+
+[node name="Crate" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-1265, -987)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate4" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-1163, -1087)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate2" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-1162, -987)
+scale = Vector2(0.2, 0.2)
+
+[node name="Container2" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(-1426, -1495)
+scale = Vector2(0.6, 0.6)
+
+[node name="Crate3" parent="MaskView/Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(-1538, -590)
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate5" parent="MaskView/Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(-57, -941)
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate6" parent="MaskView/Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(618, -1502)
+rotation = -1.5708
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate7" parent="MaskView/Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(374, -1110)
+rotation = -0.785398
+scale = Vector2(0.5, 0.5)
+
+[node name="Truck" parent="MaskView/Level/props" instance=ExtResource("7_mflnu")]
+position = Vector2(-996, 534)
+scale = Vector2(2.5, 2.5)
+
+[node name="Crate8" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(821, -449)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate9" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(923, -537)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate10" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(923, -437)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate16" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1384, -121)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate17" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1643, 787)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate18" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1643, 687)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate19" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1540, 787)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate20" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(788, 1090)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate21" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(885, 1090)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate11" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-455, -1169)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate12" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-553, -1169)
+scale = Vector2(0.19, 0.19)
+
+[node name="Crate13" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1924, -1039)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate14" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(1924, -938)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate15" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(2027, -976)
+scale = Vector2(0.2, 0.2)
+
+[node name="Container3" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(1324, -1043)
+rotation = 1.5708
+scale = Vector2(0.6, 0.6)
+
+[node name="Container5" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(2138, -666)
+rotation = 1.5708
+scale = Vector2(0.6, 0.6)
+
+[node name="Container4" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(1684, 88)
+scale = Vector2(0.6, 0.6)
+
+[node name="Crate22" parent="MaskView/Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(1588, 999)
+rotation = 1.5708
+scale = Vector2(0.5, 0.5)
+
+[node name="Crate23" parent="MaskView/Level/props" instance=ExtResource("6_h4vp2")]
+position = Vector2(-1263, 1504)
+rotation = 1.5708
+scale = Vector2(0.4, 0.4)
+
+[node name="Crate24" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-547, 1569)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate25" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-650, 1569)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate26" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(-548, 1670)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate27" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(198, -245)
+scale = Vector2(0.2, 0.2)
+
+[node name="Crate28" parent="MaskView/Level/props" instance=ExtResource("5_2nbmb")]
+position = Vector2(94, -245)
+scale = Vector2(0.2, 0.2)
+
+[node name="Car3" parent="MaskView/Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(1232, 490)
+scale = Vector2(0.4, 0.4)
+
+[node name="Car4" parent="MaskView/Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(987, 488)
+scale = Vector2(0.4, 0.4)
+
+[node name="Car5" parent="MaskView/Level/props" instance=ExtResource("3_2nbmb")]
+position = Vector2(-316, -290)
+scale = Vector2(0.4, 0.4)
+
+[node name="Container6" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(-214, 1343)
+rotation = -0.785398
+scale = Vector2(0.6, 0.6)
+
+[node name="Container7" parent="MaskView/Level/props" instance=ExtResource("4_h4vp2")]
+position = Vector2(112, 433)
+rotation = 0.785398
+scale = Vector2(0.6, 0.6)
+
+[node name="line_of_sight" type="PointLight2D" parent="MaskView" node_paths=PackedStringArray("player_character")]
+position = Vector2(291, -1802)
+texture = ExtResource("11_mflnu")
+script = ExtResource("7_k00yj")
+player_character = NodePath("../../Player")
+
+[node name="FieldOfView" type="SubViewport" parent="."]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("4_2nbmb")
+
+[node name="FovRenderView" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_in6m2")
+texture = SubResource("ViewportTexture_pk6ct")
+
+[node name="FogOfWar" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_6i28l")
+texture = SubResource("ViewportTexture_kq5kv")
+
+[node name="BG" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_mflnu")
+volume_db = -19.096
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="FOVDebugView" type="Sprite2D" parent="CanvasLayer"]
+visible = false
+position = Vector2(0, 159)
+scale = Vector2(0.2, 0.2)
+texture = SubResource("ViewportTexture_xy2gi")
+centered = false
