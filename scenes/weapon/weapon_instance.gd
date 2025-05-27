@@ -1,7 +1,7 @@
 extends Node2D
 class_name WeaponInstance
 
-var data: Weapon
+@export var data: Weapon
 var mode: WeaponAttackMode
 
 var ammo_in_mag := 0
@@ -9,11 +9,12 @@ var ammo_in_mag := 0
 var is_auto_reload := false
 var is_reloading := false
 var is_firing := false
-var is_locked := true
+@export var is_locked := true
 
-var visual_node: Node2D = null
-var sound_pool: SoundPool = null
-var reload_sfx_player: AudioStreamPlayer2D = null
+@export var sound_pool: SoundPool = null
+@export var reload_sfx_player: AudioStreamPlayer2D = null
+
+var weapon_range = 1000
 
 var BulletTrailScene = preload("res://scenes/bullet_trail/bullet_trail.tscn")
 
@@ -21,49 +22,44 @@ signal equip_action(animation_name: String, sound_stream: AudioStream)
 signal shoot_action(animation_name: String, sound_stream: AudioStream)
 signal reload_action(animation_name: String, sound_stream: AudioStream)
 
-func _init(w: Weapon):
-	data = w
-	mode = w.mode
-	ammo_in_mag = w.mag_size
+var player: PlayerController
 
+# func _init(w: Weapon, p: PlayerController):
+	# data = w
+	# mode = w.mode
+	# ammo_in_mag = w.mag_size
+	# player = p
 
-func _create_bullet_trail(start: Vector2, end: Vector2, normal) -> void:
-	# Visual trail effect
-	var trail = BulletTrailScene.instantiate()
-	trail.start_point = start
-	trail.end_point = end
-	trail.normal = normal
-	get_tree().current_scene.add_child(trail)
+func _ready() -> void:
+	mode = data.mode
+	ammo_in_mag = data.mag_size
+
 
 func _shoot_raycast() -> void:
-	if not visual_node:
-		return
-	
-	var origin = visual_node.global_position
-	var target = get_global_mouse_position()
-	var direction = (target - origin).normalized()
-	var distance = 1000
-	var end_point = origin + direction * distance
+	var origin = global_position
+	var direction = player.global_transform.x.normalized()
+	var end_point = origin + direction * weapon_range
 	
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(origin, end_point)
 	var result = space_state.intersect_ray(query)
 
 	if data.uses_ammo:
-		_create_bullet_trail(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO)
+		_create_bullet_trail.rpc(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO)
 
 	if result:
 		var collider = result.collider
 
 		if collider is PlayerController:
-			collider.health_component.take_damage(data.damage)
-
+			collider.health_component.take_damage(data.damage, player.owner_peer_id)
 
 func _lock():
-	is_locked = true
+	if multiplayer.is_server():
+		_set_weapon_locked.rpc(true)
 
 func _unlock():
-	is_locked = false
+	if multiplayer.is_server():
+		_set_weapon_locked.rpc(false)
 
 func _interrupt_reload():
 	if is_reloading and not is_auto_reload:
@@ -82,10 +78,6 @@ func force_interrupt():
 	_unlock()
 
 func drop():
-	if visual_node and visual_node.is_inside_tree():
-		visual_node.queue_free()
-		visual_node = null
-	
 	if sound_pool and sound_pool.is_inside_tree():
 		sound_pool.queue_free()
 		sound_pool = null
@@ -95,47 +87,11 @@ func drop():
 		reload_sfx_player = null
 
 func unequip():
-	if visual_node:
-		visual_node.hide()
+	hide()
 
-func equip(socket: Node2D):
-	_lock()
-
-	# Cleanup any existing visuals and sounds
-	unequip()
-
-	# Create and attach the visual and sounds
-	if not visual_node:
-		visual_node = data.weapon_scene.instantiate()
-		socket.add_child(visual_node)
-		visual_node.position = Vector2.ZERO # You can adjust offset per-weapon
-		visual_node.rotation = 0.0 # Adjust if needed
-	else:
-		visual_node.show()
-
-	if not sound_pool:
-		var fire_rate = data.mode.cooldown
-		var recommended_pool_size = clamp(ceil(1.0 / fire_rate) * 2, 4, 8)
-		sound_pool = SoundPool.new(recommended_pool_size)
-		visual_node.add_child(sound_pool)
-
-	if not reload_sfx_player:
-		reload_sfx_player = AudioStreamPlayer2D.new()
-		visual_node.add_child(reload_sfx_player)
-	
-	emit_signal("equip_action", data.animations.get("equip", ""), data.sounds.equip_sound)
-
-	# if weapon has animations
-	if visual_node and visual_node.has_node("AnimationPlayer"):
-		visual_node.get_node("AnimationPlayer").play("equip")
-	
-	sound_pool.play_stream(data.sounds.equip_sound)
-
-	await get_tree().create_timer(data.equip_duration).timeout
-	_unlock()
-
-	if ammo_in_mag <= 0:
-		await reload()
+func equip(_socket: Node2D):
+	if multiplayer.is_server():
+		_equip_weapon.rpc(_socket)
 
 
 func reload(auto: bool = false) -> void:
@@ -146,12 +102,12 @@ func reload(auto: bool = false) -> void:
 	is_auto_reload = auto
 	is_reloading = true
 	emit_signal("reload_action", data.animations.get("reload", ""), data.sounds.reload_sound)
-	
-	reload_sfx_player.stream = data.sounds.reload_sound
-	reload_sfx_player.play()
 
-	if visual_node and visual_node.has_node("AnimationPlayer"):
-		visual_node.get_node("AnimationPlayer").play("reload")
+	if multiplayer.is_server():
+		_play_reload_sound.rpc()
+
+	if has_node("AnimationPlayer"):
+		get_node("AnimationPlayer").play("reload")
 
 	await get_tree().create_timer(data.reload_duration).timeout
 
@@ -208,12 +164,13 @@ func single_shoot() -> bool:
 
 	emit_signal("shoot_action", data.animations.get("attack", ""), data.sounds.shoot_sound)
 
-	sound_pool.play_stream(data.sounds.shoot_sound)
+	if multiplayer.is_server():
+		_play_shoot_sound.rpc()
 
 	_shoot_raycast()
 
-	if visual_node and visual_node.has_node("MuzzleFlash"):
-			var flash = visual_node.get_node("MuzzleFlash")
+	if has_node("MuzzleFlash"):
+			var flash = get_node("MuzzleFlash")
 			flash.show()
 			flash.modulate = Color(1, 1, 1, 1)
 
@@ -221,10 +178,71 @@ func single_shoot() -> bool:
 			if flash:
 				flash.hide()
 
-	if visual_node and visual_node.has_node("AnimationPlayer"):
-		visual_node.get_node("AnimationPlayer").play("shoot")
+	if has_node("AnimationPlayer"):
+		get_node("AnimationPlayer").play("shoot")
 
 
 	await get_tree().create_timer(data.mode.cooldown).timeout
 
 	return true
+
+
+@rpc("authority", "call_local", "reliable")
+func _set_weapon_locked(locked: bool):
+	is_locked = locked
+
+@rpc("authority", "call_local", "unreliable")
+func _play_shoot_sound():
+	if sound_pool:
+		sound_pool.play_stream(data.sounds.shoot_sound)
+
+@rpc("authority", "call_local", "reliable")
+func _play_reload_sound():
+	if reload_sfx_player:
+		reload_sfx_player.stream = data.sounds.reload_sound
+		reload_sfx_player.play()
+
+@rpc("authority", "call_local")
+func _play_equip_sound():
+	if sound_pool:
+		sound_pool.play_stream(data.sounds.equip_sound)
+
+@rpc("authority", "call_local", "unreliable")
+func _create_bullet_trail(start: Vector2, end: Vector2, normal) -> void:
+	var trail = BulletTrailScene.instantiate()
+	trail.start_point = start
+	trail.end_point = end
+	trail.normal = normal
+	get_tree().current_scene.add_child(trail)
+
+@rpc("authority", "call_local")
+func _equip_weapon(_socket: Node2D):
+	_lock()
+
+	unequip()
+
+	show()
+
+	# if not sound_pool:
+	# 	var fire_rate = data.mode.cooldown
+	# 	var recommended_pool_size = clamp(ceil(1.0 / fire_rate) * 2, 4, 8)
+	# 	sound_pool = SoundPool.new(recommended_pool_size)
+	# 	add_child(sound_pool)
+
+	# if not reload_sfx_player:
+	# 	reload_sfx_player = AudioStreamPlayer2D.new()
+	# 	add_child(reload_sfx_player)
+	
+	emit_signal("equip_action", data.animations.get("equip", ""), data.sounds.equip_sound)
+
+	# if weapon has animations
+	if has_node("AnimationPlayer"):
+		get_node("AnimationPlayer").play("equip")
+	
+	_play_equip_sound.rpc()
+
+	await get_tree().create_timer(data.equip_duration).timeout
+	_unlock()
+
+	if ammo_in_mag <= 0:
+		await reload()

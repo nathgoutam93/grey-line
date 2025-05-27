@@ -1,8 +1,8 @@
-[gd_scene load_steps=26 format=3 uid="uid://c6bubi5tu41qm"]
+[gd_scene load_steps=25 format=3 uid="uid://c6bubi5tu41qm"]
 
 [ext_resource type="Texture2D" uid="uid://dy52bv6pn8l3" path="res://assets/sprites/character/torso.png" id="1_1u1ua"]
 [ext_resource type="Script" uid="uid://d3xt03q27kmaq" path="res://components/skeletal_mesh/character_skeletal.gd" id="1_jtl51"]
-[ext_resource type="Shader" uid="uid://bsx3mfkaxv4q6" path="res://scenes/maps/counter_strike/los.gdshader" id="1_ocduy"]
+[ext_resource type="Material" uid="uid://d0ku8kdctasp8" path="res://materials/fow_material.tres" id="1_ocduy"]
 [ext_resource type="Texture2D" uid="uid://1vbsbdrlqyaa" path="res://assets/sprites/character/head.png" id="2_0yg6b"]
 [ext_resource type="Texture2D" uid="uid://bvk3d81x52p7d" path="res://assets/sprites/pistol.png" id="2_y6eb8"]
 [ext_resource type="Texture2D" uid="uid://554s6org07e2" path="res://assets/sprites/character/backpack.png" id="3_pi4c2"]
@@ -11,11 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://d1j1kwvf7i5qg" path="res://assets/sprites/character/forearm.png" id="6_868g8"]
 [ext_resource type="Texture2D" uid="uid://dco7ljqi5iu8y" path="res://assets/sprites/character/hand_hold_knife.png" id="8_4x8ko"]
 [ext_resource type="Texture2D" uid="uid://cuctpd7s0ydqf" path="res://assets/sprites/character/hand_holding_gun.png" id="8_nb1eh"]
-[ext_resource type="PackedScene" uid="uid://bxy3omwv7b65v" path="res://components/VisionResposive/VisionResponsive.tscn" id="11_q5eky"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_rhg0w"]
-shader = ExtResource("1_ocduy")
-shader_parameter/enable_fow = true
+[ext_resource type="PackedScene" uid="uid://bxy3omwv7b65v" path="res://components/vision_resposive/VisionResponsive.tscn" id="11_q5eky"]
 
 [sub_resource type="Animation" id="Animation_0yg6b"]
 length = 0.001
@@ -2735,7 +2731,7 @@ _data = {
 }
 
 [node name="PlayerMesh" type="Node2D" node_paths=PackedStringArray("hand_socket", "anim_player")]
-material = SubResource("ShaderMaterial_rhg0w")
+material = ExtResource("1_ocduy")
 script = ExtResource("1_jtl51")
 hand_socket = NodePath("Skeleton2D/torso/arm_right/forearm_right/fist_right/hand_socket")
 anim_player = NodePath("AnimationPlayer")
