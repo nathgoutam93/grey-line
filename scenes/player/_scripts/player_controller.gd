@@ -5,28 +5,20 @@ class_name PlayerController
 @export_range(100, 300) var speed: float = 200
 @export_range(0.1, 1) var slow_walk_multiplier := 0.5
 
-@export_group("Inventory")
-@export var default_weapons: Array[PackedScene] = []
-
 @export_group("Components")
 @export var hitbox: CollisionShape2D
 @export var skeletal_character: PlayerMesh
 @export var movement_component: MovementCompoent
 @export var health_component: HealthComponent
+@export var weapon_manager: WeaponManager
 @export var sound_pool: SoundPool
 @export var footstep_player: AudioStreamPlayer2D
 @export var camera_shake: CameraShake
-
-@export var hud: CanvasLayer
-
-@export var camera: Camera2D
-@export var audio_listner: AudioListener2D
-
 @export var player_input: PlayerInput
 
-var weapon_inventory: Array[WeaponInstance]
-var current_weapon: WeaponInstance
-var current_weapon_index := 0
+@export var hud: CanvasLayer
+@export var camera: Camera2D
+@export var audio_listner: AudioListener2D
 
 @export var is_slow_walking := false
 
@@ -34,8 +26,8 @@ var owner_peer_id: int = 1
 var is_local: bool = false
 
 func _ready():
-	_setup_weapons()
 	health_component.connect("die", _on_die)
+	weapon_manager.connect("weapon_equipped", _on_weapon_equiped)
 
 func setup_locals():
 	is_local = true
@@ -53,76 +45,14 @@ func get_speed():
 	if is_slow_walking:
 		speed_multiplier *= slow_walk_multiplier
 	
-	if current_weapon:
-		speed_multiplier *= current_weapon.data.speed_multiplier
+	if weapon_manager.current_weapon:
+		speed_multiplier *= weapon_manager.current_weapon.data.speed_multiplier
 
 	return speed * speed_multiplier
 
 func _on_die(_killer_id: int):
 	if multiplayer.is_server():
 		_remote_die.rpc(global_position)
-
-func _setup_weapons():
-	if default_weapons.size() > 0:
-		for w in default_weapons:
-			var wi = w.instantiate()
-			wi.player = self
-			skeletal_character.hand_socket.add_child(wi)
-			weapon_inventory.append(wi)
-			wi.unequip()
-
-	if weapon_inventory.size() > 0:
-		_equip_weapon(weapon_inventory[current_weapon_index])
-
-func _equip_weapon(new_weapon: WeaponInstance):
-	if current_weapon:
-		current_weapon.disconnect("equip_action", _on_weapon_equip_action)
-		current_weapon.disconnect("shoot_action", _on_weapon_shoot_action)
-		current_weapon.disconnect("reload_action", _on_weapon_reload_action)
-		current_weapon.unequip()
-
-	current_weapon = new_weapon
-
-	current_weapon.connect("equip_action", _on_weapon_equip_action)
-	current_weapon.connect("shoot_action", _on_weapon_shoot_action)
-	current_weapon.connect("reload_action", _on_weapon_reload_action)
-	current_weapon.equip(skeletal_character.hand_socket)
-
-
-func switch_to_next_weapon():
-	if weapon_inventory.size() == 0:
-		return
-	
-	current_weapon.force_interrupt()
-
-	current_weapon_index = (current_weapon_index + 1) % weapon_inventory.size()
-	_equip_weapon(weapon_inventory[current_weapon_index])
-
-	_remote_equip_weapon.rpc(current_weapon_index)
-
-func switch_to_previous_weapon():
-	if weapon_inventory.size() == 0:
-		return
-	
-	current_weapon.force_interrupt()
-	
-	current_weapon_index = (current_weapon_index - 1 + weapon_inventory.size()) % weapon_inventory.size()
-	_equip_weapon(weapon_inventory[current_weapon_index])
-
-	_remote_equip_weapon.rpc(current_weapon_index)
-
-
-func _on_weapon_shoot_action(animation_name: String, _sound_stream: AudioStream):
-	if multiplayer.is_server():
-		_play_shoot_animation_for_all.rpc(animation_name)
-
-func _on_weapon_reload_action(animation_name: String, _sound_stream: AudioStream):
-	if multiplayer.is_server():
-		_play_reload_animation_for_all.rpc(animation_name)
-
-func _on_weapon_equip_action(animation_name: String, _sound_stream: AudioStream):
-	if multiplayer.is_server():
-		_play_equip_animation_for_all.rpc(animation_name)
 
 
 func _process(_delta: float) -> void:
@@ -138,11 +68,11 @@ func _process(_delta: float) -> void:
 		if footstep_player.playing:
 			footstep_player.stop();
 
-	if not current_weapon.is_locked:
+	if weapon_manager.current_weapon and not weapon_manager.current_weapon.is_locked:
 		if movement_component.is_moving:
-			skeletal_character.anim_player.play(current_weapon.data.animations.get("move", ""))
+			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("move", ""))
 		else:
-			skeletal_character.anim_player.play(current_weapon.data.animations.get("idle", ""))
+			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("idle", ""))
 	
 func _physics_process(_delta: float) -> void:
 	pass
@@ -155,38 +85,33 @@ func request_stop_slow_walk():
 	is_slow_walking = false
 
 func request_start_fire():
-	if current_weapon:
-		current_weapon.start_fire()
+	if weapon_manager.current_weapon:
+		weapon_manager.current_weapon.start_fire()
 	
 func request_stop_fire():
-	if current_weapon:
-		current_weapon.stop_fire()
+	if weapon_manager.current_weapon:
+		weapon_manager.current_weapon.stop_fire()
 
 func request_reload():
-	if current_weapon:
-		current_weapon.reload()
+	if weapon_manager.current_weapon:
+		weapon_manager.current_weapon.reload()
 
 func request_switch_weapon_next():
-	switch_to_next_weapon()
+	weapon_manager.switch_to_next_weapon()
+
+func request_drop_weapon():
+	weapon_manager.drop_weapon()
 
 
-@rpc("authority", "call_local", "reliable")
-func _play_reload_animation_for_all(animation_name: String):
-	skeletal_character.anim_player.play(animation_name)
+func _on_weapon_equiped(slot):
+	_remote_equip_weapon.rpc(slot)
 
-@rpc("authority", "call_local", "reliable")
-func _play_shoot_animation_for_all(animation_name: String):
-	skeletal_character.anim_player.play(animation_name)
-	camera_shake.apply(current_weapon.data.camera_shake_strength)
-
-@rpc("authority", "call_local", "reliable")
-func _play_equip_animation_for_all(animation_name: String):
-	skeletal_character.anim_player.play(animation_name)
+func pickup_weapon(weapon_pickup: WeaponPickup):
+	return weapon_manager.pickup_weapon(weapon_pickup)
 
 @rpc("authority", "reliable")
-func _remote_equip_weapon(index: int):
-	current_weapon_index = index
-	_equip_weapon(weapon_inventory[current_weapon_index])
+func _remote_equip_weapon(slot: int):
+	weapon_manager.equip_slot(slot)
 
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):

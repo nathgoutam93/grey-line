@@ -1,9 +1,15 @@
 extends Resource
 class_name Weapon
 
+enum WeaponType {PRIMARY, SECONDARY, MELEE}
+
 @export var name: String
 
+@export var weapon_type: WeaponType = WeaponType.SECONDARY
+
 @export var damage := 0
+@export var d_range := 1000.0
+
 @export var mag_size := 0
 @export var uses_ammo := true
 

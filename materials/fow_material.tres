@@ -5,3 +5,5 @@
 [resource]
 shader = ExtResource("1_1rb8e")
 shader_parameter/enable_fow = true
+shader_parameter/enable_outline = true
+shader_parameter/outline_color = Vector4(1, 0, 0, 1)

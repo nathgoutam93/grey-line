@@ -1,10 +1,12 @@
-[gd_scene load_steps=20 format=3 uid="uid://ca4sffa83rp24"]
+[gd_scene load_steps=21 format=3 uid="uid://ca4sffa83rp24"]
 
 [ext_resource type="Script" uid="uid://btqbhqr7k5cc5" path="res://scenes/player/_scripts/player_controller.gd" id="1_cedje"]
-[ext_resource type="PackedScene" uid="uid://b7uqibrfrx2a4" path="res://scenes/weapon/knife.tscn" id="2_gx1jg"]
+[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="2_ugbui"]
+[ext_resource type="Resource" uid="uid://hai2ryfmmjjp" path="res://resources/weapons/knife.tres" id="3_fcs02"]
 [ext_resource type="AudioStream" uid="uid://ugquajnor6qk" path="res://assets/sounds/concrete-footsteps.mp3" id="3_m8vw7"]
-[ext_resource type="PackedScene" uid="uid://dqc8bp6vg5pdg" path="res://scenes/weapon/pistol.tscn" id="3_ugbui"]
+[ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/hand_gun.tres" id="4_myrg7"]
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
+[ext_resource type="PackedScene" uid="uid://4isysde6lgiy" path="res://components/weapon_manager/weapon_manager.tscn" id="5_gx1jg"]
 [ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="10_h17s1"]
 [ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="10_je7p5"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
@@ -20,10 +22,6 @@ light_mode = 2
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5i508"]
 radius = 18.0
 height = 54.0
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_m8vw7"]
-radius = 17.0
-height = 52.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_je7p5"]
 font_size = 8
@@ -47,32 +45,28 @@ properties/2/path = NodePath(".:is_slow_walking")
 properties/2/spawn = true
 properties/2/replication_mode = 1
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("hitbox", "skeletal_character", "movement_component", "health_component", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner", "player_input")]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("hitbox", "skeletal_character", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "player_input", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
+collision_layer = 2
+motion_mode = 1
 script = ExtResource("1_cedje")
 speed = 250.0
-default_weapons = Array[PackedScene]([ExtResource("2_gx1jg"), ExtResource("3_ugbui")])
 hitbox = NodePath("HitBox")
 skeletal_character = NodePath("PlayerMesh")
 movement_component = NodePath("MovementComponent")
 health_component = NodePath("Health")
+weapon_manager = NodePath("WeaponManager")
 sound_pool = NodePath("SoundPool")
 footstep_player = NodePath("Footsteps")
 camera_shake = NodePath("Camera2D/CameraShake")
+player_input = NodePath("PlayerInput")
 hud = NodePath("HUD")
 camera = NodePath("Camera2D")
 audio_listner = NodePath("Camera2D/AudioListener2D")
-player_input = NodePath("PlayerInput")
 
 [node name="HitBox" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_5i508")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(6, 0)
-rotation = 1.5708
-shape = SubResource("CapsuleShape2D_m8vw7")
-disabled = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false
@@ -88,6 +82,12 @@ rotation_smoothing_enabled = true
 [node name="PlayerMesh" parent="." instance=ExtResource("13_u5how")]
 position = Vector2(-5, 0)
 scale = Vector2(0.32, 0.32)
+
+[node name="WeaponManager" parent="." node_paths=PackedStringArray("player", "skeletal_character", "camera_shake") instance=ExtResource("5_gx1jg")]
+default_weapons = Array[ExtResource("2_ugbui")]([ExtResource("3_fcs02"), ExtResource("4_myrg7")])
+player = NodePath("..")
+skeletal_character = NodePath("../PlayerMesh")
+camera_shake = NodePath("../Camera2D/CameraShake")
 
 [node name="MovementComponent" parent="." node_paths=PackedStringArray("player", "player_input") instance=ExtResource("12_hoixd")]
 player = NodePath("..")

@@ -1,5 +1,6 @@
-[gd_scene load_steps=282 format=3 uid="uid://dyyv6g2s66fwh"]
+[gd_scene load_steps=192 format=3 uid="uid://dyyv6g2s66fwh"]
 
+[ext_resource type="Material" uid="uid://bwlqofbrbiull" path="res://materials/all_white.tres" id="2_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://bc24o2a1i3x6k" path="res://scenes/maps/counter_strike/_assets/map.png" id="2_3iwqa"]
 [ext_resource type="PackedScene" uid="uid://c44afg3fumb4" path="res://scenes/props/car/car.tscn" id="3_2nbmb"]
 [ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="3_b3xq6"]
@@ -10,27 +11,352 @@
 [ext_resource type="PackedScene" uid="uid://bwtobiuw50ude" path="res://scenes/props/crates/sci_fi_crate.tscn" id="6_h4vp2"]
 [ext_resource type="PackedScene" uid="uid://socdrphm8n2i" path="res://scenes/props/truck/truck.tscn" id="7_mflnu"]
 [ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
-[ext_resource type="Material" uid="uid://bwlqofbrbiull" path="res://materials/all_white.tres" id="9_2nbmb"]
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
+
+[sub_resource type="Gradient" id="Gradient_fxymx"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.477912)
+colors = PackedColorArray(0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_bwbls"]
+gradient = SubResource("Gradient_fxymx")
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2nbmb"]
+polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h4vp2"]
+polygon = PackedVector2Array(-15.625, -22.5, 15.625, -22.5, 15.625, 22.5, -15.625, 22.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mflnu"]
+polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k00yj"]
+polygon = PackedVector2Array(-11.625, -74.25, 11.625, -74.25, 11.625, 74.25, -11.625, 74.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kifs8"]
+polygon = PackedVector2Array(-219, -184.5, 219, -184.5, 219, 184.5, -219, 184.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rq4m3"]
+polygon = PackedVector2Array(-345, -12, 345, -12, 345, 12, -345, 12)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jondw"]
+polygon = PackedVector2Array(-12.5, -28, 12.5, -28, 12.5, 28, -12.5, 28)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ichad"]
+polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_g4tve"]
+polygon = PackedVector2Array(-11.5, -35, 11.5, -35, 11.5, 35, -11.5, 35)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uncyb"]
+polygon = PackedVector2Array(-11.5, -11.5, 11.5, -11.5, 11.5, 11.5, -11.5, 11.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tinfn"]
+polygon = PackedVector2Array(-12, -29.25, 12, -29.25, 12, 29.25, -12, 29.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h4lhr"]
+polygon = PackedVector2Array(-11.5, -162, 11.5, -162, 11.5, 162, -11.5, 162)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sbvmh"]
+polygon = PackedVector2Array(-28.8125, -25.625, 28.8125, -25.625, 28.8125, 25.625, -28.8125, 25.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ka43b"]
+polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2de0w"]
+polygon = PackedVector2Array(-65, -14, 65, -14, 65, 14, -65, 14)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ptkua"]
+polygon = PackedVector2Array(-10, -145.5, 10, -145.5, 10, 145.5, -10, 145.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qqk3m"]
+polygon = PackedVector2Array(-10, -39.5, 10, -39.5, 10, 39.5, -10, 39.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uvnb0"]
+polygon = PackedVector2Array(-10, -183.375, 10, -183.375, 10, 183.375, -10, 183.375)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_835bh"]
+polygon = PackedVector2Array(-10, -73.5, 10, -73.5, 10, 73.5, -10, 73.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_n8cx0"]
+polygon = PackedVector2Array(-10, -142.25, 10, -142.25, 10, 142.25, -10, 142.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7khml"]
+polygon = PackedVector2Array(-10, -93.125, 10, -93.125, 10, 93.125, -10, 93.125)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cc434"]
+polygon = PackedVector2Array(-10, -68.5625, 10, -68.5625, 10, 68.5625, -10, 68.5625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xg4g0"]
+polygon = PackedVector2Array(-10, -155.5, 10, -155.5, 10, 155.5, -10, 155.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_o4ktb"]
+polygon = PackedVector2Array(-10, -280.75, 10, -280.75, 10, 280.75, -10, 280.75)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kdj1p"]
+polygon = PackedVector2Array(-10, -130.109, 10, -130.109, 10, 130.109, -10, 130.109)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ink4q"]
+polygon = PackedVector2Array(-10, -153.527, 10, -153.527, 10, 153.527, -10, 153.527)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_loviv"]
+polygon = PackedVector2Array(-10, -106.027, 10, -106.027, 10, 106.027, -10, 106.027)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_r7ov6"]
+polygon = PackedVector2Array(-10, -100.013, 10, -100.013, 10, 100.013, -10, 100.013)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_l0dc6"]
+polygon = PackedVector2Array(-10, -458.007, 10, -458.007, 10, 458.007, -10, 458.007)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cophk"]
+polygon = PackedVector2Array(-11.5, -374.004, 11.5, -374.004, 11.5, 374.004, -11.5, 374.004)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_skb8d"]
+polygon = PackedVector2Array(-10.5, -131.251, 10.5, -131.251, 10.5, 131.251, -10.5, 131.251)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uliox"]
+polygon = PackedVector2Array(-10.5, -240.626, 10.5, -240.626, 10.5, 240.626, -10.5, 240.626)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_pqvfp"]
+polygon = PackedVector2Array(-10, -119.257, 10, -119.257, 10, 119.257, -10, 119.257)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_c7gyd"]
+polygon = PackedVector2Array(-10, -88.264, 10, -88.264, 10, 88.264, -10, 88.264)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wdpgy"]
+polygon = PackedVector2Array(-11.5, -66.3455, 11.5, -66.3455, 11.5, 66.3455, -11.5, 66.3455)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_c4h8n"]
+polygon = PackedVector2Array(-10, -136.5, 10, -136.5, 10, 136.5, -10, 136.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q0um5"]
+polygon = PackedVector2Array(-10, -198.125, 10, -198.125, 10, 198.125, -10, 198.125)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ltmgd"]
+polygon = PackedVector2Array(-10, -253.25, 10, -253.25, 10, 253.25, -10, 253.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_j701p"]
+polygon = PackedVector2Array(-8, -750.625, 8, -750.625, 8, 750.625, -8, 750.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_08gw2"]
+polygon = PackedVector2Array(-10, -442.75, 10, -442.75, 10, 442.75, -10, 442.75)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_dchsu"]
+polygon = PackedVector2Array(-9.87995, -266.26, 9.87995, -266.26, 9.87995, 266.26, -9.87995, 266.26)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_22a6t"]
+polygon = PackedVector2Array(-10, -224.625, 10, -224.625, 10, 224.625, -10, 224.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k2m3x"]
+polygon = PackedVector2Array(-12.5, -54.781, 12.5, -54.781, 12.5, 54.781, -12.5, 54.781)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_gnh4e"]
+polygon = PackedVector2Array(-12.5, -103.196, 12.5, -103.196, 12.5, 103.196, -12.5, 103.196)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tatvb"]
+polygon = PackedVector2Array(-10, -426.562, 10, -426.562, 10, 426.562, -10, 426.562)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wx1lu"]
+polygon = PackedVector2Array(-10, -409.281, 10, -409.281, 10, 409.281, -10, 409.281)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ta1ll"]
+polygon = PackedVector2Array(-10, -418.641, 10, -418.641, 10, 418.641, -10, 418.641)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ok1nd"]
+polygon = PackedVector2Array(-10, -26.25, 10, -26.25, 10, 26.25, -10, 26.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ikblw"]
+polygon = PackedVector2Array(-10, -38.5, 10, -38.5, 10, 38.5, -10, 38.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bnibe"]
+polygon = PackedVector2Array(-9.9058, -64, 9.9058, -64, 9.9058, 64, -9.9058, 64)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k6cr8"]
+polygon = PackedVector2Array(-9.9058, -229, 9.9058, -229, 9.9058, 229, -9.9058, 229)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_txj3c"]
+polygon = PackedVector2Array(-9.9058, -288, 9.9058, -288, 9.9058, 288, -9.9058, 288)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nlnrp"]
+polygon = PackedVector2Array(-9.9058, -113.5, 9.9058, -113.5, 9.9058, 113.5, -9.9058, 113.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_0u1v0"]
+polygon = PackedVector2Array(-9.9058, -149.25, 9.9058, -149.25, 9.9058, 149.25, -9.9058, 149.25)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mx6q1"]
+polygon = PackedVector2Array(-9.9058, -225.5, 9.9058, -225.5, 9.9058, 225.5, -9.9058, 225.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rvb3r"]
+polygon = PackedVector2Array(-9.9058, -488.375, 9.9058, -488.375, 9.9058, 488.375, -9.9058, 488.375)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fhpgn"]
+polygon = PackedVector2Array(-9.9058, -131.625, 9.9058, -131.625, 9.9058, 131.625, -9.9058, 131.625)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xebxt"]
+polygon = PackedVector2Array(-9.9058, -44.3125, 9.9058, -44.3125, 9.9058, 44.3125, -9.9058, 44.3125)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7kb4p"]
+polygon = PackedVector2Array(-9.9058, -123.75, 9.9058, -123.75, 9.9058, 123.75, -9.9058, 123.75)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_4cfhr"]
+polygon = PackedVector2Array(-9.9058, -734.875, 9.9058, -734.875, 9.9058, 734.875, -9.9058, 734.875)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vpq5f"]
+polygon = PackedVector2Array(-10.4529, -185.5, 10.4529, -185.5, 10.4529, 185.5, -10.4529, 185.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q8pgy"]
+polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tx0vd"]
+polygon = PackedVector2Array(-62.5, -198.5, 62.5, -198.5, 62.5, 198.5, -62.5, 198.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rd1d6"]
+polygon = PackedVector2Array(-10.5, -194.5, 10.5, -194.5, 10.5, 194.5, -10.5, 194.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6mrm1"]
+polygon = PackedVector2Array(-31.25, -14, 31.25, -14, 31.25, 14, -31.25, 14)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yo5oa"]
+polygon = PackedVector2Array(-364.5, -10, 364.5, -10, 364.5, 10, -364.5, 10)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_y6kca"]
+polygon = PackedVector2Array(-73.625, -10, 73.625, -10, 73.625, 10, -73.625, 10)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bb0qr"]
+polygon = PackedVector2Array(-54.3125, -10, 54.3125, -10, 54.3125, 10, -54.3125, 10)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q3y0l"]
+polygon = PackedVector2Array(-11.5, -42, 11.5, -42, 11.5, 42, -11.5, 42)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yrm6k"]
+polygon = PackedVector2Array(-210, -83, 2, -100, 95, -112, 205, -78, 230, -2, 214, 66, 93, 108, 20, 92, -207, 83, -234, -1)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2kpps"]
+polygon = PackedVector2Array(-210, -83, 2, -100, 95, -112, 205, -78, 230, -2, 214, 66, 93, 108, 20, 92, -207, 83, -234, -1)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xru67"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_py53y"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jad5f"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jme3x"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xkdoa"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_i4ocy"]
+polygon = PackedVector2Array(-243, -176, 243, -176, 243, 176, -243, 176)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_u8dtn"]
+polygon = PackedVector2Array(-243, -176, 243, -176, 243, 176, -243, 176)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_p2rvm"]
+polygon = PackedVector2Array(-243, -176, 243, -176, 243, 176, -243, 176)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ujvpy"]
+polygon = PackedVector2Array(-243, -176, 243, -176, 243, 176, -243, 176)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nw2bi"]
+polygon = PackedVector2Array(-30.5, -213, 30.5, -213, 30.5, 213, -30.5, 213)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7d5fl"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_lf050"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nc6wh"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ngwhq"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_oj6p4"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sd8tj"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ja8ag"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_dorpl"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sw67b"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yxqev"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_1b3nk"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_o4r52"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uo4pl"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wqhhq"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_j6doa"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ak31t"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_5ohro"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wtk46"]
+polygon = PackedVector2Array(-243, -176, 243, -176, 243, 176, -243, 176)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xnffc"]
+polygon = PackedVector2Array(-243, -176, 243, -176, 243, 176, -243, 176)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_y8kkf"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_5qd58"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vn7kt"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_snsb0"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ytlo0"]
+polygon = PackedVector2Array(-252.5, -246.5, 252.5, -246.5, 252.5, 246.5, -252.5, 246.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mp3gt"]
+polygon = PackedVector2Array(-210, -83, 2, -100, 95, -112, 205, -78, 230, -2, 214, 66, 93, 108, 20, 92, -207, 83, -234, -1)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_4tgls"]
+polygon = PackedVector2Array(-210, -83, 2, -100, 95, -112, 205, -78, 230, -2, 214, 66, 93, 108, 20, 92, -207, 83, -234, -1)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_w4v0r"]
+polygon = PackedVector2Array(-210, -83, 2, -100, 95, -112, 205, -78, 230, -2, 214, 66, 93, 108, 20, 92, -207, 83, -234, -1)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6s1jw"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fxymx"]
+polygon = PackedVector2Array(-248, -118, 248, -118, 248, 118, -248, 118)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pslmq"]
 size = Vector2(31.25, 45)
 
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rq4m3"]
-polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jondw"]
-polygon = PackedVector2Array(-15.625, -22.5, 15.625, -22.5, 15.625, 22.5, -15.625, 22.5)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_li4ch"]
 size = Vector2(23.25, 148.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ichad"]
-polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_g4tve"]
-polygon = PackedVector2Array(-11.625, -74.25, 11.625, -74.25, 11.625, 74.25, -11.625, 74.25)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4ftj6"]
 size = Vector2(438, 369)
@@ -40,15 +366,6 @@ size = Vector2(690, 24)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xoxjw"]
 size = Vector2(25, 56)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uncyb"]
-polygon = PackedVector2Array(-219, -184.5, 219, -184.5, 219, 184.5, -219, 184.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tinfn"]
-polygon = PackedVector2Array(-345, -12, 345, -12, 345, 12, -345, 12)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h4lhr"]
-polygon = PackedVector2Array(-12.5, -28, 12.5, -28, 12.5, 28, -12.5, 28)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_crem8"]
 size = Vector2(23, 70)
@@ -65,32 +382,8 @@ size = Vector2(23, 324)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6kvlp"]
 size = Vector2(57.625, 51.25)
 
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sbvmh"]
-polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ka43b"]
-polygon = PackedVector2Array(-11.5, -35, 11.5, -35, 11.5, 35, -11.5, 35)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2de0w"]
-polygon = PackedVector2Array(-11.5, -11.5, 11.5, -11.5, 11.5, 11.5, -11.5, 11.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ptkua"]
-polygon = PackedVector2Array(-12, -29.25, 12, -29.25, 12, 29.25, -12, 29.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qqk3m"]
-polygon = PackedVector2Array(-11.5, -162, 11.5, -162, 11.5, 162, -11.5, 162)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uvnb0"]
-polygon = PackedVector2Array(-28.8125, -25.625, 28.8125, -25.625, 28.8125, 25.625, -28.8125, 25.625)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wftvi"]
 size = Vector2(130, 28)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_835bh"]
-polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_n8cx0"]
-polygon = PackedVector2Array(-65, -14, 65, -14, 65, 14, -65, 14)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_p2eoo"]
 size = Vector2(20, 291)
@@ -123,7 +416,7 @@ size = Vector2(20, 561.5)
 size = Vector2(20, 260.217)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6i28l"]
-size = Vector2(20, 292.108)
+size = Vector2(20, 307.054)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kq5kv"]
 size = Vector2(20, 212.054)
@@ -147,16 +440,16 @@ size = Vector2(21, 481.252)
 size = Vector2(20, 238.514)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_in6m2"]
-size = Vector2(20, 175.527)
+size = Vector2(20, 176.528)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xu5fu"]
-size = Vector2(23, 110.764)
+size = Vector2(23, 132.691)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pk6ct"]
-size = Vector2(20, 262.382)
+size = Vector2(20, 273)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xy2gi"]
-size = Vector2(20, 407)
+size = Vector2(20, 396.25)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_a7nqi"]
 size = Vector2(20, 506.5)
@@ -165,7 +458,7 @@ size = Vector2(20, 506.5)
 size = Vector2(16, 1501.25)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oxux0"]
-size = Vector2(20, 872.5)
+size = Vector2(20, 885.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w4c6u"]
 size = Vector2(19.7599, 532.52)
@@ -230,147 +523,6 @@ size = Vector2(19.8116, 1469.75)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2g2m0"]
 size = Vector2(20.9058, 371)
 
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7khml"]
-polygon = PackedVector2Array(-10, -145.5, 10, -145.5, 10, 145.5, -10, 145.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cc434"]
-polygon = PackedVector2Array(-10, -39.5, 10, -39.5, 10, 39.5, -10, 39.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xg4g0"]
-polygon = PackedVector2Array(-10, -183.375, 10, -183.375, 10, 183.375, -10, 183.375)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_o4ktb"]
-polygon = PackedVector2Array(-10, -73.5, 10, -73.5, 10, 73.5, -10, 73.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kdj1p"]
-polygon = PackedVector2Array(-10, -142.25, 10, -142.25, 10, 142.25, -10, 142.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ink4q"]
-polygon = PackedVector2Array(-10, -93.125, 10, -93.125, 10, 93.125, -10, 93.125)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_loviv"]
-polygon = PackedVector2Array(-10, -68.5625, 10, -68.5625, 10, 68.5625, -10, 68.5625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_r7ov6"]
-polygon = PackedVector2Array(-10, -155.5, 10, -155.5, 10, 155.5, -10, 155.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_l0dc6"]
-polygon = PackedVector2Array(-10, -280.75, 10, -280.75, 10, 280.75, -10, 280.75)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cophk"]
-polygon = PackedVector2Array(-10, -130.109, 10, -130.109, 10, 130.109, -10, 130.109)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_skb8d"]
-polygon = PackedVector2Array(-10, -146.054, 10, -146.054, 10, 146.054, -10, 146.054)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uliox"]
-polygon = PackedVector2Array(-10, -106.027, 10, -106.027, 10, 106.027, -10, 106.027)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_pqvfp"]
-polygon = PackedVector2Array(-10, -100.013, 10, -100.013, 10, 100.013, -10, 100.013)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_c7gyd"]
-polygon = PackedVector2Array(-10, -458.007, 10, -458.007, 10, 458.007, -10, 458.007)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wdpgy"]
-polygon = PackedVector2Array(-11.5, -374.004, 11.5, -374.004, 11.5, 374.004, -11.5, 374.004)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_c4h8n"]
-polygon = PackedVector2Array(-10.5, -131.251, 10.5, -131.251, 10.5, 131.251, -10.5, 131.251)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q0um5"]
-polygon = PackedVector2Array(-10.5, -240.626, 10.5, -240.626, 10.5, 240.626, -10.5, 240.626)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ltmgd"]
-polygon = PackedVector2Array(-10, -119.257, 10, -119.257, 10, 119.257, -10, 119.257)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_j701p"]
-polygon = PackedVector2Array(-10, -87.7635, 10, -87.7635, 10, 87.7635, -10, 87.7635)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_08gw2"]
-polygon = PackedVector2Array(-11.5, -55.382, 11.5, -55.382, 11.5, 55.382, -11.5, 55.382)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_dchsu"]
-polygon = PackedVector2Array(-10, -131.191, 10, -131.191, 10, 131.191, -10, 131.191)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_22a6t"]
-polygon = PackedVector2Array(-10, -203.5, 10, -203.5, 10, 203.5, -10, 203.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k2m3x"]
-polygon = PackedVector2Array(-10, -253.25, 10, -253.25, 10, 253.25, -10, 253.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_gnh4e"]
-polygon = PackedVector2Array(-8, -750.625, 8, -750.625, 8, 750.625, -8, 750.625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tatvb"]
-polygon = PackedVector2Array(-10, -436.25, 10, -436.25, 10, 436.25, -10, 436.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wx1lu"]
-polygon = PackedVector2Array(-9.87995, -266.26, 9.87995, -266.26, 9.87995, 266.26, -9.87995, 266.26)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ta1ll"]
-polygon = PackedVector2Array(-10, -224.625, 10, -224.625, 10, 224.625, -10, 224.625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ok1nd"]
-polygon = PackedVector2Array(-12.5, -54.781, 12.5, -54.781, 12.5, 54.781, -12.5, 54.781)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ikblw"]
-polygon = PackedVector2Array(-12.5, -103.196, 12.5, -103.196, 12.5, 103.196, -12.5, 103.196)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bnibe"]
-polygon = PackedVector2Array(-10, -426.562, 10, -426.562, 10, 426.562, -10, 426.562)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_k6cr8"]
-polygon = PackedVector2Array(-10, -409.281, 10, -409.281, 10, 409.281, -10, 409.281)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_txj3c"]
-polygon = PackedVector2Array(-10, -418.641, 10, -418.641, 10, 418.641, -10, 418.641)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nlnrp"]
-polygon = PackedVector2Array(-10, -26.25, 10, -26.25, 10, 26.25, -10, 26.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_0u1v0"]
-polygon = PackedVector2Array(-10, -38.5, 10, -38.5, 10, 38.5, -10, 38.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mx6q1"]
-polygon = PackedVector2Array(-9.9058, -64, 9.9058, -64, 9.9058, 64, -9.9058, 64)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rvb3r"]
-polygon = PackedVector2Array(-9.9058, -229, 9.9058, -229, 9.9058, 229, -9.9058, 229)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fhpgn"]
-polygon = PackedVector2Array(-9.9058, -288, 9.9058, -288, 9.9058, 288, -9.9058, 288)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xebxt"]
-polygon = PackedVector2Array(-9.9058, -113.5, 9.9058, -113.5, 9.9058, 113.5, -9.9058, 113.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7kb4p"]
-polygon = PackedVector2Array(-9.9058, -149.25, 9.9058, -149.25, 9.9058, 149.25, -9.9058, 149.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_4cfhr"]
-polygon = PackedVector2Array(-9.9058, -225.5, 9.9058, -225.5, 9.9058, 225.5, -9.9058, 225.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vpq5f"]
-polygon = PackedVector2Array(-9.9058, -488.375, 9.9058, -488.375, 9.9058, 488.375, -9.9058, 488.375)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q8pgy"]
-polygon = PackedVector2Array(-9.9058, -131.625, 9.9058, -131.625, 9.9058, 131.625, -9.9058, 131.625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tx0vd"]
-polygon = PackedVector2Array(-9.9058, -44.3125, 9.9058, -44.3125, 9.9058, 44.3125, -9.9058, 44.3125)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rd1d6"]
-polygon = PackedVector2Array(-9.9058, -123.75, 9.9058, -123.75, 9.9058, 123.75, -9.9058, 123.75)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6mrm1"]
-polygon = PackedVector2Array(-9.9058, -734.875, 9.9058, -734.875, 9.9058, 734.875, -9.9058, 734.875)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yo5oa"]
-polygon = PackedVector2Array(-10.4529, -185.5, 10.4529, -185.5, 10.4529, 185.5, -10.4529, 185.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_y6kca"]
-polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4ngsd"]
 size = Vector2(125, 397)
 
@@ -379,15 +531,6 @@ size = Vector2(21, 389)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_65ugt"]
 size = Vector2(62.5, 28)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bb0qr"]
-polygon = PackedVector2Array(-62.5, -198.5, 62.5, -198.5, 62.5, 198.5, -62.5, 198.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_q3y0l"]
-polygon = PackedVector2Array(-10.5, -194.5, 10.5, -194.5, 10.5, 194.5, -10.5, 194.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yrm6k"]
-polygon = PackedVector2Array(-31.25, -14, 31.25, -14, 31.25, 14, -31.25, 14)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rxr32"]
 size = Vector2(729, 20)
@@ -398,419 +541,8 @@ size = Vector2(147.25, 20)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_68vxq"]
 size = Vector2(108.625, 20)
 
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2kpps"]
-polygon = PackedVector2Array(-364.5, -10, 364.5, -10, 364.5, 10, -364.5, 10)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xru67"]
-polygon = PackedVector2Array(-73.625, -10, 73.625, -10, 73.625, 10, -73.625, 10)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_py53y"]
-polygon = PackedVector2Array(-54.3125, -10, 54.3125, -10, 54.3125, 10, -54.3125, 10)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vtr88"]
 size = Vector2(23, 84)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jad5f"]
-polygon = PackedVector2Array(-11.5, -42, 11.5, -42, 11.5, 42, -11.5, 42)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_2nbmb"]
-size = Vector2(31.25, 45)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h4vp2"]
-polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mflnu"]
-polygon = PackedVector2Array(-15.625, -22.5, 15.625, -22.5, 15.625, 22.5, -15.625, 22.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_k00yj"]
-size = Vector2(23.25, 148.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kifs8"]
-polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_jme3x"]
-polygon = PackedVector2Array(-11.625, -74.25, 11.625, -74.25, 11.625, 74.25, -11.625, 74.25)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_xkdoa"]
-size = Vector2(438, 369)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_i4ocy"]
-size = Vector2(690, 24)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_u8dtn"]
-size = Vector2(25, 56)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_p2rvm"]
-polygon = PackedVector2Array(-219, -184.5, 219, -184.5, 219, 184.5, -219, 184.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ujvpy"]
-polygon = PackedVector2Array(-345, -12, 345, -12, 345, 12, -345, 12)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nw2bi"]
-polygon = PackedVector2Array(-12.5, -28, 12.5, -28, 12.5, 28, -12.5, 28)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_7d5fl"]
-size = Vector2(23, 70)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lf050"]
-size = Vector2(23, 23)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_nc6wh"]
-size = Vector2(24, 58.5001)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ngwhq"]
-size = Vector2(23, 324)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_oj6p4"]
-size = Vector2(57.625, 51.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sd8tj"]
-polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ja8ag"]
-polygon = PackedVector2Array(-11.5, -35, 11.5, -35, 11.5, 35, -11.5, 35)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_dorpl"]
-polygon = PackedVector2Array(-11.5, -11.5, 11.5, -11.5, 11.5, 11.5, -11.5, 11.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sw67b"]
-polygon = PackedVector2Array(-12, -29.25, 12, -29.25, 12, 29.25, -12, 29.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yxqev"]
-polygon = PackedVector2Array(-11.5, -162, 11.5, -162, 11.5, 162, -11.5, 162)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_1b3nk"]
-polygon = PackedVector2Array(-28.8125, -25.625, 28.8125, -25.625, 28.8125, 25.625, -28.8125, 25.625)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_o4r52"]
-size = Vector2(130, 28)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uo4pl"]
-polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wqhhq"]
-polygon = PackedVector2Array(-65, -14, 65, -14, 65, 14, -65, 14)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_j6doa"]
-size = Vector2(20, 291)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ak31t"]
-size = Vector2(20, 79)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5ohro"]
-size = Vector2(20, 366.75)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wtk46"]
-size = Vector2(20, 147)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_xnffc"]
-size = Vector2(20, 284.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_y8kkf"]
-size = Vector2(20, 186.25)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5qd58"]
-size = Vector2(20, 137.125)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_vn7kt"]
-size = Vector2(20, 311)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_snsb0"]
-size = Vector2(20, 561.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ytlo0"]
-size = Vector2(20, 260.217)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_mp3gt"]
-size = Vector2(20, 292.108)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_4tgls"]
-size = Vector2(20, 212.054)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_w4v0r"]
-size = Vector2(20, 200.027)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6s1jw"]
-size = Vector2(20, 916.014)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_fxymx"]
-size = Vector2(23, 748.007)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_bwbls"]
-size = Vector2(21, 262.503)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_plksx"]
-size = Vector2(21, 481.252)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_j0hej"]
-size = Vector2(20, 238.514)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8jftv"]
-size = Vector2(20, 175.527)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_y7ejp"]
-size = Vector2(23, 110.764)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_owert"]
-size = Vector2(20, 262.382)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ao8jt"]
-size = Vector2(20, 407)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_65swg"]
-size = Vector2(20, 506.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_m8kk6"]
-size = Vector2(16, 1501.25)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_m2qe2"]
-size = Vector2(20, 872.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_yc0lx"]
-size = Vector2(19.7599, 532.52)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_o1mq1"]
-size = Vector2(20, 449.25)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6l72u"]
-size = Vector2(25, 109.562)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wvm1s"]
-size = Vector2(25, 206.391)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_yafkf"]
-size = Vector2(20, 853.125)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_gk1aj"]
-size = Vector2(20, 818.562)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_4vqel"]
-size = Vector2(20, 837.281)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_uu66n"]
-size = Vector2(20, 52.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_0a42l"]
-size = Vector2(20, 77)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6dtwe"]
-size = Vector2(19.8116, 128)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_frvgx"]
-size = Vector2(19.8116, 458)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_xpbeo"]
-size = Vector2(19.8116, 576)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_2n0r6"]
-size = Vector2(19.8116, 227)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_0irog"]
-size = Vector2(19.8116, 298.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_b1dmp"]
-size = Vector2(19.8116, 451)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_s5l6u"]
-size = Vector2(19.8116, 976.75)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_y8wod"]
-size = Vector2(19.8116, 263.25)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_iwpm1"]
-size = Vector2(19.8116, 88.625)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_u521c"]
-size = Vector2(19.8116, 247.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8wby4"]
-size = Vector2(19.8116, 1469.75)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_nhd7s"]
-size = Vector2(20.9058, 371)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_xq3av"]
-polygon = PackedVector2Array(-10, -145.5, 10, -145.5, 10, 145.5, -10, 145.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yp5o7"]
-polygon = PackedVector2Array(-10, -39.5, 10, -39.5, 10, 39.5, -10, 39.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rvry7"]
-polygon = PackedVector2Array(-10, -183.375, 10, -183.375, 10, 183.375, -10, 183.375)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_43sik"]
-polygon = PackedVector2Array(-10, -73.5, 10, -73.5, 10, 73.5, -10, 73.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_pprnk"]
-polygon = PackedVector2Array(-10, -142.25, 10, -142.25, 10, 142.25, -10, 142.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qp0bv"]
-polygon = PackedVector2Array(-10, -93.125, 10, -93.125, 10, 93.125, -10, 93.125)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7ro8w"]
-polygon = PackedVector2Array(-10, -68.5625, 10, -68.5625, 10, 68.5625, -10, 68.5625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qqhqh"]
-polygon = PackedVector2Array(-10, -155.5, 10, -155.5, 10, 155.5, -10, 155.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qlxeu"]
-polygon = PackedVector2Array(-10, -280.75, 10, -280.75, 10, 280.75, -10, 280.75)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_g6wlc"]
-polygon = PackedVector2Array(-10, -130.109, 10, -130.109, 10, 130.109, -10, 130.109)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_lj5mj"]
-polygon = PackedVector2Array(-10, -146.054, 10, -146.054, 10, 146.054, -10, 146.054)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_a3txf"]
-polygon = PackedVector2Array(-10, -106.027, 10, -106.027, 10, 106.027, -10, 106.027)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ac2a6"]
-polygon = PackedVector2Array(-10, -100.013, 10, -100.013, 10, 100.013, -10, 100.013)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_knum5"]
-polygon = PackedVector2Array(-10, -458.007, 10, -458.007, 10, 458.007, -10, 458.007)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_i70t2"]
-polygon = PackedVector2Array(-11.5, -374.004, 11.5, -374.004, 11.5, 374.004, -11.5, 374.004)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_w25nn"]
-polygon = PackedVector2Array(-10.5, -131.251, 10.5, -131.251, 10.5, 131.251, -10.5, 131.251)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qcrfn"]
-polygon = PackedVector2Array(-10.5, -240.626, 10.5, -240.626, 10.5, 240.626, -10.5, 240.626)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_3a5m4"]
-polygon = PackedVector2Array(-10, -119.257, 10, -119.257, 10, 119.257, -10, 119.257)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_ikqyr"]
-polygon = PackedVector2Array(-10, -87.7635, 10, -87.7635, 10, 87.7635, -10, 87.7635)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_vcerk"]
-polygon = PackedVector2Array(-11.5, -55.382, 11.5, -55.382, 11.5, 55.382, -11.5, 55.382)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_wtuge"]
-polygon = PackedVector2Array(-10, -131.191, 10, -131.191, 10, 131.191, -10, 131.191)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_gfxyx"]
-polygon = PackedVector2Array(-10, -203.5, 10, -203.5, 10, 203.5, -10, 203.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rkgox"]
-polygon = PackedVector2Array(-10, -253.25, 10, -253.25, 10, 253.25, -10, 253.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_v4uad"]
-polygon = PackedVector2Array(-8, -750.625, 8, -750.625, 8, 750.625, -8, 750.625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_cid2m"]
-polygon = PackedVector2Array(-10, -436.25, 10, -436.25, 10, 436.25, -10, 436.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_pj3yg"]
-polygon = PackedVector2Array(-9.87995, -266.26, 9.87995, -266.26, 9.87995, 266.26, -9.87995, 266.26)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nx7np"]
-polygon = PackedVector2Array(-10, -224.625, 10, -224.625, 10, 224.625, -10, 224.625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_p2ijj"]
-polygon = PackedVector2Array(-12.5, -54.781, 12.5, -54.781, 12.5, 54.781, -12.5, 54.781)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_aw8nw"]
-polygon = PackedVector2Array(-12.5, -103.196, 12.5, -103.196, 12.5, 103.196, -12.5, 103.196)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_r5p13"]
-polygon = PackedVector2Array(-10, -426.562, 10, -426.562, 10, 426.562, -10, 426.562)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_msdpx"]
-polygon = PackedVector2Array(-10, -409.281, 10, -409.281, 10, 409.281, -10, 409.281)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uxdkk"]
-polygon = PackedVector2Array(-10, -418.641, 10, -418.641, 10, 418.641, -10, 418.641)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tcxe0"]
-polygon = PackedVector2Array(-10, -26.25, 10, -26.25, 10, 26.25, -10, 26.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_scke5"]
-polygon = PackedVector2Array(-10, -38.5, 10, -38.5, 10, 38.5, -10, 38.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2yxnm"]
-polygon = PackedVector2Array(-9.9058, -64, 9.9058, -64, 9.9058, 64, -9.9058, 64)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fcmxo"]
-polygon = PackedVector2Array(-9.9058, -229, 9.9058, -229, 9.9058, 229, -9.9058, 229)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_1ct5y"]
-polygon = PackedVector2Array(-9.9058, -288, 9.9058, -288, 9.9058, 288, -9.9058, 288)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_yr058"]
-polygon = PackedVector2Array(-9.9058, -113.5, 9.9058, -113.5, 9.9058, 113.5, -9.9058, 113.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fgwxp"]
-polygon = PackedVector2Array(-9.9058, -149.25, 9.9058, -149.25, 9.9058, 149.25, -9.9058, 149.25)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7acad"]
-polygon = PackedVector2Array(-9.9058, -225.5, 9.9058, -225.5, 9.9058, 225.5, -9.9058, 225.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qkoyk"]
-polygon = PackedVector2Array(-9.9058, -488.375, 9.9058, -488.375, 9.9058, 488.375, -9.9058, 488.375)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_52mcs"]
-polygon = PackedVector2Array(-9.9058, -131.625, 9.9058, -131.625, 9.9058, 131.625, -9.9058, 131.625)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_a7e5e"]
-polygon = PackedVector2Array(-9.9058, -44.3125, 9.9058, -44.3125, 9.9058, 44.3125, -9.9058, 44.3125)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_naboi"]
-polygon = PackedVector2Array(-9.9058, -123.75, 9.9058, -123.75, 9.9058, 123.75, -9.9058, 123.75)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_8dl4n"]
-polygon = PackedVector2Array(-9.9058, -734.875, 9.9058, -734.875, 9.9058, 734.875, -9.9058, 734.875)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7swwf"]
-polygon = PackedVector2Array(-10.4529, -185.5, 10.4529, -185.5, 10.4529, 185.5, -10.4529, 185.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_sajgb"]
-polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_extly"]
-size = Vector2(125, 397)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_yqfgn"]
-size = Vector2(21, 389)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_yw5qm"]
-size = Vector2(62.5, 28)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_l24qt"]
-polygon = PackedVector2Array(-62.5, -198.5, 62.5, -198.5, 62.5, 198.5, -62.5, 198.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_8wy55"]
-polygon = PackedVector2Array(-10.5, -194.5, 10.5, -194.5, 10.5, 194.5, -10.5, 194.5)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_dofqe"]
-polygon = PackedVector2Array(-31.25, -14, 31.25, -14, 31.25, 14, -31.25, 14)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6douh"]
-size = Vector2(729, 20)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_iwmeb"]
-size = Vector2(147.25, 20)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_0vf76"]
-size = Vector2(108.625, 20)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bm6h7"]
-polygon = PackedVector2Array(-364.5, -10, 364.5, -10, 364.5, 10, -364.5, 10)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_teb5b"]
-polygon = PackedVector2Array(-73.625, -10, 73.625, -10, 73.625, 10, -73.625, 10)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qj7di"]
-polygon = PackedVector2Array(-54.3125, -10, 54.3125, -10, 54.3125, 10, -54.3125, 10)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_e56s0"]
-size = Vector2(23, 84)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_khkof"]
-polygon = PackedVector2Array(-11.5, -42, 11.5, -42, 11.5, 42, -11.5, 42)
 
 [sub_resource type="ViewportTexture" id="ViewportTexture_k00yj"]
 viewport_path = NodePath("FowMaskView")
@@ -819,6 +551,551 @@ viewport_path = NodePath("FowMaskView")
 viewport_path = NodePath("FowMaskView")
 
 [node name="World" type="Node2D"]
+
+[node name="FowMaskView" type="SubViewport" parent="." node_paths=PackedStringArray("los")]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("4_2nbmb")
+los = NodePath("LOS")
+
+[node name="Level" type="Node2D" parent="FowMaskView"]
+
+[node name="Sprite2D" type="Sprite2D" parent="FowMaskView/Level"]
+material = ExtResource("2_2nbmb")
+scale = Vector2(100, 100)
+texture = SubResource("GradientTexture2D_bwbls")
+
+[node name="GeneratedOccluders" type="Node2D" parent="FowMaskView/Level"]
+
+[node name="@LightOccluder2D@56800" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-493, 688)
+scale = Vector2(0.8, 0.8)
+occluder = SubResource("OccluderPolygon2D_2nbmb")
+
+[node name="@LightOccluder2D@56801" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-197.5, 381)
+scale = Vector2(0.8, 0.8)
+occluder = SubResource("OccluderPolygon2D_h4vp2")
+
+[node name="@LightOccluder2D@56802" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1998, 242)
+scale = Vector2(0.8, 0.8)
+occluder = SubResource("OccluderPolygon2D_mflnu")
+
+[node name="@LightOccluder2D@56803" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(242.752, -53.6248)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_k00yj")
+
+[node name="@LightOccluder2D@56804" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-197, 16.5)
+occluder = SubResource("OccluderPolygon2D_kifs8")
+
+[node name="@LightOccluder2D@56805" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-96, -180)
+occluder = SubResource("OccluderPolygon2D_rq4m3")
+
+[node name="@LightOccluder2D@56806" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-195.5, 228)
+occluder = SubResource("OccluderPolygon2D_jondw")
+
+[node name="@LightOccluder2D@56807" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-858, -895)
+occluder = SubResource("OccluderPolygon2D_ichad")
+
+[node name="@LightOccluder2D@56808" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-359.5, -862)
+occluder = SubResource("OccluderPolygon2D_g4tve")
+
+[node name="@LightOccluder2D@56809" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1358, -670.5)
+occluder = SubResource("OccluderPolygon2D_uncyb")
+
+[node name="@LightOccluder2D@56810" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-319.25, -1161)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_tinfn")
+
+[node name="@LightOccluder2D@56811" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-197, -1009)
+occluder = SubResource("OccluderPolygon2D_h4lhr")
+
+[node name="@LightOccluder2D@56812" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-376.812, -1147.38)
+occluder = SubResource("OccluderPolygon2D_sbvmh")
+
+[node name="@LightOccluder2D@56813" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(778, -861)
+occluder = SubResource("OccluderPolygon2D_ka43b")
+
+[node name="@LightOccluder2D@56814" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1266, -1622)
+occluder = SubResource("OccluderPolygon2D_2de0w")
+
+[node name="@LightOccluder2D@56815" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1996, -1716.5)
+occluder = SubResource("OccluderPolygon2D_ptkua")
+
+[node name="@LightOccluder2D@56816" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-971, -1728.5)
+occluder = SubResource("OccluderPolygon2D_qqk3m")
+
+[node name="@LightOccluder2D@56817" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-601, -1507.62)
+occluder = SubResource("OccluderPolygon2D_uvnb0")
+
+[node name="@LightOccluder2D@56818" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-376, -1414)
+occluder = SubResource("OccluderPolygon2D_835bh")
+
+[node name="@LightOccluder2D@56819" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1660, -1679.25)
+occluder = SubResource("OccluderPolygon2D_n8cx0")
+
+[node name="@LightOccluder2D@56820" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1956, -1443)
+occluder = SubResource("OccluderPolygon2D_7khml")
+
+[node name="@LightOccluder2D@56821" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(728, 1074.56)
+occluder = SubResource("OccluderPolygon2D_cc434")
+
+[node name="@LightOccluder2D@56822" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(561, 829.5)
+occluder = SubResource("OccluderPolygon2D_xg4g0")
+
+[node name="@LightOccluder2D@56823" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(121, 973.25)
+occluder = SubResource("OccluderPolygon2D_o4ktb")
+
+[node name="@LightOccluder2D@56824" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(192, 1355)
+rotation = -0.628319
+occluder = SubResource("OccluderPolygon2D_kdj1p")
+
+[node name="@LightOccluder2D@56825" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-340.473, 1706)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_ink4q")
+
+[node name="@LightOccluder2D@56826" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1243.03, 1389)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_loviv")
+
+[node name="@LightOccluder2D@56827" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1039.01, -106)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_r7ov6")
+
+[node name="@LightOccluder2D@56828" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1412.99, -344)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_l0dc6")
+
+[node name="@LightOccluder2D@56829" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1858, -720)
+occluder = SubResource("OccluderPolygon2D_cophk")
+
+[node name="@LightOccluder2D@56830" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1995, -1084)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_skb8d")
+
+[node name="@LightOccluder2D@56831" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-2118, -1332.63)
+occluder = SubResource("OccluderPolygon2D_uliox")
+
+[node name="@LightOccluder2D@56832" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-949, -234)
+occluder = SubResource("OccluderPolygon2D_pqvfp")
+
+[node name="@LightOccluder2D@56833" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-818.264, 1384)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_c7gyd")
+
+[node name="@LightOccluder2D@56834" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-744, 1450.65)
+occluder = SubResource("OccluderPolygon2D_wdpgy")
+
+[node name="@LightOccluder2D@56835" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-614, 1511)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_c4h8n")
+
+[node name="@LightOccluder2D@56836" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-482, 1709.12)
+occluder = SubResource("OccluderPolygon2D_q0um5")
+
+[node name="@LightOccluder2D@56837" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1352, 1629.25)
+occluder = SubResource("OccluderPolygon2D_ltmgd")
+
+[node name="@LightOccluder2D@56838" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1145, 630.625)
+occluder = SubResource("OccluderPolygon2D_j701p")
+
+[node name="@LightOccluder2D@56839" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-920.75, 1890)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_08gw2")
+
+[node name="@LightOccluder2D@56840" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(43, 1580)
+rotation = 1.06465
+scale = Vector2(1, 1)
+occluder = SubResource("OccluderPolygon2D_dchsu")
+
+[node name="@LightOccluder2D@56841" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(332.625, 687)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_22a6t")
+
+[node name="@LightOccluder2D@56842" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(946.5, 1088.78)
+occluder = SubResource("OccluderPolygon2D_k2m3x")
+
+[node name="@LightOccluder2D@56843" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(656, 997)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_gnh4e")
+
+[node name="@LightOccluder2D@56844" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(2221, -925.562)
+occluder = SubResource("OccluderPolygon2D_tatvb")
+
+[node name="@LightOccluder2D@56845" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(2155, -90.2812)
+occluder = SubResource("OccluderPolygon2D_wx1lu")
+
+[node name="@LightOccluder2D@56846" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1705, 735.641)
+occluder = SubResource("OccluderPolygon2D_ta1ll")
+
+[node name="@LightOccluder2D@56847" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-132, -1508.75)
+occluder = SubResource("OccluderPolygon2D_ok1nd")
+
+[node name="@LightOccluder2D@56848" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1544, -1805.5)
+occluder = SubResource("OccluderPolygon2D_ikblw")
+
+[node name="@LightOccluder2D@56849" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-2065, -1581)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_bnibe")
+
+[node name="@LightOccluder2D@56850" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1761, -1853)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_k6cr8")
+
+[node name="@LightOccluder2D@56851" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1249, -1777)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_txj3c")
+
+[node name="@LightOccluder2D@56852" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-479.5, -1335)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_nlnrp")
+
+[node name="@LightOccluder2D@56853" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1816.75, -1546)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_0u1v0")
+
+[node name="@LightOccluder2D@56854" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1921.5, 307)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_mx6q1")
+
+[node name="@LightOccluder2D@56855" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1207.38, 1149)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_rvb3r")
+
+[node name="@LightOccluder2D@56856" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(2097.38, -1360)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_fhpgn")
+
+[node name="@LightOccluder2D@56857" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(2189, -505)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_xebxt")
+
+[node name="@LightOccluder2D@56858" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-245, -1475)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_7kb4p")
+
+[node name="@LightOccluder2D@56859" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(933.125, -1828)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_4cfhr")
+
+[node name="@LightOccluder2D@56860" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-776, -1700)
+rotation = -1.5708
+occluder = SubResource("OccluderPolygon2D_vpq5f")
+
+[node name="@LightOccluder2D@56861" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(9, -1523)
+occluder = SubResource("OccluderPolygon2D_q8pgy")
+
+[node name="@LightOccluder2D@56862" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-692.5, 77.5)
+occluder = SubResource("OccluderPolygon2D_tx0vd")
+
+[node name="@LightOccluder2D@56863" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-645.5, -308.5)
+occluder = SubResource("OccluderPolygon2D_rd1d6")
+
+[node name="@LightOccluder2D@56864" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-605.25, -178)
+occluder = SubResource("OccluderPolygon2D_6mrm1")
+
+[node name="@LightOccluder2D@56865" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1334.5, 849)
+occluder = SubResource("OccluderPolygon2D_yo5oa")
+
+[node name="@LightOccluder2D@56866" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(897.625, 838)
+occluder = SubResource("OccluderPolygon2D_y6kca")
+
+[node name="@LightOccluder2D@56867" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(835, 775.688)
+rotation = 1.5708
+occluder = SubResource("OccluderPolygon2D_bb0qr")
+
+[node name="@LightOccluder2D@56868" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-364.5, -650)
+occluder = SubResource("OccluderPolygon2D_q3y0l")
+
+[node name="@LightOccluder2D@56869" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1947, -1258)
+rotation = 0.785398
+scale = Vector2(0.4, 0.4)
+occluder = SubResource("OccluderPolygon2D_yrm6k")
+
+[node name="@LightOccluder2D@56870" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1836, -1735)
+scale = Vector2(0.4, 0.4)
+occluder = SubResource("OccluderPolygon2D_2kpps")
+
+[node name="@LightOccluder2D@56871" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1427, -1641.4)
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_xru67")
+
+[node name="@LightOccluder2D@56872" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1265.1, -986.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_py53y")
+
+[node name="@LightOccluder2D@56873" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1163.1, -1086.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_jad5f")
+
+[node name="@LightOccluder2D@56874" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1162.1, -986.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_jme3x")
+
+[node name="@LightOccluder2D@56875" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1426, -1494.4)
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_xkdoa")
+
+[node name="@LightOccluder2D@56876" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1540.5, -589.5)
+scale = Vector2(0.5, 0.5)
+occluder = SubResource("OccluderPolygon2D_i4ocy")
+
+[node name="@LightOccluder2D@56877" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-59.5, -940.5)
+scale = Vector2(0.5, 0.5)
+occluder = SubResource("OccluderPolygon2D_u8dtn")
+
+[node name="@LightOccluder2D@56878" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(618.5, -1499.5)
+rotation = -1.5708
+scale = Vector2(0.5, 0.5)
+occluder = SubResource("OccluderPolygon2D_p2rvm")
+
+[node name="@LightOccluder2D@56879" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(372.586, -1107.88)
+rotation = -0.785398
+scale = Vector2(0.5, 0.5)
+occluder = SubResource("OccluderPolygon2D_ujvpy")
+
+[node name="@LightOccluder2D@56880" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1049, 458)
+scale = Vector2(2.5, 2.5)
+occluder = SubResource("OccluderPolygon2D_nw2bi")
+
+[node name="@LightOccluder2D@56881" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(820.9, -448.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_7d5fl")
+
+[node name="@LightOccluder2D@56882" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(922.9, -536.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_lf050")
+
+[node name="@LightOccluder2D@56883" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(922.9, -436.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_nc6wh")
+
+[node name="@LightOccluder2D@56884" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1383.9, -120.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_ngwhq")
+
+[node name="@LightOccluder2D@56885" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1642.9, 787.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_oj6p4")
+
+[node name="@LightOccluder2D@56886" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1642.9, 687.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_sd8tj")
+
+[node name="@LightOccluder2D@56887" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1539.9, 787.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_ja8ag")
+
+[node name="@LightOccluder2D@56888" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(787.905, 1090.47)
+scale = Vector2(0.19, 0.19)
+occluder = SubResource("OccluderPolygon2D_dorpl")
+
+[node name="@LightOccluder2D@56889" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(884.905, 1090.47)
+scale = Vector2(0.19, 0.19)
+occluder = SubResource("OccluderPolygon2D_sw67b")
+
+[node name="@LightOccluder2D@56890" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-455.095, -1168.53)
+scale = Vector2(0.19, 0.19)
+occluder = SubResource("OccluderPolygon2D_yxqev")
+
+[node name="@LightOccluder2D@56891" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-553.095, -1168.53)
+scale = Vector2(0.19, 0.19)
+occluder = SubResource("OccluderPolygon2D_1b3nk")
+
+[node name="@LightOccluder2D@56892" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1923.9, -1038.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_o4r52")
+
+[node name="@LightOccluder2D@56893" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1923.9, -937.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_uo4pl")
+
+[node name="@LightOccluder2D@56894" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(2026.9, -975.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_wqhhq")
+
+[node name="@LightOccluder2D@56895" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1323.4, -1043)
+rotation = 1.5708
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_j6doa")
+
+[node name="@LightOccluder2D@56896" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(2137.4, -666)
+rotation = 1.5708
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_ak31t")
+
+[node name="@LightOccluder2D@56897" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1684, 88.6)
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_5ohro")
+
+[node name="@LightOccluder2D@56898" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1587.5, 996.5)
+rotation = 1.5708
+scale = Vector2(0.5, 0.5)
+occluder = SubResource("OccluderPolygon2D_wtk46")
+
+[node name="@LightOccluder2D@56899" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-1263.4, 1502)
+rotation = 1.5708
+scale = Vector2(0.4, 0.4)
+occluder = SubResource("OccluderPolygon2D_xnffc")
+
+[node name="@LightOccluder2D@56900" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-544.1, 1672.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_y8kkf")
+
+[node name="@LightOccluder2D@56901" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-644.1, 1572.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_5qd58")
+
+[node name="@LightOccluder2D@56902" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-544.1, 1572.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_vn7kt")
+
+[node name="@LightOccluder2D@56903" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(197.9, -244.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_snsb0")
+
+[node name="@LightOccluder2D@56904" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(93.9, -244.5)
+scale = Vector2(0.2, 0.2)
+occluder = SubResource("OccluderPolygon2D_ytlo0")
+
+[node name="@LightOccluder2D@56905" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(1232, 490)
+scale = Vector2(0.4, 0.4)
+occluder = SubResource("OccluderPolygon2D_mp3gt")
+
+[node name="@LightOccluder2D@56906" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(987, 488)
+scale = Vector2(0.4, 0.4)
+occluder = SubResource("OccluderPolygon2D_4tgls")
+
+[node name="@LightOccluder2D@56907" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-316, -290)
+scale = Vector2(0.4, 0.4)
+occluder = SubResource("OccluderPolygon2D_w4v0r")
+
+[node name="@LightOccluder2D@56908" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(-213.576, 1343.42)
+rotation = -0.785398
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_6s1jw")
+
+[node name="@LightOccluder2D@56909" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+position = Vector2(111.576, 433.424)
+rotation = 0.785398
+scale = Vector2(0.6, 0.6)
+occluder = SubResource("OccluderPolygon2D_fxymx")
+
+[node name="LOS" type="PointLight2D" parent="FowMaskView"]
+position = Vector2(291, -1802)
+blend_mode = 1
+shadow_enabled = true
+texture = ExtResource("11_mflnu")
+
+[node name="Camera2D" type="Camera2D" parent="FowMaskView"]
 
 [node name="Map" type="Node2D" parent="."]
 
@@ -839,13 +1116,6 @@ polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12
 position = Vector2(369.375, -383.75)
 shape = SubResource("RectangleShape2D_pslmq")
 
-[node name="@LightOccluder2D@117080" type="LightOccluder2D" parent="Map/Level/building_1"]
-occluder = SubResource("OccluderPolygon2D_rq4m3")
-
-[node name="@LightOccluder2D@117081" type="LightOccluder2D" parent="Map/Level/building_1"]
-position = Vector2(369.375, -383.75)
-occluder = SubResource("OccluderPolygon2D_jondw")
-
 [node name="building_2" type="StaticBody2D" parent="Map/Level"]
 position = Vector2(1178, 59)
 scale = Vector2(0.8, 0.8)
@@ -860,16 +1130,6 @@ rotation = 1.5708
 scale = Vector2(1.25, 1.25)
 shape = SubResource("RectangleShape2D_li4ch")
 
-[node name="@LightOccluder2D@117531" type="LightOccluder2D" parent="Map/Level/building_2"]
-position = Vector2(1025, 228.75)
-occluder = SubResource("OccluderPolygon2D_ichad")
-
-[node name="@LightOccluder2D@117532" type="LightOccluder2D" parent="Map/Level/building_2"]
-position = Vector2(-1169.06, -140.781)
-rotation = 1.5708
-scale = Vector2(1.25, 1.25)
-occluder = SubResource("OccluderPolygon2D_g4tve")
-
 [node name="building_3" type="StaticBody2D" parent="Map/Level"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_3"]
@@ -883,18 +1143,6 @@ shape = SubResource("RectangleShape2D_slwnu")
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/building_3"]
 position = Vector2(-195.5, 228)
 shape = SubResource("RectangleShape2D_xoxjw")
-
-[node name="@LightOccluder2D@117981" type="LightOccluder2D" parent="Map/Level/building_3"]
-position = Vector2(-197, 16.5)
-occluder = SubResource("OccluderPolygon2D_uncyb")
-
-[node name="@LightOccluder2D@117982" type="LightOccluder2D" parent="Map/Level/building_3"]
-position = Vector2(-96, -180)
-occluder = SubResource("OccluderPolygon2D_tinfn")
-
-[node name="@LightOccluder2D@117983" type="LightOccluder2D" parent="Map/Level/building_3"]
-position = Vector2(-195.5, 228)
-occluder = SubResource("OccluderPolygon2D_h4lhr")
 
 [node name="building_4" type="StaticBody2D" parent="Map/Level"]
 position = Vector2(-858, -895)
@@ -923,30 +1171,6 @@ shape = SubResource("RectangleShape2D_63lqt")
 position = Vector2(481.188, -252.375)
 shape = SubResource("RectangleShape2D_6kvlp")
 
-[node name="@LightOccluder2D@118737" type="LightOccluder2D" parent="Map/Level/building_4"]
-occluder = SubResource("OccluderPolygon2D_sbvmh")
-
-[node name="@LightOccluder2D@118738" type="LightOccluder2D" parent="Map/Level/building_4"]
-position = Vector2(498.5, 33)
-occluder = SubResource("OccluderPolygon2D_ka43b")
-
-[node name="@LightOccluder2D@118739" type="LightOccluder2D" parent="Map/Level/building_4"]
-position = Vector2(-500, 224.5)
-occluder = SubResource("OccluderPolygon2D_2de0w")
-
-[node name="@LightOccluder2D@118740" type="LightOccluder2D" parent="Map/Level/building_4"]
-position = Vector2(538.75, -266)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_ptkua")
-
-[node name="@LightOccluder2D@118741" type="LightOccluder2D" parent="Map/Level/building_4"]
-position = Vector2(661, -114)
-occluder = SubResource("OccluderPolygon2D_qqk3m")
-
-[node name="@LightOccluder2D@118742" type="LightOccluder2D" parent="Map/Level/building_4"]
-position = Vector2(481.188, -252.375)
-occluder = SubResource("OccluderPolygon2D_uvnb0")
-
 [node name="building_5" type="StaticBody2D" parent="Map/Level"]
 position = Vector2(778, -861)
 
@@ -956,13 +1180,6 @@ polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_5"]
 position = Vector2(488, -761)
 shape = SubResource("RectangleShape2D_wftvi")
-
-[node name="@LightOccluder2D@119192" type="LightOccluder2D" parent="Map/Level/building_5"]
-occluder = SubResource("OccluderPolygon2D_835bh")
-
-[node name="@LightOccluder2D@119193" type="LightOccluder2D" parent="Map/Level/building_5"]
-position = Vector2(488, -761)
-occluder = SubResource("OccluderPolygon2D_n8cx0")
 
 [node name="boundary_walls" type="StaticBody2D" parent="Map/Level"]
 
@@ -1008,7 +1225,7 @@ rotation = -0.628319
 shape = SubResource("RectangleShape2D_aavx7")
 
 [node name="CollisionShape2D32" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-333, 1706)
+position = Vector2(-340.473, 1706)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_6i28l")
 
@@ -1045,21 +1262,21 @@ position = Vector2(-949, -234)
 shape = SubResource("RectangleShape2D_reb65")
 
 [node name="CollisionShape2D37" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-818.764, 1384)
+position = Vector2(-818.264, 1384)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_in6m2")
 
 [node name="CollisionShape2D39" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-741, 1446)
+position = Vector2(-744, 1450.65)
 shape = SubResource("RectangleShape2D_xu5fu")
 
 [node name="CollisionShape2D38" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-622.809, 1507)
+position = Vector2(-614, 1511)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_pk6ct")
 
 [node name="CollisionShape2D33" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-485, 1697.5)
+position = Vector2(-482, 1709.12)
 shape = SubResource("RectangleShape2D_xy2gi")
 
 [node name="CollisionShape2D35" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
@@ -1071,7 +1288,7 @@ position = Vector2(-1145, 630.625)
 shape = SubResource("RectangleShape2D_u0td1")
 
 [node name="CollisionShape2D34" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-927.25, 1890)
+position = Vector2(-920.75, 1890)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_oxux0")
 
@@ -1178,218 +1395,6 @@ shape = SubResource("RectangleShape2D_2g2m0")
 position = Vector2(9, -1523)
 polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
 
-[node name="@LightOccluder2D@119634" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1996, -1716.5)
-occluder = SubResource("OccluderPolygon2D_7khml")
-
-[node name="@LightOccluder2D@119635" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-971, -1728.5)
-occluder = SubResource("OccluderPolygon2D_cc434")
-
-[node name="@LightOccluder2D@119636" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-601, -1507.62)
-occluder = SubResource("OccluderPolygon2D_xg4g0")
-
-[node name="@LightOccluder2D@119637" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-376, -1414)
-occluder = SubResource("OccluderPolygon2D_o4ktb")
-
-[node name="@LightOccluder2D@119638" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(1660, -1679.25)
-occluder = SubResource("OccluderPolygon2D_kdj1p")
-
-[node name="@LightOccluder2D@119639" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(1956, -1443)
-occluder = SubResource("OccluderPolygon2D_ink4q")
-
-[node name="@LightOccluder2D@119640" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(728, 1074.56)
-occluder = SubResource("OccluderPolygon2D_loviv")
-
-[node name="@LightOccluder2D@119641" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(561, 829.5)
-occluder = SubResource("OccluderPolygon2D_r7ov6")
-
-[node name="@LightOccluder2D@119642" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(121, 973.25)
-occluder = SubResource("OccluderPolygon2D_l0dc6")
-
-[node name="@LightOccluder2D@119643" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(192, 1355)
-rotation = -0.628319
-occluder = SubResource("OccluderPolygon2D_cophk")
-
-[node name="@LightOccluder2D@119644" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-333, 1706)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_skb8d")
-
-[node name="@LightOccluder2D@119645" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1243.03, 1389)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_uliox")
-
-[node name="@LightOccluder2D@119646" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1039.01, -106)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_pqvfp")
-
-[node name="@LightOccluder2D@119647" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1412.99, -344)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_c7gyd")
-
-[node name="@LightOccluder2D@119648" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1858, -720)
-occluder = SubResource("OccluderPolygon2D_wdpgy")
-
-[node name="@LightOccluder2D@119649" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1995, -1084)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_c4h8n")
-
-[node name="@LightOccluder2D@119650" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-2118, -1332.63)
-occluder = SubResource("OccluderPolygon2D_q0um5")
-
-[node name="@LightOccluder2D@119651" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-949, -234)
-occluder = SubResource("OccluderPolygon2D_ltmgd")
-
-[node name="@LightOccluder2D@119652" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-818.764, 1384)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_j701p")
-
-[node name="@LightOccluder2D@119653" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-741, 1446)
-occluder = SubResource("OccluderPolygon2D_08gw2")
-
-[node name="@LightOccluder2D@119654" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-622.809, 1507)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_dchsu")
-
-[node name="@LightOccluder2D@119655" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-485, 1697.5)
-occluder = SubResource("OccluderPolygon2D_22a6t")
-
-[node name="@LightOccluder2D@119656" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1352, 1629.25)
-occluder = SubResource("OccluderPolygon2D_k2m3x")
-
-[node name="@LightOccluder2D@119657" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1145, 630.625)
-occluder = SubResource("OccluderPolygon2D_gnh4e")
-
-[node name="@LightOccluder2D@119658" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-927.25, 1890)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_tatvb")
-
-[node name="@LightOccluder2D@119659" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(43, 1580)
-rotation = 1.06465
-occluder = SubResource("OccluderPolygon2D_wx1lu")
-
-[node name="@LightOccluder2D@119660" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(332.625, 687)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_ta1ll")
-
-[node name="@LightOccluder2D@119661" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(946.5, 1088.78)
-occluder = SubResource("OccluderPolygon2D_ok1nd")
-
-[node name="@LightOccluder2D@119662" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(656, 997)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_ikblw")
-
-[node name="@LightOccluder2D@119663" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(2221, -925.562)
-occluder = SubResource("OccluderPolygon2D_bnibe")
-
-[node name="@LightOccluder2D@119664" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(2155, -90.2812)
-occluder = SubResource("OccluderPolygon2D_k6cr8")
-
-[node name="@LightOccluder2D@119665" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(1705, 735.641)
-occluder = SubResource("OccluderPolygon2D_txj3c")
-
-[node name="@LightOccluder2D@119666" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-132, -1508.75)
-occluder = SubResource("OccluderPolygon2D_nlnrp")
-
-[node name="@LightOccluder2D@119667" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1544, -1805.5)
-occluder = SubResource("OccluderPolygon2D_0u1v0")
-
-[node name="@LightOccluder2D@119668" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-2065, -1581)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_mx6q1")
-
-[node name="@LightOccluder2D@119669" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1761, -1853)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_rvb3r")
-
-[node name="@LightOccluder2D@119670" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-1249, -1777)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_fhpgn")
-
-[node name="@LightOccluder2D@119671" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-479.5, -1335)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_xebxt")
-
-[node name="@LightOccluder2D@119672" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(1816.75, -1546)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_7kb4p")
-
-[node name="@LightOccluder2D@119673" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(1921.5, 307)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_4cfhr")
-
-[node name="@LightOccluder2D@119674" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(1207.38, 1149)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_vpq5f")
-
-[node name="@LightOccluder2D@119675" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(2097.38, -1360)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_q8pgy")
-
-[node name="@LightOccluder2D@119676" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(2189, -505)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_tx0vd")
-
-[node name="@LightOccluder2D@119677" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-245, -1475)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_rd1d6")
-
-[node name="@LightOccluder2D@119678" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(933.125, -1828)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_6mrm1")
-
-[node name="@LightOccluder2D@119679" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(-776, -1700)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_yo5oa")
-
-[node name="@LightOccluder2D@119680" type="LightOccluder2D" parent="Map/Level/boundary_walls"]
-position = Vector2(9, -1523)
-occluder = SubResource("OccluderPolygon2D_y6kca")
-
 [node name="Wall" type="StaticBody2D" parent="Map/Level"]
 position = Vector2(-693, 96)
 
@@ -1404,18 +1409,6 @@ shape = SubResource("RectangleShape2D_48ias")
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/Wall"]
 position = Vector2(87.75, -274)
 shape = SubResource("RectangleShape2D_65ugt")
-
-[node name="@LightOccluder2D@120129" type="LightOccluder2D" parent="Map/Level/Wall"]
-position = Vector2(0.5, -18.5)
-occluder = SubResource("OccluderPolygon2D_bb0qr")
-
-[node name="@LightOccluder2D@120130" type="LightOccluder2D" parent="Map/Level/Wall"]
-position = Vector2(47.5, -404.5)
-occluder = SubResource("OccluderPolygon2D_q3y0l")
-
-[node name="@LightOccluder2D@120131" type="LightOccluder2D" parent="Map/Level/Wall"]
-position = Vector2(87.75, -274)
-occluder = SubResource("OccluderPolygon2D_yrm6k")
 
 [node name="Wall2" type="StaticBody2D" parent="Map/Level"]
 position = Vector2(1141, 846)
@@ -1433,29 +1426,12 @@ position = Vector2(-306, -70.3125)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_68vxq")
 
-[node name="@LightOccluder2D@120580" type="LightOccluder2D" parent="Map/Level/Wall2"]
-position = Vector2(193.5, 3)
-occluder = SubResource("OccluderPolygon2D_2kpps")
-
-[node name="@LightOccluder2D@120581" type="LightOccluder2D" parent="Map/Level/Wall2"]
-position = Vector2(-243.375, -8)
-occluder = SubResource("OccluderPolygon2D_xru67")
-
-[node name="@LightOccluder2D@120582" type="LightOccluder2D" parent="Map/Level/Wall2"]
-position = Vector2(-306, -70.3125)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_py53y")
-
 [node name="Wall3" type="StaticBody2D" parent="Map/Level"]
 position = Vector2(-363, -652)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall3"]
 position = Vector2(-1.5, 2)
 shape = SubResource("RectangleShape2D_vtr88")
-
-[node name="@LightOccluder2D@120808" type="LightOccluder2D" parent="Map/Level/Wall3"]
-position = Vector2(-1.5, 2)
-occluder = SubResource("OccluderPolygon2D_jad5f")
 
 [node name="props" type="Node" parent="Map/Level"]
 
@@ -1469,7 +1445,7 @@ position = Vector2(-1836, -1735)
 scale = Vector2(0.4, 0.4)
 
 [node name="Container" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(-1425, -1623)
+position = Vector2(-1427, -1642)
 scale = Vector2(0.6, 0.6)
 
 [node name="Crate" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
@@ -1507,7 +1483,7 @@ rotation = -0.785398
 scale = Vector2(0.5, 0.5)
 
 [node name="Truck" parent="Map/Level/props" instance=ExtResource("7_mflnu")]
-position = Vector2(-996, 534)
+position = Vector2(-1049, 458)
 scale = Vector2(2.5, 2.5)
 
 [node name="Crate8" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
@@ -1591,15 +1567,15 @@ rotation = 1.5708
 scale = Vector2(0.4, 0.4)
 
 [node name="Crate24" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-547, 1569)
+position = Vector2(-544, 1672)
 scale = Vector2(0.2, 0.2)
 
 [node name="Crate25" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-650, 1569)
+position = Vector2(-644, 1572)
 scale = Vector2(0.2, 0.2)
 
 [node name="Crate26" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-548, 1670)
+position = Vector2(-544, 1572)
 scale = Vector2(0.2, 0.2)
 
 [node name="Crate27" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
@@ -1644,7 +1620,7 @@ position = Vector2(277, 8)
 position = Vector2(-124, 1424)
 
 [node name="sp_4" type="Node2D" parent="Map/SpawnPoints"]
-position = Vector2(-1078, -36)
+position = Vector2(618, 901)
 
 [node name="sp_5" type="Node2D" parent="Map/SpawnPoints"]
 position = Vector2(-1261, 1702)
@@ -1652,833 +1628,6 @@ position = Vector2(-1261, 1702)
 [node name="BG" type="AudioStreamPlayer" parent="Map"]
 stream = ExtResource("8_mflnu")
 volume_db = -19.096
-
-[node name="FowMaskView" type="SubViewport" parent="." node_paths=PackedStringArray("los")]
-transparent_bg = true
-size = Vector2i(1280, 720)
-render_target_update_mode = 4
-script = ExtResource("4_2nbmb")
-los = NodePath("LOS")
-
-[node name="Level" type="Node2D" parent="FowMaskView"]
-material = ExtResource("9_2nbmb")
-
-[node name="Map" type="Sprite2D" parent="FowMaskView/Level"]
-use_parent_material = true
-scale = Vector2(5, 5)
-texture = ExtResource("2_3iwqa")
-
-[node name="building_1" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(-493, 688)
-scale = Vector2(0.8, 0.8)
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="FowMaskView/Level/building_1"]
-polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/building_1"]
-position = Vector2(369.375, -383.75)
-shape = SubResource("RectangleShape2D_2nbmb")
-
-[node name="_LightOccluder2D_117080" type="LightOccluder2D" parent="FowMaskView/Level/building_1"]
-occluder = SubResource("OccluderPolygon2D_h4vp2")
-
-[node name="_LightOccluder2D_117081" type="LightOccluder2D" parent="FowMaskView/Level/building_1"]
-position = Vector2(369.375, -383.75)
-occluder = SubResource("OccluderPolygon2D_mflnu")
-
-[node name="building_2" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(1178, 59)
-scale = Vector2(0.8, 0.8)
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="FowMaskView/Level/building_2"]
-position = Vector2(1025, 228.75)
-polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
-
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="FowMaskView/Level/building_2"]
-position = Vector2(-1169.06, -140.781)
-rotation = 1.5708
-scale = Vector2(1.25, 1.25)
-shape = SubResource("RectangleShape2D_k00yj")
-
-[node name="_LightOccluder2D_117531" type="LightOccluder2D" parent="FowMaskView/Level/building_2"]
-position = Vector2(1025, 228.75)
-occluder = SubResource("OccluderPolygon2D_kifs8")
-
-[node name="_LightOccluder2D_117532" type="LightOccluder2D" parent="FowMaskView/Level/building_2"]
-position = Vector2(-1169.06, -140.781)
-rotation = 1.5708
-scale = Vector2(1.25, 1.25)
-occluder = SubResource("OccluderPolygon2D_jme3x")
-
-[node name="building_3" type="StaticBody2D" parent="FowMaskView/Level"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/building_3"]
-position = Vector2(-197, 16.5)
-shape = SubResource("RectangleShape2D_xkdoa")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="FowMaskView/Level/building_3"]
-position = Vector2(-96, -180)
-shape = SubResource("RectangleShape2D_i4ocy")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="FowMaskView/Level/building_3"]
-position = Vector2(-195.5, 228)
-shape = SubResource("RectangleShape2D_u8dtn")
-
-[node name="_LightOccluder2D_117981" type="LightOccluder2D" parent="FowMaskView/Level/building_3"]
-position = Vector2(-197, 16.5)
-occluder = SubResource("OccluderPolygon2D_p2rvm")
-
-[node name="_LightOccluder2D_117982" type="LightOccluder2D" parent="FowMaskView/Level/building_3"]
-position = Vector2(-96, -180)
-occluder = SubResource("OccluderPolygon2D_ujvpy")
-
-[node name="_LightOccluder2D_117983" type="LightOccluder2D" parent="FowMaskView/Level/building_3"]
-position = Vector2(-195.5, 228)
-occluder = SubResource("OccluderPolygon2D_nw2bi")
-
-[node name="building_4" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(-858, -895)
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="FowMaskView/Level/building_4"]
-polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(498.5, 33)
-shape = SubResource("RectangleShape2D_7d5fl")
-
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(-500, 224.5)
-shape = SubResource("RectangleShape2D_lf050")
-
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(538.75, -266)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_nc6wh")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(661, -114)
-shape = SubResource("RectangleShape2D_ngwhq")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(481.188, -252.375)
-shape = SubResource("RectangleShape2D_oj6p4")
-
-[node name="_LightOccluder2D_118737" type="LightOccluder2D" parent="FowMaskView/Level/building_4"]
-occluder = SubResource("OccluderPolygon2D_sd8tj")
-
-[node name="_LightOccluder2D_118738" type="LightOccluder2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(498.5, 33)
-occluder = SubResource("OccluderPolygon2D_ja8ag")
-
-[node name="_LightOccluder2D_118739" type="LightOccluder2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(-500, 224.5)
-occluder = SubResource("OccluderPolygon2D_dorpl")
-
-[node name="_LightOccluder2D_118740" type="LightOccluder2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(538.75, -266)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_sw67b")
-
-[node name="_LightOccluder2D_118741" type="LightOccluder2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(661, -114)
-occluder = SubResource("OccluderPolygon2D_yxqev")
-
-[node name="_LightOccluder2D_118742" type="LightOccluder2D" parent="FowMaskView/Level/building_4"]
-position = Vector2(481.188, -252.375)
-occluder = SubResource("OccluderPolygon2D_1b3nk")
-
-[node name="building_5" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(778, -861)
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="FowMaskView/Level/building_5"]
-polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/building_5"]
-position = Vector2(488, -761)
-shape = SubResource("RectangleShape2D_o4r52")
-
-[node name="_LightOccluder2D_119192" type="LightOccluder2D" parent="FowMaskView/Level/building_5"]
-occluder = SubResource("OccluderPolygon2D_uo4pl")
-
-[node name="_LightOccluder2D_119193" type="LightOccluder2D" parent="FowMaskView/Level/building_5"]
-position = Vector2(488, -761)
-occluder = SubResource("OccluderPolygon2D_wqhhq")
-
-[node name="boundary_walls" type="StaticBody2D" parent="FowMaskView/Level"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1996, -1716.5)
-shape = SubResource("RectangleShape2D_j6doa")
-
-[node name="CollisionShape2D7" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-971, -1728.5)
-shape = SubResource("RectangleShape2D_ak31t")
-
-[node name="CollisionShape2D8" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-601, -1507.62)
-shape = SubResource("RectangleShape2D_5ohro")
-
-[node name="CollisionShape2D10" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-376, -1414)
-shape = SubResource("RectangleShape2D_wtk46")
-
-[node name="CollisionShape2D14" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1660, -1679.25)
-shape = SubResource("RectangleShape2D_xnffc")
-
-[node name="CollisionShape2D16" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1956, -1443)
-shape = SubResource("RectangleShape2D_y8kkf")
-
-[node name="CollisionShape2D24" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(728, 1074.56)
-shape = SubResource("RectangleShape2D_5qd58")
-
-[node name="CollisionShape2D27" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(561, 829.5)
-shape = SubResource("RectangleShape2D_vn7kt")
-
-[node name="CollisionShape2D29" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(121, 973.25)
-shape = SubResource("RectangleShape2D_snsb0")
-
-[node name="CollisionShape2D31" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(192, 1355)
-rotation = -0.628319
-shape = SubResource("RectangleShape2D_ytlo0")
-
-[node name="CollisionShape2D32" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-333, 1706)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_mp3gt")
-
-[node name="CollisionShape2D36" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1243.03, 1389)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_4tgls")
-
-[node name="CollisionShape2D41" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1039.01, -106)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_w4v0r")
-
-[node name="CollisionShape2D43" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1412.99, -344)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_6s1jw")
-
-[node name="CollisionShape2D44" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1858, -720)
-shape = SubResource("RectangleShape2D_fxymx")
-
-[node name="CollisionShape2D45" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1995, -1084)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_bwbls")
-
-[node name="CollisionShape2D46" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-2118, -1332.63)
-shape = SubResource("RectangleShape2D_plksx")
-
-[node name="CollisionShape2D42" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-949, -234)
-shape = SubResource("RectangleShape2D_j0hej")
-
-[node name="CollisionShape2D37" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-818.764, 1384)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_8jftv")
-
-[node name="CollisionShape2D39" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-741, 1446)
-shape = SubResource("RectangleShape2D_y7ejp")
-
-[node name="CollisionShape2D38" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-622.809, 1507)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_owert")
-
-[node name="CollisionShape2D33" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-485, 1697.5)
-shape = SubResource("RectangleShape2D_ao8jt")
-
-[node name="CollisionShape2D35" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1352, 1629.25)
-shape = SubResource("RectangleShape2D_65swg")
-
-[node name="CollisionShape2D40" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1145, 630.625)
-shape = SubResource("RectangleShape2D_m8kk6")
-
-[node name="CollisionShape2D34" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-927.25, 1890)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_m2qe2")
-
-[node name="CollisionShape2D30" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(43, 1580)
-rotation = 1.06465
-shape = SubResource("RectangleShape2D_yc0lx")
-
-[node name="CollisionShape2D28" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(332.625, 687)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_o1mq1")
-
-[node name="CollisionShape2D25" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(946.5, 1088.78)
-shape = SubResource("RectangleShape2D_6l72u")
-
-[node name="CollisionShape2D26" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(656, 997)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_wvm1s")
-
-[node name="CollisionShape2D18" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2221, -925.562)
-shape = SubResource("RectangleShape2D_yafkf")
-
-[node name="CollisionShape2D20" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2155, -90.2812)
-shape = SubResource("RectangleShape2D_gk1aj")
-
-[node name="CollisionShape2D22" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1705, 735.641)
-shape = SubResource("RectangleShape2D_4vqel")
-
-[node name="CollisionShape2D12" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-132, -1508.75)
-shape = SubResource("RectangleShape2D_uu66n")
-
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1544, -1805.5)
-shape = SubResource("RectangleShape2D_0a42l")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-2065, -1581)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_6dtwe")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1761, -1853)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_frvgx")
-
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1249, -1777)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_xpbeo")
-
-[node name="CollisionShape2D9" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-479.5, -1335)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_2n0r6")
-
-[node name="CollisionShape2D15" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1816.75, -1546)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_0irog")
-
-[node name="CollisionShape2D21" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1921.5, 307)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_b1dmp")
-
-[node name="CollisionShape2D23" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1207.38, 1149)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_s5l6u")
-
-[node name="CollisionShape2D17" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2097.38, -1360)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_y8wod")
-
-[node name="CollisionShape2D19" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2189, -505)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_iwpm1")
-
-[node name="CollisionShape2D11" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-245, -1475)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_u521c")
-
-[node name="CollisionShape2D13" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(933.125, -1828)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_8wby4")
-
-[node name="CollisionShape2D6" type="CollisionShape2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-776, -1700)
-rotation = -1.5708
-shape = SubResource("RectangleShape2D_nhd7s")
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(9, -1523)
-polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
-
-[node name="_LightOccluder2D_119634" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1996, -1716.5)
-occluder = SubResource("OccluderPolygon2D_xq3av")
-
-[node name="_LightOccluder2D_119635" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-971, -1728.5)
-occluder = SubResource("OccluderPolygon2D_yp5o7")
-
-[node name="_LightOccluder2D_119636" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-601, -1507.62)
-occluder = SubResource("OccluderPolygon2D_rvry7")
-
-[node name="_LightOccluder2D_119637" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-376, -1414)
-occluder = SubResource("OccluderPolygon2D_43sik")
-
-[node name="_LightOccluder2D_119638" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1660, -1679.25)
-occluder = SubResource("OccluderPolygon2D_pprnk")
-
-[node name="_LightOccluder2D_119639" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1956, -1443)
-occluder = SubResource("OccluderPolygon2D_qp0bv")
-
-[node name="_LightOccluder2D_119640" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(728, 1074.56)
-occluder = SubResource("OccluderPolygon2D_7ro8w")
-
-[node name="_LightOccluder2D_119641" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(561, 829.5)
-occluder = SubResource("OccluderPolygon2D_qqhqh")
-
-[node name="_LightOccluder2D_119642" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(121, 973.25)
-occluder = SubResource("OccluderPolygon2D_qlxeu")
-
-[node name="_LightOccluder2D_119643" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(192, 1355)
-rotation = -0.628319
-occluder = SubResource("OccluderPolygon2D_g6wlc")
-
-[node name="_LightOccluder2D_119644" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-333, 1706)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_lj5mj")
-
-[node name="_LightOccluder2D_119645" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1243.03, 1389)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_a3txf")
-
-[node name="_LightOccluder2D_119646" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1039.01, -106)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_ac2a6")
-
-[node name="_LightOccluder2D_119647" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1412.99, -344)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_knum5")
-
-[node name="_LightOccluder2D_119648" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1858, -720)
-occluder = SubResource("OccluderPolygon2D_i70t2")
-
-[node name="_LightOccluder2D_119649" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1995, -1084)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_w25nn")
-
-[node name="_LightOccluder2D_119650" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-2118, -1332.63)
-occluder = SubResource("OccluderPolygon2D_qcrfn")
-
-[node name="_LightOccluder2D_119651" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-949, -234)
-occluder = SubResource("OccluderPolygon2D_3a5m4")
-
-[node name="_LightOccluder2D_119652" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-818.764, 1384)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_ikqyr")
-
-[node name="_LightOccluder2D_119653" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-741, 1446)
-occluder = SubResource("OccluderPolygon2D_vcerk")
-
-[node name="_LightOccluder2D_119654" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-622.809, 1507)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_wtuge")
-
-[node name="_LightOccluder2D_119655" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-485, 1697.5)
-occluder = SubResource("OccluderPolygon2D_gfxyx")
-
-[node name="_LightOccluder2D_119656" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1352, 1629.25)
-occluder = SubResource("OccluderPolygon2D_rkgox")
-
-[node name="_LightOccluder2D_119657" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1145, 630.625)
-occluder = SubResource("OccluderPolygon2D_v4uad")
-
-[node name="_LightOccluder2D_119658" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-927.25, 1890)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_cid2m")
-
-[node name="_LightOccluder2D_119659" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(43, 1580)
-rotation = 1.06465
-occluder = SubResource("OccluderPolygon2D_pj3yg")
-
-[node name="_LightOccluder2D_119660" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(332.625, 687)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_nx7np")
-
-[node name="_LightOccluder2D_119661" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(946.5, 1088.78)
-occluder = SubResource("OccluderPolygon2D_p2ijj")
-
-[node name="_LightOccluder2D_119662" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(656, 997)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_aw8nw")
-
-[node name="_LightOccluder2D_119663" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2221, -925.562)
-occluder = SubResource("OccluderPolygon2D_r5p13")
-
-[node name="_LightOccluder2D_119664" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2155, -90.2812)
-occluder = SubResource("OccluderPolygon2D_msdpx")
-
-[node name="_LightOccluder2D_119665" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1705, 735.641)
-occluder = SubResource("OccluderPolygon2D_uxdkk")
-
-[node name="_LightOccluder2D_119666" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-132, -1508.75)
-occluder = SubResource("OccluderPolygon2D_tcxe0")
-
-[node name="_LightOccluder2D_119667" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1544, -1805.5)
-occluder = SubResource("OccluderPolygon2D_scke5")
-
-[node name="_LightOccluder2D_119668" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-2065, -1581)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_2yxnm")
-
-[node name="_LightOccluder2D_119669" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1761, -1853)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_fcmxo")
-
-[node name="_LightOccluder2D_119670" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-1249, -1777)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_1ct5y")
-
-[node name="_LightOccluder2D_119671" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-479.5, -1335)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_yr058")
-
-[node name="_LightOccluder2D_119672" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1816.75, -1546)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_fgwxp")
-
-[node name="_LightOccluder2D_119673" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1921.5, 307)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_7acad")
-
-[node name="_LightOccluder2D_119674" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(1207.38, 1149)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_qkoyk")
-
-[node name="_LightOccluder2D_119675" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2097.38, -1360)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_52mcs")
-
-[node name="_LightOccluder2D_119676" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(2189, -505)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_a7e5e")
-
-[node name="_LightOccluder2D_119677" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-245, -1475)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_naboi")
-
-[node name="_LightOccluder2D_119678" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(933.125, -1828)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_8dl4n")
-
-[node name="_LightOccluder2D_119679" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(-776, -1700)
-rotation = -1.5708
-occluder = SubResource("OccluderPolygon2D_7swwf")
-
-[node name="_LightOccluder2D_119680" type="LightOccluder2D" parent="FowMaskView/Level/boundary_walls"]
-position = Vector2(9, -1523)
-occluder = SubResource("OccluderPolygon2D_sajgb")
-
-[node name="Wall" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(-693, 96)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/Wall"]
-position = Vector2(0.5, -18.5)
-shape = SubResource("RectangleShape2D_extly")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="FowMaskView/Level/Wall"]
-position = Vector2(47.5, -404.5)
-shape = SubResource("RectangleShape2D_yqfgn")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="FowMaskView/Level/Wall"]
-position = Vector2(87.75, -274)
-shape = SubResource("RectangleShape2D_yw5qm")
-
-[node name="_LightOccluder2D_120129" type="LightOccluder2D" parent="FowMaskView/Level/Wall"]
-position = Vector2(0.5, -18.5)
-occluder = SubResource("OccluderPolygon2D_l24qt")
-
-[node name="_LightOccluder2D_120130" type="LightOccluder2D" parent="FowMaskView/Level/Wall"]
-position = Vector2(47.5, -404.5)
-occluder = SubResource("OccluderPolygon2D_8wy55")
-
-[node name="_LightOccluder2D_120131" type="LightOccluder2D" parent="FowMaskView/Level/Wall"]
-position = Vector2(87.75, -274)
-occluder = SubResource("OccluderPolygon2D_dofqe")
-
-[node name="Wall2" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(1141, 846)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/Wall2"]
-position = Vector2(193.5, 3)
-shape = SubResource("RectangleShape2D_6douh")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="FowMaskView/Level/Wall2"]
-position = Vector2(-243.375, -8)
-shape = SubResource("RectangleShape2D_iwmeb")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="FowMaskView/Level/Wall2"]
-position = Vector2(-306, -70.3125)
-rotation = 1.5708
-shape = SubResource("RectangleShape2D_0vf76")
-
-[node name="_LightOccluder2D_120580" type="LightOccluder2D" parent="FowMaskView/Level/Wall2"]
-position = Vector2(193.5, 3)
-occluder = SubResource("OccluderPolygon2D_bm6h7")
-
-[node name="_LightOccluder2D_120581" type="LightOccluder2D" parent="FowMaskView/Level/Wall2"]
-position = Vector2(-243.375, -8)
-occluder = SubResource("OccluderPolygon2D_teb5b")
-
-[node name="_LightOccluder2D_120582" type="LightOccluder2D" parent="FowMaskView/Level/Wall2"]
-position = Vector2(-306, -70.3125)
-rotation = 1.5708
-occluder = SubResource("OccluderPolygon2D_qj7di")
-
-[node name="Wall3" type="StaticBody2D" parent="FowMaskView/Level"]
-position = Vector2(-363, -652)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="FowMaskView/Level/Wall3"]
-position = Vector2(-1.5, 2)
-shape = SubResource("RectangleShape2D_e56s0")
-
-[node name="_LightOccluder2D_120808" type="LightOccluder2D" parent="FowMaskView/Level/Wall3"]
-position = Vector2(-1.5, 2)
-occluder = SubResource("OccluderPolygon2D_khkof")
-
-[node name="props" type="Node" parent="FowMaskView/Level"]
-
-[node name="Car" parent="FowMaskView/Level/props" instance=ExtResource("3_2nbmb")]
-position = Vector2(-1947, -1258)
-rotation = 0.785398
-scale = Vector2(0.4, 0.4)
-
-[node name="Car2" parent="FowMaskView/Level/props" instance=ExtResource("3_2nbmb")]
-position = Vector2(-1836, -1735)
-scale = Vector2(0.4, 0.4)
-
-[node name="Container" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(-1425, -1623)
-scale = Vector2(0.6, 0.6)
-
-[node name="Crate" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-1265, -987)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate4" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-1163, -1087)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate2" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-1162, -987)
-scale = Vector2(0.2, 0.2)
-
-[node name="Container2" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(-1426, -1495)
-scale = Vector2(0.6, 0.6)
-
-[node name="Crate3" parent="FowMaskView/Level/props" instance=ExtResource("6_h4vp2")]
-position = Vector2(-1538, -590)
-scale = Vector2(0.5, 0.5)
-
-[node name="Crate5" parent="FowMaskView/Level/props" instance=ExtResource("6_h4vp2")]
-position = Vector2(-57, -941)
-scale = Vector2(0.5, 0.5)
-
-[node name="Crate6" parent="FowMaskView/Level/props" instance=ExtResource("6_h4vp2")]
-position = Vector2(618, -1502)
-rotation = -1.5708
-scale = Vector2(0.5, 0.5)
-
-[node name="Crate7" parent="FowMaskView/Level/props" instance=ExtResource("6_h4vp2")]
-position = Vector2(374, -1110)
-rotation = -0.785398
-scale = Vector2(0.5, 0.5)
-
-[node name="Truck" parent="FowMaskView/Level/props" instance=ExtResource("7_mflnu")]
-position = Vector2(-996, 534)
-scale = Vector2(2.5, 2.5)
-
-[node name="Crate8" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(821, -449)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate9" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(923, -537)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate10" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(923, -437)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate16" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(1384, -121)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate17" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(1643, 787)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate18" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(1643, 687)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate19" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(1540, 787)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate20" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(788, 1090)
-scale = Vector2(0.19, 0.19)
-
-[node name="Crate21" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(885, 1090)
-scale = Vector2(0.19, 0.19)
-
-[node name="Crate11" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-455, -1169)
-scale = Vector2(0.19, 0.19)
-
-[node name="Crate12" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-553, -1169)
-scale = Vector2(0.19, 0.19)
-
-[node name="Crate13" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(1924, -1039)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate14" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(1924, -938)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate15" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(2027, -976)
-scale = Vector2(0.2, 0.2)
-
-[node name="Container3" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(1324, -1043)
-rotation = 1.5708
-scale = Vector2(0.6, 0.6)
-
-[node name="Container5" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(2138, -666)
-rotation = 1.5708
-scale = Vector2(0.6, 0.6)
-
-[node name="Container4" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(1684, 88)
-scale = Vector2(0.6, 0.6)
-
-[node name="Crate22" parent="FowMaskView/Level/props" instance=ExtResource("6_h4vp2")]
-position = Vector2(1588, 999)
-rotation = 1.5708
-scale = Vector2(0.5, 0.5)
-
-[node name="Crate23" parent="FowMaskView/Level/props" instance=ExtResource("6_h4vp2")]
-position = Vector2(-1263, 1504)
-rotation = 1.5708
-scale = Vector2(0.4, 0.4)
-
-[node name="Crate24" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-547, 1569)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate25" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-650, 1569)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate26" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(-548, 1670)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate27" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(198, -245)
-scale = Vector2(0.2, 0.2)
-
-[node name="Crate28" parent="FowMaskView/Level/props" instance=ExtResource("5_2nbmb")]
-position = Vector2(94, -245)
-scale = Vector2(0.2, 0.2)
-
-[node name="Car3" parent="FowMaskView/Level/props" instance=ExtResource("3_2nbmb")]
-position = Vector2(1232, 490)
-scale = Vector2(0.4, 0.4)
-
-[node name="Car4" parent="FowMaskView/Level/props" instance=ExtResource("3_2nbmb")]
-position = Vector2(987, 488)
-scale = Vector2(0.4, 0.4)
-
-[node name="Car5" parent="FowMaskView/Level/props" instance=ExtResource("3_2nbmb")]
-position = Vector2(-316, -290)
-scale = Vector2(0.4, 0.4)
-
-[node name="Container6" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(-214, 1343)
-rotation = -0.785398
-scale = Vector2(0.6, 0.6)
-
-[node name="Container7" parent="FowMaskView/Level/props" instance=ExtResource("4_h4vp2")]
-position = Vector2(112, 433)
-rotation = 0.785398
-scale = Vector2(0.6, 0.6)
-
-[node name="LOS" type="PointLight2D" parent="FowMaskView"]
-position = Vector2(291, -1802)
-blend_mode = 1
-shadow_enabled = true
-texture = ExtResource("11_mflnu")
-
-[node name="Camera2D" type="Camera2D" parent="FowMaskView"]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -2513,6 +1662,6 @@ kd_stats_container = NodePath("../UI/Control/VBoxContainer")
 map = NodePath("../Map")
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24", "uid://b7uqibrfrx2a4", "uid://dqc8bp6vg5pdg")
+_spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
 spawn_path = NodePath("../Map")
 spawn_limit = 8

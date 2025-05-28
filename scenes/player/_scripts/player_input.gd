@@ -58,6 +58,11 @@ func _process(_delta: float) -> void:
         else:
             request_switch_weapon_next.rpc_id(1)
 
+    if Input.is_action_just_pressed("drop_weapon"):
+        if multiplayer.is_server():
+            player.request_drop_weapon()
+        else:
+            request_drop_weapon.rpc_id(1)
 
 @rpc("authority", "reliable")
 func request_start_slow_walk():
@@ -82,3 +87,7 @@ func request_reload():
 @rpc("authority", "reliable")
 func request_switch_weapon_next():
     player.request_switch_weapon_next()
+
+@rpc("authority", "reliable")
+func request_drop_weapon():
+    player.request_drop_weapon()

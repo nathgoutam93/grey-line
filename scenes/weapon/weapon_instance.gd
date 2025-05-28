@@ -1,20 +1,18 @@
 extends Node2D
 class_name WeaponInstance
 
-@export var data: Weapon
+var data: Weapon
 var mode: WeaponAttackMode
 
 var ammo_in_mag := 0
-
 var is_auto_reload := false
 var is_reloading := false
 var is_firing := false
+
 @export var is_locked := true
 
 @export var sound_pool: SoundPool = null
 @export var reload_sfx_player: AudioStreamPlayer2D = null
-
-var weapon_range = 1000
 
 var BulletTrailScene = preload("res://scenes/bullet_trail/bullet_trail.tscn")
 
@@ -24,21 +22,15 @@ signal reload_action(animation_name: String, sound_stream: AudioStream)
 
 var player: PlayerController
 
-# func _init(w: Weapon, p: PlayerController):
-	# data = w
-	# mode = w.mode
-	# ammo_in_mag = w.mag_size
-	# player = p
-
-func _ready() -> void:
+func set_weapon_data(w: Weapon):
+	data = w
 	mode = data.mode
 	ammo_in_mag = data.mag_size
-
 
 func _shoot_raycast() -> void:
 	var origin = global_position
 	var direction = player.global_transform.x.normalized()
-	var end_point = origin + direction * weapon_range
+	var end_point = origin + direction * data.d_range
 	
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(origin, end_point)
@@ -47,11 +39,15 @@ func _shoot_raycast() -> void:
 	if data.uses_ammo:
 		_create_bullet_trail.rpc(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO)
 
+
+	# draw_debug_line(origin, result.position if result else end_point)
+
 	if result:
 		var collider = result.collider
 
 		if collider is PlayerController:
 			collider.health_component.take_damage(data.damage, player.owner_peer_id)
+
 
 func _lock():
 	if multiplayer.is_server():
@@ -77,21 +73,33 @@ func force_interrupt():
 	is_firing = false
 	_unlock()
 
+
 func drop():
-	if sound_pool and sound_pool.is_inside_tree():
-		sound_pool.queue_free()
-		sound_pool = null
+	force_interrupt()
+	unequip()
+	drop_weapon_pickup()
+	queue_free()
+
+func drop_weapon_pickup():
+	var pickup = data.pickup_scene.instantiate() as RigidBody2D
+	pickup.weapon_data = data
+	pickup.ammo_in_mag = ammo_in_mag
 	
-	if reload_sfx_player and reload_sfx_player.is_inside_tree():
-		reload_sfx_player.queue_free()
-		reload_sfx_player = null
+	get_tree().current_scene.add_child(pickup)
+	pickup.global_position = global_position
+
+	var drop_direction = global_transform.x.normalized()
+	var drop_force = drop_direction * 250
+	pickup.apply_impulse(drop_force, Vector2.ZERO)
+	pickup.angular_velocity = randf_range(-5.0, 5.0)
+
 
 func unequip():
 	hide()
 
-func equip(_socket: Node2D):
+func equip():
 	if multiplayer.is_server():
-		_equip_weapon.rpc(_socket)
+		_equip_weapon.rpc()
 
 
 func reload(auto: bool = false) -> void:
@@ -118,8 +126,6 @@ func reload(auto: bool = false) -> void:
 
 
 func start_fire():
-	_interrupt_reload()
-
 	if is_firing or is_locked:
 		return
 
@@ -184,6 +190,11 @@ func single_shoot() -> bool:
 
 	await get_tree().create_timer(data.mode.cooldown).timeout
 
+	if data.uses_ammo and ammo_in_mag <= 0:
+		_unlock()
+		await reload(true) # ⬅️ Auto reload when empty
+		return false
+
 	return true
 
 
@@ -216,22 +227,12 @@ func _create_bullet_trail(start: Vector2, end: Vector2, normal) -> void:
 	get_tree().current_scene.add_child(trail)
 
 @rpc("authority", "call_local")
-func _equip_weapon(_socket: Node2D):
+func _equip_weapon():
 	_lock()
 
 	unequip()
 
 	show()
-
-	# if not sound_pool:
-	# 	var fire_rate = data.mode.cooldown
-	# 	var recommended_pool_size = clamp(ceil(1.0 / fire_rate) * 2, 4, 8)
-	# 	sound_pool = SoundPool.new(recommended_pool_size)
-	# 	add_child(sound_pool)
-
-	# if not reload_sfx_player:
-	# 	reload_sfx_player = AudioStreamPlayer2D.new()
-	# 	add_child(reload_sfx_player)
 	
 	emit_signal("equip_action", data.animations.get("equip", ""), data.sounds.equip_sound)
 
@@ -246,3 +247,19 @@ func _equip_weapon(_socket: Node2D):
 
 	if ammo_in_mag <= 0:
 		await reload()
+
+		
+func draw_debug_line(origin: Vector2, end_point: Vector2, color := Color.RED, duration := 0.2):
+	var debug_line = Line2D.new()
+	debug_line.position = Vector2.ZERO # Important: don't inherit position
+	debug_line.points = PackedVector2Array([origin, end_point]) # world-space points
+	debug_line.default_color = color
+	debug_line.width = 2.0
+	get_tree().current_scene.add_child(debug_line) # Add to scene root
+
+	var timer = Timer.new()
+	timer.wait_time = duration
+	timer.one_shot = true
+	debug_line.add_child(timer)
+	timer.start()
+	timer.timeout.connect(func(): debug_line.queue_free())

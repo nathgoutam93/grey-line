@@ -1,0 +1,38 @@
+[gd_scene load_steps=7 format=3 uid="uid://dqc8bp6vg5pdg"]
+
+[ext_resource type="PackedScene" uid="uid://bq5cot73krdnm" path="res://scenes/weapon/base_weapon.tscn" id="1_70cis"]
+[ext_resource type="Texture2D" uid="uid://ctjmwgpl5udrb" path="res://assets/sprites/muzzle_flash_01.png" id="2_gpfw8"]
+[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="3_3mw73"]
+[ext_resource type="Resource" uid="uid://4ayk7h820owr" path="res://resources/weapon_modes/single.tres" id="3_icvpx"]
+[ext_resource type="Resource" uid="uid://cd4wrjoyr743b" path="res://resources/weapon_sounds/pistol_sounds.tres" id="4_5upvq"]
+
+[sub_resource type="Resource" id="Resource_0ia8h"]
+script = ExtResource("3_3mw73")
+name = "pistol"
+damage = 40
+mag_size = 10
+uses_ammo = true
+is_reloadable = true
+reload_duration = 1.0
+equip_duration = 0.5
+speed_multiplier = 0.8
+camera_shake_strength = 5.0
+mode = ExtResource("3_icvpx")
+animations = {
+"attack": "pistol_shoot",
+"equip": "pistol_equip",
+"idle": "pistol_idle",
+"move": "pistol_move",
+"reload": "pistol_reload"
+}
+sounds = ExtResource("4_5upvq")
+metadata/_custom_type_script = "uid://chb4uyirj3rf3"
+
+[node name="Pistol" instance=ExtResource("1_70cis")]
+data = SubResource("Resource_0ia8h")
+
+[node name="MuzzleFlash" type="Sprite2D" parent="." index="1"]
+visible = false
+position = Vector2(44, 2)
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("2_gpfw8")

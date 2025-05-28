@@ -2,7 +2,7 @@ extends Node
 
 @export var port: int = 3000
 @export var max_players: int = 8
-@export var address: String = "13.126.8.47" # "127.0.0.1" # Used for client connection
+@export var address: String = "127.0.0.1" # "13.126.8.47"  # Used for client connection
 
 @onready var level: Node2D = get_node("../Level")
 @onready var ui_layer: CanvasLayer = get_node("../UI")

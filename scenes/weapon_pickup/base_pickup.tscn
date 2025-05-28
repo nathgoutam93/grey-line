@@ -1,0 +1,44 @@
+[gd_scene load_steps=8 format=3 uid="uid://djd5057n31hec"]
+
+[ext_resource type="Shader" uid="uid://bsx3mfkaxv4q6" path="res://shaders/fow.gdshader" id="1_wa42x"]
+[ext_resource type="Script" uid="uid://8y7mo5qeoo20" path="res://scenes/weapon_pickup/weapon_pickup.gd" id="2_adk0k"]
+[ext_resource type="Texture2D" uid="uid://bvk3d81x52p7d" path="res://assets/sprites/pistol.png" id="2_pc2pn"]
+[ext_resource type="PackedScene" uid="uid://bxy3omwv7b65v" path="res://components/vision_resposive/VisionResponsive.tscn" id="5_xak8e"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pc2pn"]
+shader = ExtResource("1_wa42x")
+shader_parameter/enable_fow = true
+shader_parameter/enable_outline = true
+shader_parameter/outline_color = Vector4(1, 0, 0, 1)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dy6u6"]
+radius = 21.0
+height = 92.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_turku"]
+radius = 21.0
+height = 90.0
+
+[node name="BasePickup" type="RigidBody2D"]
+material = SubResource("ShaderMaterial_pc2pn")
+collision_layer = 4
+gravity_scale = 0.0
+script = ExtResource("2_adk0k")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_dy6u6")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+use_parent_material = true
+texture = ExtResource("2_pc2pn")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_turku")
+
+[node name="VisionResponsive" parent="." instance=ExtResource("5_xak8e")]

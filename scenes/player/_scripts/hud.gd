@@ -12,6 +12,6 @@ func _ready() -> void:
 		hide()
 
 func _process(_delta: float) -> void:
-	weapon_name_label.text = str(_player.current_weapon.data.name)
-	ammo_left_label.text = str(_player.current_weapon.ammo_in_mag)
-	mag_size_label.text = str(_player.current_weapon.data.mag_size)
+	weapon_name_label.text = str(_player.weapon_manager.get_current_weapon_name())
+	ammo_left_label.text = str(_player.weapon_manager.get_ammo_in_mag())
+	mag_size_label.text = str(_player.weapon_manager.get_mag_size())
