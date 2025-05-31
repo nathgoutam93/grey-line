@@ -43,7 +43,10 @@ properties/1/spawn = true
 properties/1/replication_mode = 1
 properties/2/path = NodePath(".:is_slow_walking")
 properties/2/spawn = true
-properties/2/replication_mode = 1
+properties/2/replication_mode = 2
+properties/3/path = NodePath("WeaponManager:current_slot")
+properties/3/spawn = true
+properties/3/replication_mode = 2
 
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("hitbox", "skeletal_character", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "player_input", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
@@ -64,6 +67,7 @@ player_input = NodePath("PlayerInput")
 hud = NodePath("HUD")
 camera = NodePath("Camera2D")
 audio_listner = NodePath("Camera2D/AudioListener2D")
+metadata/_edit_vertical_guides_ = [-39.0]
 
 [node name="HitBox" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_5i508")

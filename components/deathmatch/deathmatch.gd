@@ -84,11 +84,11 @@ func get_stats(peer_id: int) -> Dictionary:
 
 @rpc("call_local", "reliable")
 func _setup_player(peer_id, player_path: NodePath):
+	await get_tree().process_frame
 	var player = get_node(player_path) as PlayerController
-	
-	player.owner_peer_id = peer_id
 
 	if player:
+		player.owner_peer_id = peer_id
 		player.player_input.set_authority(peer_id)
 
 		if multiplayer.is_server():
@@ -112,10 +112,7 @@ func spawn_player(peer_id: int):
 	map.add_child.call_deferred(player_instance, true)
 	
 	print("Spawned player for peer %d at %s" % [peer_id, spawn_point.global_position])
-
-	await get_tree().create_timer(1).timeout
-	rpc("_setup_player", peer_id, player_instance.get_path())
-	
+	player_instance.ready.connect(func(): rpc("_setup_player", peer_id, player_instance.get_path()))
 
 func _exit_tree() -> void:
 	if not multiplayer.is_server():

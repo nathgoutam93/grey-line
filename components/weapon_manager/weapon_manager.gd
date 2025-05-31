@@ -1,8 +1,6 @@
 extends Node
 class_name WeaponManager
 
-signal weapon_equipped(new_weapon)
-
 enum WeaponSlot {PRIMARY, SECONDARY, MELEE}
 
 @export_group("Inventory")
@@ -19,27 +17,17 @@ var weapon_slots := {
 	WeaponSlot.MELEE: null
 }
 
-var current_slot := WeaponSlot.PRIMARY
+@export var current_slot := WeaponSlot.MELEE
+
 var current_weapon: WeaponInstance = null
 
 func _ready():
+	await get_tree().process_frame
 	setup_default_weapons()
 
-
-func get_current_weapon_name() -> String:
-	return current_weapon.data.name if current_weapon else ""
-
-func get_ammo_in_mag() -> int:
-	return current_weapon.ammo_in_mag if current_weapon else 0
-
-func get_mag_size() -> int:
-	return current_weapon.data.mag_size if current_weapon else 0
-
-func get_weapon_in_slot(slot: int):
-	return weapon_slots.get(slot)
-
-
 func setup_default_weapons():
+	print(multiplayer.get_unique_id())
+
 	for w in default_weapons:
 		var wi = w.weapon_scene.instantiate()
 		wi.set_weapon_data(w)
@@ -53,6 +41,19 @@ func setup_default_weapons():
 			WeaponSlot.MELEE: weapon_slots[WeaponSlot.MELEE] = wi
 
 	equip_slot(current_slot)
+
+
+func get_current_weapon_name() -> String:
+	return current_weapon.data.name if current_weapon else ""
+
+func get_ammo_in_mag() -> int:
+	return current_weapon.ammo_in_mag if current_weapon else 0
+
+func get_mag_size() -> int:
+	return current_weapon.data.mag_size if current_weapon else 0
+
+func get_weapon_in_slot(slot: int):
+	return weapon_slots.get(slot)
 
 func equip_slot(slot: int):
 	var new_weapon = weapon_slots.get(slot)
@@ -73,8 +74,6 @@ func equip_slot(slot: int):
 	current_weapon.connect("shoot_action", _on_weapon_shoot_action)
 	current_weapon.connect("reload_action", _on_weapon_reload_action)
 	current_weapon.equip()
-
-	emit_signal("weapon_equipped", slot)
 
 func switch_to_next_weapon():
 	var slots = [WeaponSlot.PRIMARY, WeaponSlot.SECONDARY, WeaponSlot.MELEE]
@@ -140,27 +139,11 @@ func drop_slot(slot: int):
 
 
 func _on_weapon_shoot_action(animation_name: String, _sound_stream: AudioStream):
-	if multiplayer.is_server():
-		_play_shoot_animation_for_all.rpc(animation_name)
-
-func _on_weapon_reload_action(animation_name: String, _sound_stream: AudioStream):
-	if multiplayer.is_server():
-		_play_reload_animation_for_all.rpc(animation_name)
-
-func _on_weapon_equip_action(animation_name: String, _sound_stream: AudioStream):
-	if multiplayer.is_server():
-		_play_equip_animation_for_all.rpc(animation_name)
-
-
-@rpc("authority", "call_local", "reliable")
-func _play_reload_animation_for_all(animation_name: String):
-	skeletal_character.anim_player.play(animation_name)
-
-@rpc("authority", "call_local", "reliable")
-func _play_shoot_animation_for_all(animation_name: String):
 	skeletal_character.anim_player.play(animation_name)
 	camera_shake.apply(current_weapon.data.camera_shake_strength)
 
-@rpc("authority", "call_local", "reliable")
-func _play_equip_animation_for_all(animation_name: String):
+func _on_weapon_reload_action(animation_name: String, _sound_stream: AudioStream):
+	skeletal_character.anim_player.play(animation_name)
+
+func _on_weapon_equip_action(animation_name: String, _sound_stream: AudioStream):
 	skeletal_character.anim_player.play(animation_name)

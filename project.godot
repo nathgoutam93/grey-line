@@ -17,11 +17,8 @@ config/icon="uid://b656ppaqmcoi2"
 
 [autoload]
 
-SmokeSpawner="*res://scenes/smoke/_scripts/smoke_spawner.gd"
-ImpactSpawner="*res://scenes/impact/_scripts/impact_spawner.gd"
 FowOccluderSync="*res://scripts/FowOccluderSync.gd"
 MaskViewProvider="*res://scripts/MaskViewProvider.gd"
-WeaponFactory="*res://scripts/weapon_factory.gd"
 
 [display]
 

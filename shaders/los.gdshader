@@ -4,8 +4,9 @@ void fragment() {
     float brightness = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
 
     if (brightness < 0.5) {
-		discard;
+        COLOR =  vec4(1, 1, 1, .1);
     } else {
-        COLOR =  vec4(0, 0, 0, .5);
+		discard;
+
 	}
 }

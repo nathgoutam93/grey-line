@@ -5,6 +5,8 @@ var start_point: Vector2
 var end_point: Vector2
 var normal: Vector2
 
+@export var impact_spawner: ImpactSpawner2D
+
 func _ready():
     position = start_point
     rotation = (end_point - start_point).angle()
@@ -16,5 +18,5 @@ func _ready():
 
 
 func _on_hit():
-    ImpactSpawner.spawn_impact_effect(end_point, normal)
+    impact_spawner.spawn_impact_effect(end_point, normal)
     queue_free()

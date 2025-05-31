@@ -31,7 +31,7 @@ gravity = Vector3(0, 98, 0)
 scale_curve = SubResource("CurveTexture_g4tve")
 color_ramp = SubResource("GradientTexture1D_jondw")
 
-[node name="Node2D" type="Node2D"]
+[node name="ImpactParticle" type="Node2D"]
 script = ExtResource("1_k5rga")
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="."]

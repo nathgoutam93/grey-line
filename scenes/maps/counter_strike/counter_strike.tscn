@@ -1,4 +1,4 @@
-[gd_scene load_steps=192 format=3 uid="uid://dyyv6g2s66fwh"]
+[gd_scene load_steps=193 format=3 uid="uid://dyyv6g2s66fwh"]
 
 [ext_resource type="Material" uid="uid://bwlqofbrbiull" path="res://materials/all_white.tres" id="2_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://bc24o2a1i3x6k" path="res://scenes/maps/counter_strike/_assets/map.png" id="2_3iwqa"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://socdrphm8n2i" path="res://scenes/props/truck/truck.tscn" id="7_mflnu"]
 [ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
+[ext_resource type="Texture2D" uid="uid://3g6e4toaippt" path="res://space_station.jpg" id="11_h4vp2"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
 
 [sub_resource type="Gradient" id="Gradient_fxymx"]
@@ -745,7 +746,6 @@ occluder = SubResource("OccluderPolygon2D_08gw2")
 [node name="@LightOccluder2D@56840" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
 position = Vector2(43, 1580)
 rotation = 1.06465
-scale = Vector2(1, 1)
 occluder = SubResource("OccluderPolygon2D_dchsu")
 
 [node name="@LightOccluder2D@56841" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
@@ -1100,6 +1100,7 @@ texture = ExtResource("11_mflnu")
 [node name="Map" type="Node2D" parent="."]
 
 [node name="Level" type="Node2D" parent="Map"]
+visible = false
 
 [node name="Map" type="Sprite2D" parent="Map/Level"]
 scale = Vector2(5, 5)
@@ -1433,7 +1434,7 @@ position = Vector2(-363, -652)
 position = Vector2(-1.5, 2)
 shape = SubResource("RectangleShape2D_vtr88")
 
-[node name="props" type="Node" parent="Map/Level"]
+[node name="props" type="Node2D" parent="Map/Level"]
 
 [node name="Car" parent="Map/Level/props" instance=ExtResource("3_2nbmb")]
 position = Vector2(-1947, -1258)
@@ -1629,6 +1630,11 @@ position = Vector2(-1261, 1702)
 stream = ExtResource("8_mflnu")
 volume_db = -19.096
 
+[node name="SpaceStation" type="Sprite2D" parent="Map"]
+position = Vector2(-29, -158)
+scale = Vector2(5, 5)
+texture = ExtResource("11_h4vp2")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="FogOfWar" type="Sprite2D" parent="CanvasLayer"]
@@ -1661,7 +1667,10 @@ player_scene = ExtResource("3_b3xq6")
 kd_stats_container = NodePath("../UI/Control/VBoxContainer")
 map = NodePath("../Map")
 
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
 spawn_path = NodePath("../Map")
-spawn_limit = 8
+
+[node name="PickupSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://djd5057n31hec", "uid://cy2enpfy31fdt")
+spawn_path = NodePath("../Map")

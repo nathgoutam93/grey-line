@@ -37,7 +37,7 @@ func _shoot_raycast() -> void:
 	var result = space_state.intersect_ray(query)
 
 	if data.uses_ammo:
-		_create_bullet_trail.rpc(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO)
+		_create_bullet_trail(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO)
 
 
 	# draw_debug_line(origin, result.position if result else end_point)
@@ -48,14 +48,11 @@ func _shoot_raycast() -> void:
 		if collider is PlayerController:
 			collider.health_component.take_damage(data.damage, player.owner_peer_id)
 
-
 func _lock():
-	if multiplayer.is_server():
-		_set_weapon_locked.rpc(true)
+	is_locked = true
 
 func _unlock():
-	if multiplayer.is_server():
-		_set_weapon_locked.rpc(false)
+	is_locked = false
 
 func _interrupt_reload():
 	if is_reloading and not is_auto_reload:
@@ -81,25 +78,47 @@ func drop():
 	queue_free()
 
 func drop_weapon_pickup():
+	if not multiplayer.is_server():
+		return
+
 	var pickup = data.pickup_scene.instantiate() as RigidBody2D
-	pickup.weapon_data = data
-	pickup.ammo_in_mag = ammo_in_mag
-	
-	get_tree().current_scene.add_child(pickup)
 	pickup.global_position = global_position
+
+	var map_node = get_tree().current_scene.find_child("Map", true, false)
+	map_node.add_child.call_deferred(pickup, true)
 
 	var drop_direction = global_transform.x.normalized()
 	var drop_force = drop_direction * 250
 	pickup.apply_impulse(drop_force, Vector2.ZERO)
 	pickup.angular_velocity = randf_range(-5.0, 5.0)
 
+	# await get_tree().process_frame
+	# pickup.initialize_weapon.rpc(data.to_dict(), ammo_in_mag)
+
 
 func unequip():
 	hide()
 
 func equip():
-	if multiplayer.is_server():
-		_equip_weapon.rpc()
+	_lock()
+
+	unequip()
+
+	show()
+	
+	emit_signal("equip_action", data.animations.get("equip", ""), data.sounds.equip_sound)
+
+	# if weapon has animations
+	if has_node("AnimationPlayer"):
+		get_node("AnimationPlayer").play("equip")
+	
+	_play_equip_sound()
+
+	await get_tree().create_timer(data.equip_duration).timeout
+	_unlock()
+
+	if ammo_in_mag <= 0:
+		await reload()
 
 
 func reload(auto: bool = false) -> void:
@@ -109,10 +128,10 @@ func reload(auto: bool = false) -> void:
 	_lock()
 	is_auto_reload = auto
 	is_reloading = true
+	
 	emit_signal("reload_action", data.animations.get("reload", ""), data.sounds.reload_sound)
 
-	if multiplayer.is_server():
-		_play_reload_sound.rpc()
+	_play_reload_sound()
 
 	if has_node("AnimationPlayer"):
 		get_node("AnimationPlayer").play("reload")
@@ -123,7 +142,6 @@ func reload(auto: bool = false) -> void:
 		ammo_in_mag = data.mag_size
 		is_reloading = false
 		_unlock()
-
 
 func start_fire():
 	if is_firing or is_locked:
@@ -170,19 +188,18 @@ func single_shoot() -> bool:
 
 	emit_signal("shoot_action", data.animations.get("attack", ""), data.sounds.shoot_sound)
 
-	if multiplayer.is_server():
-		_play_shoot_sound.rpc()
+	_play_shoot_sound()
 
 	_shoot_raycast()
 
 	if has_node("MuzzleFlash"):
-			var flash = get_node("MuzzleFlash")
-			flash.show()
-			flash.modulate = Color(1, 1, 1, 1)
+		var flash = get_node("MuzzleFlash")
+		flash.show()
+		flash.modulate = Color(1, 1, 1, 1)
 
-			await get_tree().create_timer(0.05).timeout
-			if flash:
-				flash.hide()
+		await get_tree().create_timer(0.05).timeout
+		if flash:
+			flash.hide()
 
 	if has_node("AnimationPlayer"):
 		get_node("AnimationPlayer").play("shoot")
@@ -197,56 +214,25 @@ func single_shoot() -> bool:
 
 	return true
 
-
-@rpc("authority", "call_local", "reliable")
-func _set_weapon_locked(locked: bool):
-	is_locked = locked
-
-@rpc("authority", "call_local", "unreliable")
 func _play_shoot_sound():
 	if sound_pool:
 		sound_pool.play_stream(data.sounds.shoot_sound)
 
-@rpc("authority", "call_local", "reliable")
 func _play_reload_sound():
 	if reload_sfx_player:
 		reload_sfx_player.stream = data.sounds.reload_sound
 		reload_sfx_player.play()
 
-@rpc("authority", "call_local")
 func _play_equip_sound():
 	if sound_pool:
 		sound_pool.play_stream(data.sounds.equip_sound)
 
-@rpc("authority", "call_local", "unreliable")
 func _create_bullet_trail(start: Vector2, end: Vector2, normal) -> void:
 	var trail = BulletTrailScene.instantiate()
 	trail.start_point = start
 	trail.end_point = end
 	trail.normal = normal
 	get_tree().current_scene.add_child(trail)
-
-@rpc("authority", "call_local")
-func _equip_weapon():
-	_lock()
-
-	unequip()
-
-	show()
-	
-	emit_signal("equip_action", data.animations.get("equip", ""), data.sounds.equip_sound)
-
-	# if weapon has animations
-	if has_node("AnimationPlayer"):
-		get_node("AnimationPlayer").play("equip")
-	
-	_play_equip_sound.rpc()
-
-	await get_tree().create_timer(data.equip_duration).timeout
-	_unlock()
-
-	if ammo_in_mag <= 0:
-		await reload()
 
 		
 func draw_debug_line(origin: Vector2, end_point: Vector2, color := Color.RED, duration := 0.2):

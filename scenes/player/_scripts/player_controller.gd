@@ -23,20 +23,21 @@ class_name PlayerController
 @export var is_slow_walking := false
 
 var owner_peer_id: int = 1
-var is_local: bool = false
+
+var interactables: Array[Interactable]
+
+func has_authority(id):
+	return id == get_multiplayer_authority() or id == owner_peer_id
 
 func _ready():
-	health_component.connect("die", _on_die)
-	weapon_manager.connect("weapon_equipped", _on_weapon_equiped)
+	# health_component.connect("die", _on_die)
+	pass
 
 func setup_locals():
-	is_local = true
-
 	camera.enabled = true
 	camera.make_current()
 	audio_listner.make_current()
 	hud.visible = true
-	# remove FOW shader from own body
 	skeletal_character.material = null
 
 func get_speed():
@@ -68,7 +69,7 @@ func _process(_delta: float) -> void:
 		if footstep_player.playing:
 			footstep_player.stop();
 
-	if weapon_manager.current_weapon and not weapon_manager.current_weapon.is_locked:
+	if weapon_manager and weapon_manager.current_weapon and not weapon_manager.current_weapon.is_locked:
 		if movement_component.is_moving:
 			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("move", ""))
 		else:
@@ -78,40 +79,109 @@ func _physics_process(_delta: float) -> void:
 	pass
 
 
+func add_interactable(item: Interactable):
+	interactables.append(item)
+
+func remove_interactable(item: Interactable):
+	interactables.erase(item)
+
+@rpc("any_peer", "call_local")
+func pickup_weapon(pickup_path: NodePath):
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	_remote_pickup.rpc(pickup_path)
+
+@rpc("any_peer", "call_local")
 func request_start_slow_walk():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
 	is_slow_walking = true
 
+@rpc("any_peer", "call_local")
 func request_stop_slow_walk():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
 	is_slow_walking = false
 
+@rpc("any_peer", "call_local")
 func request_start_fire():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	_remote_start_fire.rpc()
+	
+@rpc("any_peer", "call_local")
+func request_stop_fire():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	_remote_stop_fire.rpc()
+
+@rpc("any_peer", "call_local")
+func request_reload():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	_remote_reload.rpc()
+
+@rpc("any_peer", "call_local")
+func request_switch_weapon_next():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	_remote_switch_weapon.rpc()
+
+@rpc("any_peer", "call_local")
+func request_drop_weapon():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	_remote_drop_weapon.rpc()
+
+@rpc("any_peer", "call_local")
+func request_interact():
+	if not has_authority(multiplayer.get_remote_sender_id()):
+		return
+
+	remote_interact.rpc()
+
+
+@rpc("authority", "call_local")
+func remote_interact():
+	for i in interactables:
+		i.on_interact()
+
+@rpc("authority", "call_local", "reliable")
+func _remote_start_fire():
 	if weapon_manager.current_weapon:
 		weapon_manager.current_weapon.start_fire()
-	
-func request_stop_fire():
+
+@rpc("authority", "call_local", "reliable")
+func _remote_stop_fire():
 	if weapon_manager.current_weapon:
 		weapon_manager.current_weapon.stop_fire()
 
-func request_reload():
+@rpc("authority", "call_local", "reliable")
+func _remote_reload():
 	if weapon_manager.current_weapon:
 		weapon_manager.current_weapon.reload()
 
-func request_switch_weapon_next():
+@rpc("authority", "call_local", "reliable")
+func _remote_switch_weapon():
 	weapon_manager.switch_to_next_weapon()
 
-func request_drop_weapon():
+@rpc("authority", "call_local", "reliable")
+func _remote_drop_weapon():
 	weapon_manager.drop_weapon()
 
-
-func _on_weapon_equiped(slot):
-	_remote_equip_weapon.rpc(slot)
-
-func pickup_weapon(weapon_pickup: WeaponPickup):
-	return weapon_manager.pickup_weapon(weapon_pickup)
-
-@rpc("authority", "reliable")
-func _remote_equip_weapon(slot: int):
-	weapon_manager.equip_slot(slot)
+@rpc("authority", "call_local", "reliable")
+func _remote_pickup(pickup_path: NodePath):
+	var weapon_pickup = get_node(pickup_path)
+	if (weapon_manager.pickup_weapon(weapon_pickup)):
+		weapon_pickup.queue_free()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):

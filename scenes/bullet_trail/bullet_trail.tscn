@@ -1,11 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://dgn6j0sup1lun"]
+[gd_scene load_steps=4 format=3 uid="uid://dgn6j0sup1lun"]
 
 [ext_resource type="Script" uid="uid://c0ukpgsh6pxr7" path="res://scenes/bullet_trail/bullet_trail.gd" id="1_2ut36"]
 [ext_resource type="Texture2D" uid="uid://dn5u13ysdbgfh" path="res://scenes/bullet_trail/_assets/tracer.png" id="1_y8x6v"]
+[ext_resource type="PackedScene" uid="uid://y3h2t51eu4eb" path="res://components/impact_spawner/impact_spawner.tscn" id="3_y15ud"]
 
-[node name="BulletTrail" type="Node2D"]
+[node name="BulletTrail" type="Node2D" node_paths=PackedStringArray("impact_spawner")]
 script = ExtResource("1_2ut36")
+impact_spawner = NodePath("ImpactSpawner")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 rotation = 3.14159
 texture = ExtResource("1_y8x6v")
+
+[node name="ImpactSpawner" parent="." instance=ExtResource("3_y15ud")]
