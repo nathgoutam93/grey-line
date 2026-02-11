@@ -83,6 +83,10 @@ func drop_weapon_pickup():
 
 	var pickup = data.pickup_scene.instantiate() as RigidBody2D
 	pickup.global_position = global_position
+	if pickup.has_method("set_weapon_data"):
+		pickup.set_weapon_data(data)
+	if "ammo_in_mag" in pickup:
+		pickup.ammo_in_mag = ammo_in_mag
 
 	var map_node = get_tree().current_scene.find_child("Map", true, false)
 	map_node.add_child.call_deferred(pickup, true)
@@ -92,8 +96,7 @@ func drop_weapon_pickup():
 	pickup.apply_impulse(drop_force, Vector2.ZERO)
 	pickup.angular_velocity = randf_range(-5.0, 5.0)
 
-	# await get_tree().process_frame
-	# pickup.initialize_weapon.rpc(data.to_dict(), ammo_in_mag)
+	# Data is already set on the server; replication will sync it to clients.
 
 
 func unequip():

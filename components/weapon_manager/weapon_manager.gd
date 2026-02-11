@@ -94,6 +94,8 @@ func switch_to_previous_weapon():
 			return
 
 func pickup_weapon(pickup: WeaponPickup):
+	if pickup == null or pickup.weapon_data == null:
+		return false
 	var wi = pickup.weapon_data.weapon_scene.instantiate()
 	wi.set_weapon_data(pickup.weapon_data)
 	wi.ammo_in_mag = pickup.ammo_in_mag

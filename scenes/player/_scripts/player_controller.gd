@@ -146,13 +146,19 @@ func request_interact():
 	if not has_authority(multiplayer.get_remote_sender_id()):
 		return
 
-	remote_interact.rpc()
+	var target_path: NodePath = NodePath("")
+	if interactables.size() > 0 and interactables[0]:
+		target_path = interactables[0].get_path()
+	remote_interact.rpc(target_path)
 
 
 @rpc("authority", "call_local")
-func remote_interact():
-	for i in interactables:
-		i.on_interact()
+func remote_interact(target_path: NodePath):
+	if target_path == NodePath(""):
+		return
+	var interactable = get_node_or_null(target_path)
+	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
+		interactable.owner_ref.on_interact(self)
 
 @rpc("authority", "call_local", "reliable")
 func _remote_start_fire():
