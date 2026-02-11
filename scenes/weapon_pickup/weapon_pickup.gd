@@ -37,6 +37,8 @@ func set_weapon_data(data: Weapon):
 	weapon_data = data
 
 func _on_player_entered(player):
+	if not multiplayer.is_server():
+		return
 	if can_auto_pickup(player):
 		pickup_weapon(player)
 	else:
@@ -52,10 +54,9 @@ func can_auto_pickup(player):
 	return existing_weapon == null
 
 func pickup_weapon(player):
-	if multiplayer.is_server():
-		player._remote_pickup(get_path())
-	else:
-		player.pickup_weapon.rpc_id(1, get_path())
+	if not multiplayer.is_server():
+		return
+	player._remote_pickup.rpc(get_path())
 
 func show_message(text):
 	print(text)

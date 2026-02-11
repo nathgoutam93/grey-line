@@ -29,6 +29,14 @@ var interactables: Array[Interactable]
 func has_authority(id):
 	return id == get_multiplayer_authority() or id == owner_peer_id
 
+func _is_valid_owner_request() -> bool:
+	if not multiplayer.is_server():
+		return false
+	var sender_id := multiplayer.get_remote_sender_id()
+	if sender_id == 0:
+		sender_id = multiplayer.get_unique_id()
+	return sender_id == owner_peer_id
+
 func _ready():
 	if health_component and not health_component.is_connected("die", _on_die):
 		health_component.connect("die", _on_die)
@@ -87,63 +95,63 @@ func remove_interactable(item: Interactable):
 
 @rpc("any_peer", "call_local")
 func pickup_weapon(pickup_path: NodePath):
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	_remote_pickup.rpc(pickup_path)
 
 @rpc("any_peer", "call_local")
 func request_start_slow_walk():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	is_slow_walking = true
 
 @rpc("any_peer", "call_local")
 func request_stop_slow_walk():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	is_slow_walking = false
 
 @rpc("any_peer", "call_local")
 func request_start_fire():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	_remote_start_fire.rpc()
 	
 @rpc("any_peer", "call_local")
 func request_stop_fire():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	_remote_stop_fire.rpc()
 
 @rpc("any_peer", "call_local")
 func request_reload():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	_remote_reload.rpc()
 
 @rpc("any_peer", "call_local")
 func request_switch_weapon_next():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	_remote_switch_weapon.rpc()
 
 @rpc("any_peer", "call_local")
 func request_drop_weapon():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	_remote_drop_weapon.rpc()
 
 @rpc("any_peer", "call_local")
 func request_interact():
-	if not has_authority(multiplayer.get_remote_sender_id()):
+	if not _is_valid_owner_request():
 		return
 
 	var target_path: NodePath = NodePath("")
