@@ -26,7 +26,7 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 
 [resource]
 script = ExtResource("1_tir7r")
-name = "handgun"
+name = "pistol"
 damage = 40
 mag_size = 10
 reload_duration = 1.0

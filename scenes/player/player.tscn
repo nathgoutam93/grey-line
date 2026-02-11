@@ -7,6 +7,7 @@
 [ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/hand_gun.tres" id="4_myrg7"]
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
 [ext_resource type="PackedScene" uid="uid://4isysde6lgiy" path="res://components/weapon_manager/weapon_manager.tscn" id="5_gx1jg"]
+[ext_resource type="Resource" uid="uid://bc18r0r4gbkx3" path="res://resources/weapons/rifle.tres" id="9_myrg7"]
 [ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="10_h17s1"]
 [ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="10_je7p5"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
@@ -88,7 +89,7 @@ position = Vector2(-5, 0)
 scale = Vector2(0.32, 0.32)
 
 [node name="WeaponManager" parent="." unique_id=898153522 node_paths=PackedStringArray("player", "skeletal_character", "camera_shake") instance=ExtResource("5_gx1jg")]
-default_weapons = Array[ExtResource("2_ugbui")]([ExtResource("3_fcs02"), ExtResource("4_myrg7")])
+default_weapons = Array[ExtResource("2_ugbui")]([ExtResource("3_fcs02"), ExtResource("4_myrg7"), ExtResource("9_myrg7")])
 player = NodePath("..")
 skeletal_character = NodePath("../PlayerMesh")
 camera_shake = NodePath("../Camera2D/CameraShake")

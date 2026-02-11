@@ -30,8 +30,8 @@ func has_authority(id):
 	return id == get_multiplayer_authority() or id == owner_peer_id
 
 func _ready():
-	# health_component.connect("die", _on_die)
-	pass
+	if health_component and not health_component.is_connected("die", _on_die):
+		health_component.connect("die", _on_die)
 
 func setup_locals():
 	camera.enabled = true

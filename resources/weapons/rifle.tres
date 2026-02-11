@@ -3,14 +3,17 @@
 [ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_0lkds"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_sbf7q"]
 [ext_resource type="AudioStream" uid="uid://cdjgbvnegkgkh" path="res://assets/sounds/rifle-shoot.mp3" id="2_p2jh4"]
+[ext_resource type="PackedScene" uid="uid://bt7txyxfcccff" path="res://scenes/weapon_pickup/rifle_pickup.tscn" id="3_ys2y7"]
 [ext_resource type="AudioStream" uid="uid://b101cpd0hbkcx" path="res://assets/sounds/rifle-reload.mp3" id="4_dggia"]
 [ext_resource type="AudioStream" uid="uid://dfppdypofdlfm" path="res://assets/sounds/rifle-equip.mp3" id="4_p2jh4"]
 [ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="5_ys2y7"]
+[ext_resource type="PackedScene" uid="uid://dm36jm84yb6hm" path="res://scenes/weapon/rifle.tscn" id="8_wwuao"]
 
 [sub_resource type="Resource" id="Resource_p2jh4"]
 script = ExtResource("1_0lkds")
 name = "burst"
 cooldown = 0.1
+is_auto = true
 sound = ExtResource("2_p2jh4")
 metadata/_custom_type_script = "uid://ds6mffk8bhugv"
 
@@ -24,6 +27,7 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 [resource]
 script = ExtResource("1_sbf7q")
 name = "rifle"
+weapon_type = 0
 damage = 80
 mag_size = 25
 reload_duration = 1.4
@@ -32,10 +36,12 @@ speed_multiplier = 0.7
 camera_shake_strength = 5.0
 mode = SubResource("Resource_p2jh4")
 animations = {
-"attack": "rifle_shoot",
-"equip": "rifle_equip",
-"idle": "rifle_idle",
-"move": "rifle_move",
-"reload": "rifle_reload"
+"attack": "pistol_shoot",
+"equip": "pistol_equip",
+"idle": "pistol_idle",
+"move": "pistol_move",
+"reload": "pistol_reload"
 }
 sounds = SubResource("Resource_c4qrx")
+weapon_scene = ExtResource("8_wwuao")
+pickup_scene = ExtResource("3_ys2y7")
