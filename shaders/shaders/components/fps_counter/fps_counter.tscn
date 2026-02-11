@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://wtqekk5k5spy"]
-
-[ext_resource type="Script" uid="uid://6atifq1sjbvt" path="res://components/fps_counter/fps_counter.gd" id="1_mr32i"]
-
-[node name="FpsCounter" type="Label"]
-script = ExtResource("1_mr32i")

@@ -1,7 +1,0 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://d0ku8kdctasp8"]
-
-[ext_resource type="Shader" uid="uid://bsx3mfkaxv4q6" path="res://shaders/fow.gdshader" id="1_1rb8e"]
-
-[resource]
-shader = ExtResource("1_1rb8e")
-shader_parameter/enable_fow = false

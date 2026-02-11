@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=11 format=3 uid="uid://cop5hxltvyjt7"]
+[gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://cop5hxltvyjt7"]
 
 [ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_btwah"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_tir7r"]
@@ -14,9 +14,7 @@ script = ExtResource("1_btwah")
 name = "Single"
 cooldown = 0.1
 burst_count = 0
-is_auto = false
 sound = ExtResource("2_e5hq6")
-animation = ""
 metadata/_custom_type_script = "uid://ds6mffk8bhugv"
 
 [sub_resource type="Resource" id="Resource_58iix"]
@@ -29,12 +27,8 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 [resource]
 script = ExtResource("1_tir7r")
 name = "handgun"
-weapon_type = 1
 damage = 40
-d_range = 1000.0
 mag_size = 10
-uses_ammo = true
-is_reloadable = true
 reload_duration = 1.0
 equip_duration = 0.5
 speed_multiplier = 0.9

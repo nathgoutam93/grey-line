@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://ca4sffa83rp24"]
+[gd_scene format=3 uid="uid://ca4sffa83rp24"]
 
 [ext_resource type="Script" uid="uid://btqbhqr7k5cc5" path="res://scenes/player/_scripts/player_controller.gd" id="1_cedje"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="2_ugbui"]
@@ -7,6 +7,7 @@
 [ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/hand_gun.tres" id="4_myrg7"]
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
 [ext_resource type="PackedScene" uid="uid://4isysde6lgiy" path="res://components/weapon_manager/weapon_manager.tscn" id="5_gx1jg"]
+[ext_resource type="Resource" uid="uid://bc18r0r4gbkx3" path="res://resources/weapons/rifle.tres" id="9_myrg7"]
 [ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="10_h17s1"]
 [ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="10_je7p5"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
@@ -48,7 +49,7 @@ properties/3/path = NodePath("WeaponManager:current_slot")
 properties/3/spawn = true
 properties/3/replication_mode = 2
 
-[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("hitbox", "skeletal_character", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "player_input", "hud", "camera", "audio_listner") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("hitbox", "skeletal_character", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "player_input", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
 collision_layer = 2
@@ -69,46 +70,46 @@ camera = NodePath("Camera2D")
 audio_listner = NodePath("Camera2D/AudioListener2D")
 metadata/_edit_vertical_guides_ = [-39.0]
 
-[node name="HitBox" type="CollisionShape2D" parent="."]
+[node name="HitBox" type="CollisionShape2D" parent="." unique_id=1690495568]
 shape = SubResource("CapsuleShape2D_5i508")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2034022886]
 enabled = false
 zoom = Vector2(0.5, 0.5)
 rotation_smoothing_enabled = true
 
-[node name="CameraShake" parent="Camera2D" instance=ExtResource("181_ooe3s")]
+[node name="CameraShake" parent="Camera2D" unique_id=1871293477 instance=ExtResource("181_ooe3s")]
 
-[node name="AudioListener2D" type="AudioListener2D" parent="Camera2D"]
+[node name="AudioListener2D" type="AudioListener2D" parent="Camera2D" unique_id=1130780519]
 
-[node name="Health" parent="." instance=ExtResource("5_fm80t")]
+[node name="Health" parent="." unique_id=808461477 instance=ExtResource("5_fm80t")]
 
-[node name="PlayerMesh" parent="." instance=ExtResource("13_u5how")]
+[node name="PlayerMesh" parent="." unique_id=721801445 instance=ExtResource("13_u5how")]
 position = Vector2(-5, 0)
 scale = Vector2(0.32, 0.32)
 
-[node name="WeaponManager" parent="." node_paths=PackedStringArray("player", "skeletal_character", "camera_shake") instance=ExtResource("5_gx1jg")]
-default_weapons = Array[ExtResource("2_ugbui")]([ExtResource("3_fcs02"), ExtResource("4_myrg7")])
+[node name="WeaponManager" parent="." unique_id=898153522 node_paths=PackedStringArray("player", "skeletal_character", "camera_shake") instance=ExtResource("5_gx1jg")]
+default_weapons = Array[ExtResource("2_ugbui")]([ExtResource("3_fcs02"), ExtResource("4_myrg7"), ExtResource("9_myrg7")])
 player = NodePath("..")
 skeletal_character = NodePath("../PlayerMesh")
 camera_shake = NodePath("../Camera2D/CameraShake")
 
-[node name="MovementComponent" parent="." node_paths=PackedStringArray("player", "player_input") instance=ExtResource("12_hoixd")]
+[node name="MovementComponent" parent="." unique_id=819673025 node_paths=PackedStringArray("player", "player_input") instance=ExtResource("12_hoixd")]
 player = NodePath("..")
 player_input = NodePath("../PlayerInput")
 
-[node name="Footsteps" type="AudioStreamPlayer2D" parent="."]
+[node name="Footsteps" type="AudioStreamPlayer2D" parent="." unique_id=1931870781]
 stream = ExtResource("3_m8vw7")
 volume_db = -20.0
 
-[node name="SoundPool" parent="." instance=ExtResource("187_ooe3s")]
+[node name="SoundPool" parent="." unique_id=351196777 instance=ExtResource("187_ooe3s")]
 pool_size = 3
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1705118506]
 visible = false
 script = ExtResource("201_5o5no")
 
-[node name="Control" type="Control" parent="HUD"]
+[node name="Control" type="Control" parent="HUD" unique_id=94047674]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -116,7 +117,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control" unique_id=1226619341]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -131,26 +132,26 @@ grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 
-[node name="weapon_name" type="Label" parent="HUD/Control/HBoxContainer"]
+[node name="weapon_name" type="Label" parent="HUD/Control/HBoxContainer" unique_id=853865757]
 layout_mode = 2
 text = "Weapon Name"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control/HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control/HBoxContainer" unique_id=516350813]
 layout_mode = 2
 
-[node name="ammo_left" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer"]
+[node name="ammo_left" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer" unique_id=1472230339]
 layout_mode = 2
 text = "12"
 
-[node name="Label" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer" unique_id=181973341]
 layout_mode = 2
 text = "/"
 
-[node name="mag_size" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer"]
+[node name="mag_size" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer" unique_id=1309342777]
 layout_mode = 2
 text = "36"
 
-[node name="FpsCounter" parent="HUD/Control" instance=ExtResource("10_je7p5")]
+[node name="FpsCounter" parent="HUD/Control" unique_id=1412295425 instance=ExtResource("10_je7p5")]
 layout_mode = 0
 offset_left = 7.0
 offset_top = 6.0
@@ -159,14 +160,14 @@ offset_bottom = 29.0
 text = "FPS: 60"
 label_settings = SubResource("LabelSettings_je7p5")
 
-[node name="crosshair" parent="HUD" instance=ExtResource("10_h17s1")]
+[node name="crosshair" parent="HUD" unique_id=560736327 instance=ExtResource("10_h17s1")]
 
-[node name="PlayerInput" type="MultiplayerSynchronizer" parent="." node_paths=PackedStringArray("player")]
+[node name="PlayerInput" type="MultiplayerSynchronizer" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_fm80t")
 script = ExtResource("13_gx1jg")
 player = NodePath("..")
 
-[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=213592159]
 replication_config = SubResource("SceneReplicationConfig_ugbui")
 visibility_update_mode = 1

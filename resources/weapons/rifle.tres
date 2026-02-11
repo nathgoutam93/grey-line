@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=9 format=3 uid="uid://bc18r0r4gbkx3"]
+[gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://bc18r0r4gbkx3"]
 
 [ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_0lkds"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_sbf7q"]
@@ -11,10 +11,7 @@
 script = ExtResource("1_0lkds")
 name = "burst"
 cooldown = 0.1
-burst_count = 3
-is_auto = false
 sound = ExtResource("2_p2jh4")
-animation = ""
 metadata/_custom_type_script = "uid://ds6mffk8bhugv"
 
 [sub_resource type="Resource" id="Resource_c4qrx"]
@@ -29,8 +26,6 @@ script = ExtResource("1_sbf7q")
 name = "rifle"
 damage = 80
 mag_size = 25
-uses_ammo = true
-is_reloadable = true
 reload_duration = 1.4
 equip_duration = 0.5
 speed_multiplier = 0.7

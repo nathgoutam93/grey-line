@@ -1,4 +1,4 @@
-[gd_scene load_steps=193 format=3 uid="uid://dyyv6g2s66fwh"]
+[gd_scene format=3 uid="uid://dyyv6g2s66fwh"]
 
 [ext_resource type="Material" uid="uid://bwlqofbrbiull" path="res://materials/all_white.tres" id="2_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://bc24o2a1i3x6k" path="res://scenes/maps/counter_strike/_assets/map.png" id="2_3iwqa"]
@@ -551,1126 +551,1126 @@ viewport_path = NodePath("FowMaskView")
 [sub_resource type="ViewportTexture" id="ViewportTexture_rq4m3"]
 viewport_path = NodePath("FowMaskView")
 
-[node name="World" type="Node2D"]
+[node name="World" type="Node2D" unique_id=539019978]
 
-[node name="FowMaskView" type="SubViewport" parent="." node_paths=PackedStringArray("los")]
+[node name="FowMaskView" type="SubViewport" parent="." unique_id=2145603682 node_paths=PackedStringArray("los")]
 transparent_bg = true
 size = Vector2i(1280, 720)
 render_target_update_mode = 4
 script = ExtResource("4_2nbmb")
 los = NodePath("LOS")
 
-[node name="Level" type="Node2D" parent="FowMaskView"]
+[node name="Level" type="Node2D" parent="FowMaskView" unique_id=1976538564]
 
-[node name="Sprite2D" type="Sprite2D" parent="FowMaskView/Level"]
+[node name="Sprite2D" type="Sprite2D" parent="FowMaskView/Level" unique_id=639574458]
 material = ExtResource("2_2nbmb")
 scale = Vector2(100, 100)
 texture = SubResource("GradientTexture2D_bwbls")
 
-[node name="GeneratedOccluders" type="Node2D" parent="FowMaskView/Level"]
+[node name="GeneratedOccluders" type="Node2D" parent="FowMaskView/Level" unique_id=337354437]
 
-[node name="@LightOccluder2D@56800" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56800" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=861834121]
 position = Vector2(-493, 688)
 scale = Vector2(0.8, 0.8)
 occluder = SubResource("OccluderPolygon2D_2nbmb")
 
-[node name="@LightOccluder2D@56801" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56801" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1017074741]
 position = Vector2(-197.5, 381)
 scale = Vector2(0.8, 0.8)
 occluder = SubResource("OccluderPolygon2D_h4vp2")
 
-[node name="@LightOccluder2D@56802" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56802" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1876578798]
 position = Vector2(1998, 242)
 scale = Vector2(0.8, 0.8)
 occluder = SubResource("OccluderPolygon2D_mflnu")
 
-[node name="@LightOccluder2D@56803" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56803" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=847750557]
 position = Vector2(242.752, -53.6248)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_k00yj")
 
-[node name="@LightOccluder2D@56804" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56804" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1644855159]
 position = Vector2(-197, 16.5)
 occluder = SubResource("OccluderPolygon2D_kifs8")
 
-[node name="@LightOccluder2D@56805" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56805" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=913668704]
 position = Vector2(-96, -180)
 occluder = SubResource("OccluderPolygon2D_rq4m3")
 
-[node name="@LightOccluder2D@56806" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56806" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1759863920]
 position = Vector2(-195.5, 228)
 occluder = SubResource("OccluderPolygon2D_jondw")
 
-[node name="@LightOccluder2D@56807" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56807" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=11514744]
 position = Vector2(-858, -895)
 occluder = SubResource("OccluderPolygon2D_ichad")
 
-[node name="@LightOccluder2D@56808" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56808" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=150952795]
 position = Vector2(-359.5, -862)
 occluder = SubResource("OccluderPolygon2D_g4tve")
 
-[node name="@LightOccluder2D@56809" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56809" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=194159977]
 position = Vector2(-1358, -670.5)
 occluder = SubResource("OccluderPolygon2D_uncyb")
 
-[node name="@LightOccluder2D@56810" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56810" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=855936010]
 position = Vector2(-319.25, -1161)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_tinfn")
 
-[node name="@LightOccluder2D@56811" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56811" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2136798553]
 position = Vector2(-197, -1009)
 occluder = SubResource("OccluderPolygon2D_h4lhr")
 
-[node name="@LightOccluder2D@56812" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56812" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=266548450]
 position = Vector2(-376.812, -1147.38)
 occluder = SubResource("OccluderPolygon2D_sbvmh")
 
-[node name="@LightOccluder2D@56813" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56813" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=998992539]
 position = Vector2(778, -861)
 occluder = SubResource("OccluderPolygon2D_ka43b")
 
-[node name="@LightOccluder2D@56814" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56814" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=28136997]
 position = Vector2(1266, -1622)
 occluder = SubResource("OccluderPolygon2D_2de0w")
 
-[node name="@LightOccluder2D@56815" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56815" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2019456847]
 position = Vector2(-1996, -1716.5)
 occluder = SubResource("OccluderPolygon2D_ptkua")
 
-[node name="@LightOccluder2D@56816" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56816" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=273875131]
 position = Vector2(-971, -1728.5)
 occluder = SubResource("OccluderPolygon2D_qqk3m")
 
-[node name="@LightOccluder2D@56817" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56817" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=979214998]
 position = Vector2(-601, -1507.62)
 occluder = SubResource("OccluderPolygon2D_uvnb0")
 
-[node name="@LightOccluder2D@56818" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56818" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2110963996]
 position = Vector2(-376, -1414)
 occluder = SubResource("OccluderPolygon2D_835bh")
 
-[node name="@LightOccluder2D@56819" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56819" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=717711425]
 position = Vector2(1660, -1679.25)
 occluder = SubResource("OccluderPolygon2D_n8cx0")
 
-[node name="@LightOccluder2D@56820" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56820" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=252623758]
 position = Vector2(1956, -1443)
 occluder = SubResource("OccluderPolygon2D_7khml")
 
-[node name="@LightOccluder2D@56821" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56821" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1695116719]
 position = Vector2(728, 1074.56)
 occluder = SubResource("OccluderPolygon2D_cc434")
 
-[node name="@LightOccluder2D@56822" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56822" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=443292709]
 position = Vector2(561, 829.5)
 occluder = SubResource("OccluderPolygon2D_xg4g0")
 
-[node name="@LightOccluder2D@56823" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56823" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1422099613]
 position = Vector2(121, 973.25)
 occluder = SubResource("OccluderPolygon2D_o4ktb")
 
-[node name="@LightOccluder2D@56824" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56824" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=685662146]
 position = Vector2(192, 1355)
 rotation = -0.628319
 occluder = SubResource("OccluderPolygon2D_kdj1p")
 
-[node name="@LightOccluder2D@56825" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56825" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=27987564]
 position = Vector2(-340.473, 1706)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_ink4q")
 
-[node name="@LightOccluder2D@56826" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56826" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=203007572]
 position = Vector2(-1243.03, 1389)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_loviv")
 
-[node name="@LightOccluder2D@56827" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56827" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1258639227]
 position = Vector2(-1039.01, -106)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_r7ov6")
 
-[node name="@LightOccluder2D@56828" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56828" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=522774294]
 position = Vector2(-1412.99, -344)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_l0dc6")
 
-[node name="@LightOccluder2D@56829" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56829" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=900811607]
 position = Vector2(-1858, -720)
 occluder = SubResource("OccluderPolygon2D_cophk")
 
-[node name="@LightOccluder2D@56830" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56830" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2139058613]
 position = Vector2(-1995, -1084)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_skb8d")
 
-[node name="@LightOccluder2D@56831" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56831" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1331969602]
 position = Vector2(-2118, -1332.63)
 occluder = SubResource("OccluderPolygon2D_uliox")
 
-[node name="@LightOccluder2D@56832" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56832" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1124048840]
 position = Vector2(-949, -234)
 occluder = SubResource("OccluderPolygon2D_pqvfp")
 
-[node name="@LightOccluder2D@56833" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56833" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=629831916]
 position = Vector2(-818.264, 1384)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_c7gyd")
 
-[node name="@LightOccluder2D@56834" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56834" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=708391857]
 position = Vector2(-744, 1450.65)
 occluder = SubResource("OccluderPolygon2D_wdpgy")
 
-[node name="@LightOccluder2D@56835" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56835" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=122957325]
 position = Vector2(-614, 1511)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_c4h8n")
 
-[node name="@LightOccluder2D@56836" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56836" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=568177522]
 position = Vector2(-482, 1709.12)
 occluder = SubResource("OccluderPolygon2D_q0um5")
 
-[node name="@LightOccluder2D@56837" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56837" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1491617163]
 position = Vector2(-1352, 1629.25)
 occluder = SubResource("OccluderPolygon2D_ltmgd")
 
-[node name="@LightOccluder2D@56838" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56838" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1110688883]
 position = Vector2(-1145, 630.625)
 occluder = SubResource("OccluderPolygon2D_j701p")
 
-[node name="@LightOccluder2D@56839" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56839" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=906157451]
 position = Vector2(-920.75, 1890)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_08gw2")
 
-[node name="@LightOccluder2D@56840" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56840" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=179873495]
 position = Vector2(43, 1580)
 rotation = 1.06465
 occluder = SubResource("OccluderPolygon2D_dchsu")
 
-[node name="@LightOccluder2D@56841" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56841" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1973413984]
 position = Vector2(332.625, 687)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_22a6t")
 
-[node name="@LightOccluder2D@56842" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56842" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2137690898]
 position = Vector2(946.5, 1088.78)
 occluder = SubResource("OccluderPolygon2D_k2m3x")
 
-[node name="@LightOccluder2D@56843" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56843" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=817549769]
 position = Vector2(656, 997)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_gnh4e")
 
-[node name="@LightOccluder2D@56844" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56844" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1657327989]
 position = Vector2(2221, -925.562)
 occluder = SubResource("OccluderPolygon2D_tatvb")
 
-[node name="@LightOccluder2D@56845" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56845" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=356141299]
 position = Vector2(2155, -90.2812)
 occluder = SubResource("OccluderPolygon2D_wx1lu")
 
-[node name="@LightOccluder2D@56846" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56846" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=342547590]
 position = Vector2(1705, 735.641)
 occluder = SubResource("OccluderPolygon2D_ta1ll")
 
-[node name="@LightOccluder2D@56847" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56847" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=593670092]
 position = Vector2(-132, -1508.75)
 occluder = SubResource("OccluderPolygon2D_ok1nd")
 
-[node name="@LightOccluder2D@56848" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56848" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=921284724]
 position = Vector2(-1544, -1805.5)
 occluder = SubResource("OccluderPolygon2D_ikblw")
 
-[node name="@LightOccluder2D@56849" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56849" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1982288187]
 position = Vector2(-2065, -1581)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_bnibe")
 
-[node name="@LightOccluder2D@56850" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56850" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1618845039]
 position = Vector2(-1761, -1853)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_k6cr8")
 
-[node name="@LightOccluder2D@56851" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56851" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1722071272]
 position = Vector2(-1249, -1777)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_txj3c")
 
-[node name="@LightOccluder2D@56852" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56852" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=667143404]
 position = Vector2(-479.5, -1335)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_nlnrp")
 
-[node name="@LightOccluder2D@56853" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56853" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1030209439]
 position = Vector2(1816.75, -1546)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_0u1v0")
 
-[node name="@LightOccluder2D@56854" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56854" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=175363943]
 position = Vector2(1921.5, 307)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_mx6q1")
 
-[node name="@LightOccluder2D@56855" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56855" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1912112344]
 position = Vector2(1207.38, 1149)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_rvb3r")
 
-[node name="@LightOccluder2D@56856" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56856" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1514390539]
 position = Vector2(2097.38, -1360)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_fhpgn")
 
-[node name="@LightOccluder2D@56857" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56857" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=814477871]
 position = Vector2(2189, -505)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_xebxt")
 
-[node name="@LightOccluder2D@56858" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56858" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=478505290]
 position = Vector2(-245, -1475)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_7kb4p")
 
-[node name="@LightOccluder2D@56859" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56859" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1348283060]
 position = Vector2(933.125, -1828)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_4cfhr")
 
-[node name="@LightOccluder2D@56860" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56860" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=177112145]
 position = Vector2(-776, -1700)
 rotation = -1.5708
 occluder = SubResource("OccluderPolygon2D_vpq5f")
 
-[node name="@LightOccluder2D@56861" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56861" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=132083206]
 position = Vector2(9, -1523)
 occluder = SubResource("OccluderPolygon2D_q8pgy")
 
-[node name="@LightOccluder2D@56862" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56862" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=269091523]
 position = Vector2(-692.5, 77.5)
 occluder = SubResource("OccluderPolygon2D_tx0vd")
 
-[node name="@LightOccluder2D@56863" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56863" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=201570847]
 position = Vector2(-645.5, -308.5)
 occluder = SubResource("OccluderPolygon2D_rd1d6")
 
-[node name="@LightOccluder2D@56864" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56864" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=95867587]
 position = Vector2(-605.25, -178)
 occluder = SubResource("OccluderPolygon2D_6mrm1")
 
-[node name="@LightOccluder2D@56865" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56865" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1595013038]
 position = Vector2(1334.5, 849)
 occluder = SubResource("OccluderPolygon2D_yo5oa")
 
-[node name="@LightOccluder2D@56866" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56866" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=659088332]
 position = Vector2(897.625, 838)
 occluder = SubResource("OccluderPolygon2D_y6kca")
 
-[node name="@LightOccluder2D@56867" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56867" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=275578299]
 position = Vector2(835, 775.688)
 rotation = 1.5708
 occluder = SubResource("OccluderPolygon2D_bb0qr")
 
-[node name="@LightOccluder2D@56868" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56868" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=135321438]
 position = Vector2(-364.5, -650)
 occluder = SubResource("OccluderPolygon2D_q3y0l")
 
-[node name="@LightOccluder2D@56869" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56869" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1347404291]
 position = Vector2(-1947, -1258)
 rotation = 0.785398
 scale = Vector2(0.4, 0.4)
 occluder = SubResource("OccluderPolygon2D_yrm6k")
 
-[node name="@LightOccluder2D@56870" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56870" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1442792086]
 position = Vector2(-1836, -1735)
 scale = Vector2(0.4, 0.4)
 occluder = SubResource("OccluderPolygon2D_2kpps")
 
-[node name="@LightOccluder2D@56871" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56871" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1997394458]
 position = Vector2(-1427, -1641.4)
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_xru67")
 
-[node name="@LightOccluder2D@56872" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56872" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=433212483]
 position = Vector2(-1265.1, -986.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_py53y")
 
-[node name="@LightOccluder2D@56873" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56873" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=103678647]
 position = Vector2(-1163.1, -1086.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_jad5f")
 
-[node name="@LightOccluder2D@56874" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56874" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1496067529]
 position = Vector2(-1162.1, -986.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_jme3x")
 
-[node name="@LightOccluder2D@56875" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56875" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=436758776]
 position = Vector2(-1426, -1494.4)
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_xkdoa")
 
-[node name="@LightOccluder2D@56876" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56876" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1377479087]
 position = Vector2(-1540.5, -589.5)
 scale = Vector2(0.5, 0.5)
 occluder = SubResource("OccluderPolygon2D_i4ocy")
 
-[node name="@LightOccluder2D@56877" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56877" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1834367474]
 position = Vector2(-59.5, -940.5)
 scale = Vector2(0.5, 0.5)
 occluder = SubResource("OccluderPolygon2D_u8dtn")
 
-[node name="@LightOccluder2D@56878" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56878" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=301867823]
 position = Vector2(618.5, -1499.5)
 rotation = -1.5708
 scale = Vector2(0.5, 0.5)
 occluder = SubResource("OccluderPolygon2D_p2rvm")
 
-[node name="@LightOccluder2D@56879" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56879" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1731988180]
 position = Vector2(372.586, -1107.88)
 rotation = -0.785398
 scale = Vector2(0.5, 0.5)
 occluder = SubResource("OccluderPolygon2D_ujvpy")
 
-[node name="@LightOccluder2D@56880" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56880" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=37778520]
 position = Vector2(-1049, 458)
 scale = Vector2(2.5, 2.5)
 occluder = SubResource("OccluderPolygon2D_nw2bi")
 
-[node name="@LightOccluder2D@56881" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56881" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=180010376]
 position = Vector2(820.9, -448.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_7d5fl")
 
-[node name="@LightOccluder2D@56882" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56882" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1819672640]
 position = Vector2(922.9, -536.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_lf050")
 
-[node name="@LightOccluder2D@56883" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56883" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=445889066]
 position = Vector2(922.9, -436.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_nc6wh")
 
-[node name="@LightOccluder2D@56884" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56884" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1993068588]
 position = Vector2(1383.9, -120.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_ngwhq")
 
-[node name="@LightOccluder2D@56885" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56885" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=526046915]
 position = Vector2(1642.9, 787.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_oj6p4")
 
-[node name="@LightOccluder2D@56886" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56886" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=775480612]
 position = Vector2(1642.9, 687.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_sd8tj")
 
-[node name="@LightOccluder2D@56887" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56887" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2070800562]
 position = Vector2(1539.9, 787.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_ja8ag")
 
-[node name="@LightOccluder2D@56888" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56888" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=143265860]
 position = Vector2(787.905, 1090.47)
 scale = Vector2(0.19, 0.19)
 occluder = SubResource("OccluderPolygon2D_dorpl")
 
-[node name="@LightOccluder2D@56889" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56889" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1170756320]
 position = Vector2(884.905, 1090.47)
 scale = Vector2(0.19, 0.19)
 occluder = SubResource("OccluderPolygon2D_sw67b")
 
-[node name="@LightOccluder2D@56890" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56890" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1757519789]
 position = Vector2(-455.095, -1168.53)
 scale = Vector2(0.19, 0.19)
 occluder = SubResource("OccluderPolygon2D_yxqev")
 
-[node name="@LightOccluder2D@56891" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56891" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1443133096]
 position = Vector2(-553.095, -1168.53)
 scale = Vector2(0.19, 0.19)
 occluder = SubResource("OccluderPolygon2D_1b3nk")
 
-[node name="@LightOccluder2D@56892" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56892" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=136240520]
 position = Vector2(1923.9, -1038.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_o4r52")
 
-[node name="@LightOccluder2D@56893" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56893" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=977206799]
 position = Vector2(1923.9, -937.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_uo4pl")
 
-[node name="@LightOccluder2D@56894" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56894" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1262608620]
 position = Vector2(2026.9, -975.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_wqhhq")
 
-[node name="@LightOccluder2D@56895" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56895" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1903601120]
 position = Vector2(1323.4, -1043)
 rotation = 1.5708
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_j6doa")
 
-[node name="@LightOccluder2D@56896" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56896" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1765294503]
 position = Vector2(2137.4, -666)
 rotation = 1.5708
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_ak31t")
 
-[node name="@LightOccluder2D@56897" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56897" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=764333567]
 position = Vector2(1684, 88.6)
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_5ohro")
 
-[node name="@LightOccluder2D@56898" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56898" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=562873493]
 position = Vector2(1587.5, 996.5)
 rotation = 1.5708
 scale = Vector2(0.5, 0.5)
 occluder = SubResource("OccluderPolygon2D_wtk46")
 
-[node name="@LightOccluder2D@56899" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56899" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1129224426]
 position = Vector2(-1263.4, 1502)
 rotation = 1.5708
 scale = Vector2(0.4, 0.4)
 occluder = SubResource("OccluderPolygon2D_xnffc")
 
-[node name="@LightOccluder2D@56900" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56900" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=932603478]
 position = Vector2(-544.1, 1672.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_y8kkf")
 
-[node name="@LightOccluder2D@56901" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56901" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=375700518]
 position = Vector2(-644.1, 1572.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_5qd58")
 
-[node name="@LightOccluder2D@56902" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56902" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2112285371]
 position = Vector2(-544.1, 1572.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_vn7kt")
 
-[node name="@LightOccluder2D@56903" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56903" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=727379328]
 position = Vector2(197.9, -244.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_snsb0")
 
-[node name="@LightOccluder2D@56904" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56904" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=2130197906]
 position = Vector2(93.9, -244.5)
 scale = Vector2(0.2, 0.2)
 occluder = SubResource("OccluderPolygon2D_ytlo0")
 
-[node name="@LightOccluder2D@56905" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56905" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=376981109]
 position = Vector2(1232, 490)
 scale = Vector2(0.4, 0.4)
 occluder = SubResource("OccluderPolygon2D_mp3gt")
 
-[node name="@LightOccluder2D@56906" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56906" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=270068338]
 position = Vector2(987, 488)
 scale = Vector2(0.4, 0.4)
 occluder = SubResource("OccluderPolygon2D_4tgls")
 
-[node name="@LightOccluder2D@56907" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56907" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1406887422]
 position = Vector2(-316, -290)
 scale = Vector2(0.4, 0.4)
 occluder = SubResource("OccluderPolygon2D_w4v0r")
 
-[node name="@LightOccluder2D@56908" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56908" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1639770337]
 position = Vector2(-213.576, 1343.42)
 rotation = -0.785398
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_6s1jw")
 
-[node name="@LightOccluder2D@56909" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders"]
+[node name="@LightOccluder2D@56909" type="LightOccluder2D" parent="FowMaskView/Level/GeneratedOccluders" unique_id=1791227272]
 position = Vector2(111.576, 433.424)
 rotation = 0.785398
 scale = Vector2(0.6, 0.6)
 occluder = SubResource("OccluderPolygon2D_fxymx")
 
-[node name="LOS" type="PointLight2D" parent="FowMaskView"]
+[node name="LOS" type="PointLight2D" parent="FowMaskView" unique_id=185645498]
 position = Vector2(291, -1802)
 blend_mode = 1
 shadow_enabled = true
 texture = ExtResource("11_mflnu")
 
-[node name="Camera2D" type="Camera2D" parent="FowMaskView"]
+[node name="Camera2D" type="Camera2D" parent="FowMaskView" unique_id=1215250904]
 
-[node name="Map" type="Node2D" parent="."]
+[node name="Map" type="Node2D" parent="." unique_id=2023424144]
 
-[node name="Level" type="Node2D" parent="Map"]
-visible = false
+[node name="Level" type="Node2D" parent="Map" unique_id=381917250]
 
-[node name="Map" type="Sprite2D" parent="Map/Level"]
+[node name="Map" type="Sprite2D" parent="Map/Level" unique_id=669428939]
 scale = Vector2(5, 5)
 texture = ExtResource("2_3iwqa")
 
-[node name="building_1" type="StaticBody2D" parent="Map/Level"]
+[node name="building_1" type="StaticBody2D" parent="Map/Level" unique_id=1663654942]
 position = Vector2(-493, 688)
 scale = Vector2(0.8, 0.8)
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_1"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_1" unique_id=1015887588]
 polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_1"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_1" unique_id=1649002920]
 position = Vector2(369.375, -383.75)
 shape = SubResource("RectangleShape2D_pslmq")
 
-[node name="building_2" type="StaticBody2D" parent="Map/Level"]
+[node name="building_2" type="StaticBody2D" parent="Map/Level" unique_id=1524141266]
 position = Vector2(1178, 59)
 scale = Vector2(0.8, 0.8)
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_2"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_2" unique_id=219892523]
 position = Vector2(1025, 228.75)
 polygon = PackedVector2Array(-2105, -385, -2106, 138.5, -1466, 143.5, -1463.5, 183.5, -831, 177.25, -828.5, -96.5, -587.25, -97.75, -593.5, -289, -163.5, -294, -159.75, -1665.25, -377.25, -1937.75, -752.25, -1937.75, -749.75, -1425.25, -699.75, -1421.5, -698.5, -386.5)
 
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/building_2"]
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/building_2" unique_id=663385393]
 position = Vector2(-1169.06, -140.781)
 rotation = 1.5708
 scale = Vector2(1.25, 1.25)
 shape = SubResource("RectangleShape2D_li4ch")
 
-[node name="building_3" type="StaticBody2D" parent="Map/Level"]
+[node name="building_3" type="StaticBody2D" parent="Map/Level" unique_id=2133475351]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_3"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_3" unique_id=186903383]
 position = Vector2(-197, 16.5)
 shape = SubResource("RectangleShape2D_4ftj6")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/building_3"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/building_3" unique_id=546465789]
 position = Vector2(-96, -180)
 shape = SubResource("RectangleShape2D_slwnu")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/building_3"]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/building_3" unique_id=664088995]
 position = Vector2(-195.5, 228)
 shape = SubResource("RectangleShape2D_xoxjw")
 
-[node name="building_4" type="StaticBody2D" parent="Map/Level"]
+[node name="building_4" type="StaticBody2D" parent="Map/Level" unique_id=1958165442]
 position = Vector2(-858, -895)
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_4"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_4" unique_id=1409796462]
 polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 214, -204, 393, 223, 393, 223, 285, 268, 285, 269, 0, 510, 0, 509, -227, 257, -224, 257, -187, 89, -186, 89, -549, -124, -554, -124, -233, -143, -233, -145, 24, -578, 25, -576, -203)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_4"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=1712813642]
 position = Vector2(498.5, 33)
 shape = SubResource("RectangleShape2D_crem8")
 
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/building_4"]
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=1903976519]
 position = Vector2(-500, 224.5)
 shape = SubResource("RectangleShape2D_ef0tw")
 
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="Map/Level/building_4"]
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=1245249694]
 position = Vector2(538.75, -266)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_37pbp")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/building_4"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=1919837022]
 position = Vector2(661, -114)
 shape = SubResource("RectangleShape2D_63lqt")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/building_4"]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=970997672]
 position = Vector2(481.188, -252.375)
 shape = SubResource("RectangleShape2D_6kvlp")
 
-[node name="building_5" type="StaticBody2D" parent="Map/Level"]
+[node name="building_5" type="StaticBody2D" parent="Map/Level" unique_id=1136949269]
 position = Vector2(778, -861)
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_5"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/building_5" unique_id=27547821]
 polygon = PackedVector2Array(-986, 12, -220, 13, -169, -6, -122, -54, -103, -108, -102, -505, -63, -505, -65, -776, 423, -774, 422, -545, 348, -545, 349, 186, 341, 213, 323, 241, 301, 261, 272, 273, 93, 274, 93, 362, -899, 358, -925, 352, -947, 335, -970, 313, -988, 276)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_5"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/building_5" unique_id=445425152]
 position = Vector2(488, -761)
 shape = SubResource("RectangleShape2D_wftvi")
 
-[node name="boundary_walls" type="StaticBody2D" parent="Map/Level"]
+[node name="boundary_walls" type="StaticBody2D" parent="Map/Level" unique_id=1593102904]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=848753152]
 position = Vector2(-1996, -1716.5)
 shape = SubResource("RectangleShape2D_p2eoo")
 
-[node name="CollisionShape2D7" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D7" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=469836473]
 position = Vector2(-971, -1728.5)
 shape = SubResource("RectangleShape2D_cji2n")
 
-[node name="CollisionShape2D8" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D8" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=2049459244]
 position = Vector2(-601, -1507.62)
 shape = SubResource("RectangleShape2D_7yndo")
 
-[node name="CollisionShape2D10" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D10" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1560076870]
 position = Vector2(-376, -1414)
 shape = SubResource("RectangleShape2D_he210")
 
-[node name="CollisionShape2D14" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D14" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1757163446]
 position = Vector2(1660, -1679.25)
 shape = SubResource("RectangleShape2D_gpbfy")
 
-[node name="CollisionShape2D16" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D16" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1453438839]
 position = Vector2(1956, -1443)
 shape = SubResource("RectangleShape2D_v6mw4")
 
-[node name="CollisionShape2D24" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D24" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1998074590]
 position = Vector2(728, 1074.56)
 shape = SubResource("RectangleShape2D_d3xj4")
 
-[node name="CollisionShape2D27" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D27" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=228472646]
 position = Vector2(561, 829.5)
 shape = SubResource("RectangleShape2D_kvq5t")
 
-[node name="CollisionShape2D29" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D29" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1065036346]
 position = Vector2(121, 973.25)
 shape = SubResource("RectangleShape2D_ohl27")
 
-[node name="CollisionShape2D31" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D31" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1517641661]
 position = Vector2(192, 1355)
 rotation = -0.628319
 shape = SubResource("RectangleShape2D_aavx7")
 
-[node name="CollisionShape2D32" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D32" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1200483293]
 position = Vector2(-340.473, 1706)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_6i28l")
 
-[node name="CollisionShape2D36" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D36" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=935364540]
 position = Vector2(-1243.03, 1389)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_kq5kv")
 
-[node name="CollisionShape2D41" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D41" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=570940721]
 position = Vector2(-1039.01, -106)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_fgbny")
 
-[node name="CollisionShape2D43" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D43" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1064204676]
 position = Vector2(-1412.99, -344)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_flvw0")
 
-[node name="CollisionShape2D44" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D44" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1358908495]
 position = Vector2(-1858, -720)
 shape = SubResource("RectangleShape2D_das80")
 
-[node name="CollisionShape2D45" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D45" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1280456261]
 position = Vector2(-1995, -1084)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_24nji")
 
-[node name="CollisionShape2D46" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D46" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1537644139]
 position = Vector2(-2118, -1332.63)
 shape = SubResource("RectangleShape2D_tckb6")
 
-[node name="CollisionShape2D42" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D42" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=976704834]
 position = Vector2(-949, -234)
 shape = SubResource("RectangleShape2D_reb65")
 
-[node name="CollisionShape2D37" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D37" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1683353481]
 position = Vector2(-818.264, 1384)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_in6m2")
 
-[node name="CollisionShape2D39" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D39" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1863317500]
 position = Vector2(-744, 1450.65)
 shape = SubResource("RectangleShape2D_xu5fu")
 
-[node name="CollisionShape2D38" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D38" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=992895007]
 position = Vector2(-614, 1511)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_pk6ct")
 
-[node name="CollisionShape2D33" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D33" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=993391399]
 position = Vector2(-482, 1709.12)
 shape = SubResource("RectangleShape2D_xy2gi")
 
-[node name="CollisionShape2D35" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D35" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1271933657]
 position = Vector2(-1352, 1629.25)
 shape = SubResource("RectangleShape2D_a7nqi")
 
-[node name="CollisionShape2D40" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D40" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1550288968]
 position = Vector2(-1145, 630.625)
 shape = SubResource("RectangleShape2D_u0td1")
 
-[node name="CollisionShape2D34" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D34" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=217958032]
 position = Vector2(-920.75, 1890)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_oxux0")
 
-[node name="CollisionShape2D30" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D30" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=924118347]
 position = Vector2(43, 1580)
 rotation = 1.06465
 shape = SubResource("RectangleShape2D_w4c6u")
 
-[node name="CollisionShape2D28" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D28" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1017514108]
 position = Vector2(332.625, 687)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_xsrw1")
 
-[node name="CollisionShape2D25" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D25" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1011194070]
 position = Vector2(946.5, 1088.78)
 shape = SubResource("RectangleShape2D_m6748")
 
-[node name="CollisionShape2D26" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D26" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=620787825]
 position = Vector2(656, 997)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_pwlac")
 
-[node name="CollisionShape2D18" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D18" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=689158331]
 position = Vector2(2221, -925.562)
 shape = SubResource("RectangleShape2D_bfbmp")
 
-[node name="CollisionShape2D20" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D20" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1858618903]
 position = Vector2(2155, -90.2812)
 shape = SubResource("RectangleShape2D_7cq6y")
 
-[node name="CollisionShape2D22" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D22" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1795272305]
 position = Vector2(1705, 735.641)
 shape = SubResource("RectangleShape2D_lk1od")
 
-[node name="CollisionShape2D12" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D12" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1516364783]
 position = Vector2(-132, -1508.75)
 shape = SubResource("RectangleShape2D_0seti")
 
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=579583191]
 position = Vector2(-1544, -1805.5)
 shape = SubResource("RectangleShape2D_bkmrn")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=2125772210]
 position = Vector2(-2065, -1581)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_wvoyx")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=293313256]
 position = Vector2(-1761, -1853)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_dm6by")
 
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1705154191]
 position = Vector2(-1249, -1777)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_x7gwx")
 
-[node name="CollisionShape2D9" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D9" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1548399021]
 position = Vector2(-479.5, -1335)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_ctidc")
 
-[node name="CollisionShape2D15" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D15" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=2009797088]
 position = Vector2(1816.75, -1546)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_hh82a")
 
-[node name="CollisionShape2D21" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D21" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=801026419]
 position = Vector2(1921.5, 307)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_45v53")
 
-[node name="CollisionShape2D23" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D23" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=139279715]
 position = Vector2(1207.38, 1149)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_8vg3x")
 
-[node name="CollisionShape2D17" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D17" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1370080656]
 position = Vector2(2097.38, -1360)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_xds0o")
 
-[node name="CollisionShape2D19" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D19" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1632403674]
 position = Vector2(2189, -505)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_sc8hg")
 
-[node name="CollisionShape2D11" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D11" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1954352757]
 position = Vector2(-245, -1475)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_0rq0o")
 
-[node name="CollisionShape2D13" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D13" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1555772966]
 position = Vector2(933.125, -1828)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_lybj1")
 
-[node name="CollisionShape2D6" type="CollisionShape2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionShape2D6" type="CollisionShape2D" parent="Map/Level/boundary_walls" unique_id=1729699203]
 position = Vector2(-776, -1700)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_2g2m0")
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/boundary_walls"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Map/Level/boundary_walls" unique_id=933903133]
 position = Vector2(9, -1523)
 polygon = PackedVector2Array(-132, 10, 70, 9, 127, -9, 171, -46, 206, -113, 206, -296, -38, -231)
 
-[node name="Wall" type="StaticBody2D" parent="Map/Level"]
+[node name="Wall" type="StaticBody2D" parent="Map/Level" unique_id=1657298064]
 position = Vector2(-693, 96)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall" unique_id=326724510]
 position = Vector2(0.5, -18.5)
 shape = SubResource("RectangleShape2D_4ngsd")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/Wall"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/Wall" unique_id=2100823698]
 position = Vector2(47.5, -404.5)
 shape = SubResource("RectangleShape2D_48ias")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/Wall"]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/Wall" unique_id=945788812]
 position = Vector2(87.75, -274)
 shape = SubResource("RectangleShape2D_65ugt")
 
-[node name="Wall2" type="StaticBody2D" parent="Map/Level"]
+[node name="Wall2" type="StaticBody2D" parent="Map/Level" unique_id=746653839]
 position = Vector2(1141, 846)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall2" unique_id=1326388888]
 position = Vector2(193.5, 3)
 shape = SubResource("RectangleShape2D_rxr32")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/Wall2"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Map/Level/Wall2" unique_id=2083606533]
 position = Vector2(-243.375, -8)
 shape = SubResource("RectangleShape2D_ge0pw")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/Wall2"]
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="Map/Level/Wall2" unique_id=1662307078]
 position = Vector2(-306, -70.3125)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_68vxq")
 
-[node name="Wall3" type="StaticBody2D" parent="Map/Level"]
+[node name="Wall3" type="StaticBody2D" parent="Map/Level" unique_id=1060981673]
 position = Vector2(-363, -652)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall3"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/Level/Wall3" unique_id=1603912973]
 position = Vector2(-1.5, 2)
 shape = SubResource("RectangleShape2D_vtr88")
 
-[node name="props" type="Node2D" parent="Map/Level"]
+[node name="props" type="Node2D" parent="Map/Level" unique_id=1339062630]
 
-[node name="Car" parent="Map/Level/props" instance=ExtResource("3_2nbmb")]
+[node name="Car" parent="Map/Level/props" unique_id=1360142601 instance=ExtResource("3_2nbmb")]
 position = Vector2(-1947, -1258)
 rotation = 0.785398
 scale = Vector2(0.4, 0.4)
 
-[node name="Car2" parent="Map/Level/props" instance=ExtResource("3_2nbmb")]
+[node name="Car2" parent="Map/Level/props" unique_id=1298302018 instance=ExtResource("3_2nbmb")]
 position = Vector2(-1836, -1735)
 scale = Vector2(0.4, 0.4)
 
-[node name="Container" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container" parent="Map/Level/props" unique_id=239067193 instance=ExtResource("4_h4vp2")]
 position = Vector2(-1427, -1642)
 scale = Vector2(0.6, 0.6)
 
-[node name="Crate" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate" parent="Map/Level/props" unique_id=1111511486 instance=ExtResource("5_2nbmb")]
 position = Vector2(-1265, -987)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate4" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate4" parent="Map/Level/props" unique_id=1346410352 instance=ExtResource("5_2nbmb")]
 position = Vector2(-1163, -1087)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate2" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate2" parent="Map/Level/props" unique_id=746740255 instance=ExtResource("5_2nbmb")]
 position = Vector2(-1162, -987)
 scale = Vector2(0.2, 0.2)
 
-[node name="Container2" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container2" parent="Map/Level/props" unique_id=697678686 instance=ExtResource("4_h4vp2")]
 position = Vector2(-1426, -1495)
 scale = Vector2(0.6, 0.6)
 
-[node name="Crate3" parent="Map/Level/props" instance=ExtResource("6_h4vp2")]
+[node name="Crate3" parent="Map/Level/props" unique_id=1611579174 instance=ExtResource("6_h4vp2")]
 position = Vector2(-1538, -590)
 scale = Vector2(0.5, 0.5)
 
-[node name="Crate5" parent="Map/Level/props" instance=ExtResource("6_h4vp2")]
+[node name="Crate5" parent="Map/Level/props" unique_id=1463452889 instance=ExtResource("6_h4vp2")]
 position = Vector2(-57, -941)
 scale = Vector2(0.5, 0.5)
 
-[node name="Crate6" parent="Map/Level/props" instance=ExtResource("6_h4vp2")]
+[node name="Crate6" parent="Map/Level/props" unique_id=1757593890 instance=ExtResource("6_h4vp2")]
 position = Vector2(618, -1502)
 rotation = -1.5708
 scale = Vector2(0.5, 0.5)
 
-[node name="Crate7" parent="Map/Level/props" instance=ExtResource("6_h4vp2")]
+[node name="Crate7" parent="Map/Level/props" unique_id=1583429099 instance=ExtResource("6_h4vp2")]
 position = Vector2(374, -1110)
 rotation = -0.785398
 scale = Vector2(0.5, 0.5)
 
-[node name="Truck" parent="Map/Level/props" instance=ExtResource("7_mflnu")]
+[node name="Truck" parent="Map/Level/props" unique_id=2021933125 instance=ExtResource("7_mflnu")]
 position = Vector2(-1049, 458)
 scale = Vector2(2.5, 2.5)
 
-[node name="Crate8" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate8" parent="Map/Level/props" unique_id=1909243296 instance=ExtResource("5_2nbmb")]
 position = Vector2(821, -449)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate9" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate9" parent="Map/Level/props" unique_id=2118679239 instance=ExtResource("5_2nbmb")]
 position = Vector2(923, -537)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate10" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate10" parent="Map/Level/props" unique_id=2016216202 instance=ExtResource("5_2nbmb")]
 position = Vector2(923, -437)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate16" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate16" parent="Map/Level/props" unique_id=1081494421 instance=ExtResource("5_2nbmb")]
 position = Vector2(1384, -121)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate17" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate17" parent="Map/Level/props" unique_id=962571736 instance=ExtResource("5_2nbmb")]
 position = Vector2(1643, 787)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate18" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate18" parent="Map/Level/props" unique_id=1063488502 instance=ExtResource("5_2nbmb")]
 position = Vector2(1643, 687)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate19" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate19" parent="Map/Level/props" unique_id=1700855732 instance=ExtResource("5_2nbmb")]
 position = Vector2(1540, 787)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate20" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate20" parent="Map/Level/props" unique_id=1698145867 instance=ExtResource("5_2nbmb")]
 position = Vector2(788, 1090)
 scale = Vector2(0.19, 0.19)
 
-[node name="Crate21" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate21" parent="Map/Level/props" unique_id=885783461 instance=ExtResource("5_2nbmb")]
 position = Vector2(885, 1090)
 scale = Vector2(0.19, 0.19)
 
-[node name="Crate11" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate11" parent="Map/Level/props" unique_id=1412790885 instance=ExtResource("5_2nbmb")]
 position = Vector2(-455, -1169)
 scale = Vector2(0.19, 0.19)
 
-[node name="Crate12" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate12" parent="Map/Level/props" unique_id=1549439432 instance=ExtResource("5_2nbmb")]
 position = Vector2(-553, -1169)
 scale = Vector2(0.19, 0.19)
 
-[node name="Crate13" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate13" parent="Map/Level/props" unique_id=1099417413 instance=ExtResource("5_2nbmb")]
 position = Vector2(1924, -1039)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate14" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate14" parent="Map/Level/props" unique_id=1301958196 instance=ExtResource("5_2nbmb")]
 position = Vector2(1924, -938)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate15" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate15" parent="Map/Level/props" unique_id=744373714 instance=ExtResource("5_2nbmb")]
 position = Vector2(2027, -976)
 scale = Vector2(0.2, 0.2)
 
-[node name="Container3" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container3" parent="Map/Level/props" unique_id=488407206 instance=ExtResource("4_h4vp2")]
 position = Vector2(1324, -1043)
 rotation = 1.5708
 scale = Vector2(0.6, 0.6)
 
-[node name="Container5" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container5" parent="Map/Level/props" unique_id=1313674097 instance=ExtResource("4_h4vp2")]
 position = Vector2(2138, -666)
 rotation = 1.5708
 scale = Vector2(0.6, 0.6)
 
-[node name="Container4" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container4" parent="Map/Level/props" unique_id=2134850351 instance=ExtResource("4_h4vp2")]
 position = Vector2(1684, 88)
 scale = Vector2(0.6, 0.6)
 
-[node name="Crate22" parent="Map/Level/props" instance=ExtResource("6_h4vp2")]
+[node name="Crate22" parent="Map/Level/props" unique_id=1892479875 instance=ExtResource("6_h4vp2")]
 position = Vector2(1588, 999)
 rotation = 1.5708
 scale = Vector2(0.5, 0.5)
 
-[node name="Crate23" parent="Map/Level/props" instance=ExtResource("6_h4vp2")]
+[node name="Crate23" parent="Map/Level/props" unique_id=1726769903 instance=ExtResource("6_h4vp2")]
 position = Vector2(-1263, 1504)
 rotation = 1.5708
 scale = Vector2(0.4, 0.4)
 
-[node name="Crate24" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate24" parent="Map/Level/props" unique_id=2072817825 instance=ExtResource("5_2nbmb")]
 position = Vector2(-544, 1672)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate25" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate25" parent="Map/Level/props" unique_id=1584116519 instance=ExtResource("5_2nbmb")]
 position = Vector2(-644, 1572)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate26" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate26" parent="Map/Level/props" unique_id=1610810595 instance=ExtResource("5_2nbmb")]
 position = Vector2(-544, 1572)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate27" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate27" parent="Map/Level/props" unique_id=1415821303 instance=ExtResource("5_2nbmb")]
 position = Vector2(198, -245)
 scale = Vector2(0.2, 0.2)
 
-[node name="Crate28" parent="Map/Level/props" instance=ExtResource("5_2nbmb")]
+[node name="Crate28" parent="Map/Level/props" unique_id=799300390 instance=ExtResource("5_2nbmb")]
 position = Vector2(94, -245)
 scale = Vector2(0.2, 0.2)
 
-[node name="Car3" parent="Map/Level/props" instance=ExtResource("3_2nbmb")]
+[node name="Car3" parent="Map/Level/props" unique_id=1886873812 instance=ExtResource("3_2nbmb")]
 position = Vector2(1232, 490)
 scale = Vector2(0.4, 0.4)
 
-[node name="Car4" parent="Map/Level/props" instance=ExtResource("3_2nbmb")]
+[node name="Car4" parent="Map/Level/props" unique_id=604261329 instance=ExtResource("3_2nbmb")]
 position = Vector2(987, 488)
 scale = Vector2(0.4, 0.4)
 
-[node name="Car5" parent="Map/Level/props" instance=ExtResource("3_2nbmb")]
+[node name="Car5" parent="Map/Level/props" unique_id=997467799 instance=ExtResource("3_2nbmb")]
 position = Vector2(-316, -290)
 scale = Vector2(0.4, 0.4)
 
-[node name="Container6" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container6" parent="Map/Level/props" unique_id=1205500314 instance=ExtResource("4_h4vp2")]
 position = Vector2(-214, 1343)
 rotation = -0.785398
 scale = Vector2(0.6, 0.6)
 
-[node name="Container7" parent="Map/Level/props" instance=ExtResource("4_h4vp2")]
+[node name="Container7" parent="Map/Level/props" unique_id=783825142 instance=ExtResource("4_h4vp2")]
 position = Vector2(112, 433)
 rotation = 0.785398
 scale = Vector2(0.6, 0.6)
 
-[node name="SpawnPoints" type="Node2D" parent="Map"]
+[node name="SpawnPoints" type="Node2D" parent="Map" unique_id=966192770]
 
-[node name="sp_1" type="Node2D" parent="Map/SpawnPoints"]
+[node name="sp_1" type="Node2D" parent="Map/SpawnPoints" unique_id=287398613]
 position = Vector2(-542, -68)
 
-[node name="sp_2" type="Node2D" parent="Map/SpawnPoints"]
+[node name="sp_2" type="Node2D" parent="Map/SpawnPoints" unique_id=1558338208]
 position = Vector2(277, 8)
 
-[node name="sp_3" type="Node2D" parent="Map/SpawnPoints"]
+[node name="sp_3" type="Node2D" parent="Map/SpawnPoints" unique_id=252392505]
 position = Vector2(-124, 1424)
 
-[node name="sp_4" type="Node2D" parent="Map/SpawnPoints"]
+[node name="sp_4" type="Node2D" parent="Map/SpawnPoints" unique_id=1119090846]
 position = Vector2(618, 901)
 
-[node name="sp_5" type="Node2D" parent="Map/SpawnPoints"]
+[node name="sp_5" type="Node2D" parent="Map/SpawnPoints" unique_id=1327990475]
 position = Vector2(-1261, 1702)
 
-[node name="BG" type="AudioStreamPlayer" parent="Map"]
+[node name="BG" type="AudioStreamPlayer" parent="Map" unique_id=711162239]
 stream = ExtResource("8_mflnu")
 volume_db = -19.096
 
-[node name="SpaceStation" type="Sprite2D" parent="Map"]
+[node name="SpaceStation" type="Sprite2D" parent="Map" unique_id=1441462266]
+visible = false
 position = Vector2(-29, -158)
 scale = Vector2(5, 5)
 texture = ExtResource("11_h4vp2")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=83054388]
 
-[node name="FogOfWar" type="Sprite2D" parent="CanvasLayer"]
+[node name="FogOfWar" type="Sprite2D" parent="CanvasLayer" unique_id=1787375951]
 material = ExtResource("11_2nbmb")
 scale = Vector2(0.5, 0.5)
 texture = SubResource("ViewportTexture_k00yj")
 centered = false
 
-[node name="FOVDebugView" type="Sprite2D" parent="CanvasLayer"]
+[node name="FOVDebugView" type="Sprite2D" parent="CanvasLayer" unique_id=215542524]
 position = Vector2(0, 159)
 scale = Vector2(0.1, 0.1)
 texture = SubResource("ViewportTexture_rq4m3")
 centered = false
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1728044305]
 
-[node name="Control" type="Control" parent="UI"]
+[node name="Control" type="Control" parent="UI" unique_id=1307998354]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Control"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Control" unique_id=155331878]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="DeathmatchGameMode" parent="." node_paths=PackedStringArray("kd_stats_container", "map") instance=ExtResource("3_mflnu")]
+[node name="DeathmatchGameMode" parent="." unique_id=515007015 node_paths=PackedStringArray("kd_stats_container", "map") instance=ExtResource("3_mflnu")]
 player_scene = ExtResource("3_b3xq6")
 kd_stats_container = NodePath("../UI/Control/VBoxContainer")
 map = NodePath("../Map")
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=712465194]
 _spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
 spawn_path = NodePath("../Map")
 
-[node name="PickupSpawner" type="MultiplayerSpawner" parent="."]
+[node name="PickupSpawner" type="MultiplayerSpawner" parent="." unique_id=108037772]
 _spawnable_scenes = PackedStringArray("uid://djd5057n31hec", "uid://cy2enpfy31fdt")
 spawn_path = NodePath("../Map")
