@@ -26,6 +26,7 @@ var owner_peer_id: int = 1
 
 var interactables: Array[Interactable]
 var is_dead := false
+var is_local_player := false
 
 func has_authority(id):
 	return id == get_multiplayer_authority() or id == owner_peer_id
@@ -43,11 +44,14 @@ func _ready():
 		health_component.connect("die", _on_die)
 
 func setup_locals():
+	is_local_player = true
 	camera.enabled = true
 	camera.make_current()
 	audio_listner.make_current()
 	hud.visible = true
 	skeletal_character.material = null
+	if weapon_manager:
+		weapon_manager.apply_local_view()
 
 func get_speed():
 	var speed_multiplier = 1

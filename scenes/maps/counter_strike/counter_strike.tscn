@@ -12,7 +12,6 @@
 [ext_resource type="PackedScene" uid="uid://socdrphm8n2i" path="res://scenes/props/truck/truck.tscn" id="7_mflnu"]
 [ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
-[ext_resource type="Texture2D" uid="uid://3g6e4toaippt" path="res://space_station.jpg" id="11_h4vp2"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
 
 [sub_resource type="Gradient" id="Gradient_fxymx"]
@@ -1628,12 +1627,6 @@ position = Vector2(-1261, 1702)
 [node name="BG" type="AudioStreamPlayer" parent="Map" unique_id=711162239]
 stream = ExtResource("8_mflnu")
 volume_db = -19.096
-
-[node name="SpaceStation" type="Sprite2D" parent="Map" unique_id=1441462266]
-visible = false
-position = Vector2(-29, -158)
-scale = Vector2(5, 5)
-texture = ExtResource("11_h4vp2")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=83054388]
 

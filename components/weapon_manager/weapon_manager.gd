@@ -73,7 +73,16 @@ func equip_slot(slot: int):
 	current_weapon.connect("equip_action", _on_weapon_equip_action)
 	current_weapon.connect("shoot_action", _on_weapon_shoot_action)
 	current_weapon.connect("reload_action", _on_weapon_reload_action)
+	apply_local_view()
 	current_weapon.equip()
+
+func apply_local_view():
+	if not player or not player.is_local_player or not current_weapon:
+		return
+
+	var weapon_sprite := current_weapon.get_node_or_null("Sprite2D") as CanvasItem
+	if weapon_sprite:
+		weapon_sprite.material = null
 
 func switch_to_next_weapon():
 	var slots = [WeaponSlot.PRIMARY, WeaponSlot.SECONDARY, WeaponSlot.MELEE]
