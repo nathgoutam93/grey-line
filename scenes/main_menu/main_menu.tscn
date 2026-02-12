@@ -1,21 +1,21 @@
-[gd_scene load_steps=2 format=3 uid="uid://bglb3r2wa4lrs"]
+[gd_scene format=3 uid="uid://bglb3r2wa4lrs"]
 
 [ext_resource type="PackedScene" uid="uid://dnijy4kf8kg8f" path="res://components/multiplayer/multiplayer_manager.tscn" id="1_fsom3"]
 
-[node name="MainMenu" type="Node2D"]
+[node name="MainMenu" type="Node2D" unique_id=2110683862]
 
-[node name="Level" type="Node2D" parent="."]
+[node name="Level" type="Node2D" parent="." unique_id=1986656895]
 
-[node name="LevelSpawner" type="MultiplayerSpawner" parent="."]
+[node name="LevelSpawner" type="MultiplayerSpawner" parent="." unique_id=1202549893]
 _spawnable_scenes = PackedStringArray("uid://dyyv6g2s66fwh")
 spawn_path = NodePath("../Level")
 spawn_limit = 1
 
-[node name="MultiplayerManager" parent="." instance=ExtResource("1_fsom3")]
+[node name="MultiplayerManager" parent="." unique_id=652982671 instance=ExtResource("1_fsom3")]
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=454486105]
 
-[node name="Control" type="Control" parent="UI"]
+[node name="Control" type="Control" parent="UI" unique_id=571270165]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +23,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="join" type="Button" parent="UI/Control"]
+[node name="join" type="Button" parent="UI/Control" unique_id=631652916]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -39,7 +39,7 @@ grow_vertical = 2
 text = "Join Session
 "
 
-[node name="host" type="Button" parent="UI/Control"]
+[node name="host" type="Button" parent="UI/Control" unique_id=312586170]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

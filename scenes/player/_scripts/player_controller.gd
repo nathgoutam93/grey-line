@@ -25,6 +25,7 @@ class_name PlayerController
 var owner_peer_id: int = 1
 
 var interactables: Array[Interactable]
+var is_dead := false
 
 func has_authority(id):
 	return id == get_multiplayer_authority() or id == owner_peer_id
@@ -199,8 +200,22 @@ func _remote_pickup(pickup_path: NodePath):
 
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):
+	is_dead = true
 	hitbox.disabled = true
 	player_input.set_process(false)
+	set_process(false)
+	set_physics_process(false)
+	if movement_component:
+		movement_component.set_process(false)
+		movement_component.set_physics_process(false)
+		movement_component.is_moving = false
+	velocity = Vector2.ZERO
+	if footstep_player.playing:
+		footstep_player.stop()
+	if weapon_manager and weapon_manager.current_weapon:
+		if weapon_manager.current_weapon.has_method("force_interrupt"):
+			weapon_manager.current_weapon.force_interrupt()
+		weapon_manager.current_weapon.stop_fire()
 	hide()
 
 	var dead_scene = preload("res://scenes/player/player_dead.tscn").instantiate()
