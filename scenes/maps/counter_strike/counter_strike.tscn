@@ -8,7 +8,9 @@
 [ext_resource type="Script" uid="uid://cn0nbsf4jbfxl" path="res://components/fog_of_war_mask_view/fow_viewport_controller.gd" id="4_2nbmb"]
 [ext_resource type="PackedScene" uid="uid://b1wihqlewmt7" path="res://scenes/props/container/container.tscn" id="4_h4vp2"]
 [ext_resource type="PackedScene" uid="uid://drl1y3lb8tswy" path="res://scenes/props/crates/crate.tscn" id="5_2nbmb"]
+[ext_resource type="Texture2D" uid="uid://c38kcwf7fdr58" path="res://assets/sprites/a.png" id="5_mflnu"]
 [ext_resource type="PackedScene" uid="uid://bwtobiuw50ude" path="res://scenes/props/crates/sci_fi_crate.tscn" id="6_h4vp2"]
+[ext_resource type="Texture2D" uid="uid://n4gqipe6vkmb" path="res://assets/sprites/b.png" id="6_k00yj"]
 [ext_resource type="PackedScene" uid="uid://socdrphm8n2i" path="res://scenes/props/truck/truck.tscn" id="7_mflnu"]
 [ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
@@ -1104,6 +1106,18 @@ texture = ExtResource("11_mflnu")
 scale = Vector2(5, 5)
 texture = ExtResource("2_3iwqa")
 
+[node name="A" type="Sprite2D" parent="Map/Level" unique_id=1472400317]
+modulate = Color(1, 1, 1, 0.16862746)
+position = Vector2(-1637, -1430.0001)
+scale = Vector2(0.81293327, 0.747184)
+texture = ExtResource("5_mflnu")
+
+[node name="B" type="Sprite2D" parent="Map/Level" unique_id=682073922]
+modulate = Color(1, 1, 1, 0.23529412)
+position = Vector2(-343.00006, 1235)
+rotation = -2.0926497
+texture = ExtResource("6_k00yj")
+
 [node name="building_1" type="StaticBody2D" parent="Map/Level" unique_id=1663654942]
 position = Vector2(-493, 688)
 scale = Vector2(0.8, 0.8)
@@ -1610,19 +1624,22 @@ scale = Vector2(0.6, 0.6)
 [node name="SpawnPoints" type="Node2D" parent="Map" unique_id=966192770]
 
 [node name="sp_1" type="Node2D" parent="Map/SpawnPoints" unique_id=287398613]
-position = Vector2(-542, -68)
+position = Vector2(-876, 56)
 
 [node name="sp_2" type="Node2D" parent="Map/SpawnPoints" unique_id=1558338208]
-position = Vector2(277, 8)
+position = Vector2(-877, 218)
 
 [node name="sp_3" type="Node2D" parent="Map/SpawnPoints" unique_id=252392505]
-position = Vector2(-124, 1424)
+position = Vector2(-875, 391)
 
 [node name="sp_4" type="Node2D" parent="Map/SpawnPoints" unique_id=1119090846]
-position = Vector2(618, 901)
+position = Vector2(1974, -643)
 
 [node name="sp_5" type="Node2D" parent="Map/SpawnPoints" unique_id=1327990475]
-position = Vector2(-1261, 1702)
+position = Vector2(1980, -436)
+
+[node name="sp_6" type="Node2D" parent="Map/SpawnPoints" unique_id=993248298]
+position = Vector2(1975, -535)
 
 [node name="BG" type="AudioStreamPlayer" parent="Map" unique_id=711162239]
 stream = ExtResource("8_mflnu")
