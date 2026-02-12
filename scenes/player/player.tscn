@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
 [ext_resource type="Script" uid="uid://btw8i1fo6337l" path="res://scenes/player/_scripts/player_input.gd" id="13_gx1jg"]
 [ext_resource type="PackedScene" uid="uid://c6bubi5tu41qm" path="res://components/skeletal_mesh/character_skeletal.tscn" id="13_u5how"]
+[ext_resource type="Texture2D" uid="uid://bornhf45jlqk3" path="res://assets/sprites/hud/shape_1.png" id="14_kvlxm"]
 [ext_resource type="PackedScene" uid="uid://bdyn3d05wtfee" path="res://components/camera_shake/camera_shake.tscn" id="181_ooe3s"]
 [ext_resource type="PackedScene" uid="uid://dt3c830kdvwu6" path="res://components/sound_pool/sound_pool.tscn" id="187_ooe3s"]
 [ext_resource type="Script" uid="uid://mm1vvtgplxa3" path="res://scenes/player/_scripts/hud.gd" id="201_5o5no"]
@@ -106,7 +107,6 @@ volume_db = -20.0
 pool_size = 3
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1705118506]
-visible = false
 script = ExtResource("201_5o5no")
 
 [node name="Control" type="Control" parent="HUD" unique_id=94047674]
@@ -124,32 +124,79 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -79.0
-offset_right = 150.0
-offset_bottom = 1.0
+offset_left = -87.5
+offset_top = -23.0
+offset_right = 87.5
 grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 
-[node name="weapon_name" type="Label" parent="HUD/Control/HBoxContainer" unique_id=853865757]
+[node name="Panel" type="Control" parent="HUD/Control/HBoxContainer" unique_id=1790326385]
 layout_mode = 2
-text = "Weapon Name"
+size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control/HBoxContainer" unique_id=516350813]
+[node name="hp" type="Label" parent="HUD/Control/HBoxContainer/Panel" unique_id=548193126]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -20.0
+offset_right = -17.0
+offset_bottom = 3.0
+text = "100"
+
+[node name="TextureRect" type="TextureRect" parent="HUD/Control/HBoxContainer/Panel" unique_id=1782070255]
+layout_mode = 0
+offset_left = -60.0
+offset_top = -40.0
+offset_right = 40.0
+offset_bottom = 10.0
+texture = ExtResource("14_kvlxm")
+expand_mode = 1
+
+[node name="Panel3" type="Control" parent="HUD/Control/HBoxContainer" unique_id=1143777574]
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="ammo_left" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer" unique_id=1472230339]
+[node name="weapon_name" type="Label" parent="HUD/Control/HBoxContainer/Panel3" unique_id=853865757]
+layout_mode = 0
+offset_top = -20.0
+offset_right = 64.0
+offset_bottom = 3.0
+text = "Weapon"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Panel2" type="Control" parent="HUD/Control/HBoxContainer" unique_id=1184221924]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control/HBoxContainer/Panel2" unique_id=516350813]
+layout_mode = 0
+offset_left = 70.0
+offset_top = -20.0
+offset_right = 123.0
+offset_bottom = 3.0
+
+[node name="ammo_left" type="Label" parent="HUD/Control/HBoxContainer/Panel2/HBoxContainer" unique_id=1472230339]
 layout_mode = 2
 text = "12"
 
-[node name="Label" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer" unique_id=181973341]
+[node name="Label" type="Label" parent="HUD/Control/HBoxContainer/Panel2/HBoxContainer" unique_id=181973341]
 layout_mode = 2
 text = "/"
 
-[node name="mag_size" type="Label" parent="HUD/Control/HBoxContainer/HBoxContainer" unique_id=1309342777]
+[node name="mag_size" type="Label" parent="HUD/Control/HBoxContainer/Panel2/HBoxContainer" unique_id=1309342777]
 layout_mode = 2
 text = "36"
+
+[node name="TextureRect" type="TextureRect" parent="HUD/Control/HBoxContainer/Panel2" unique_id=836951792]
+layout_mode = 0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 120.0
+offset_bottom = 10.0
+texture = ExtResource("14_kvlxm")
+expand_mode = 1
+flip_h = true
 
 [node name="FpsCounter" parent="HUD/Control" unique_id=1412295425 instance=ExtResource("10_je7p5")]
 layout_mode = 0
