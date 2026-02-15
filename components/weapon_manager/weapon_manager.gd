@@ -102,6 +102,11 @@ func switch_to_previous_weapon():
 			equip_slot(prev_slot)
 			return
 
+func switch_to_slot(slot: int):
+	if slot == current_slot:
+		return
+	equip_slot(slot)
+
 func pickup_weapon(pickup: WeaponPickup):
 	if pickup == null or pickup.weapon_data == null:
 		return false

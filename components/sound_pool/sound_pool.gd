@@ -11,6 +11,7 @@ func _ready():
 	for i in pool_size:
 		var p = AudioStreamPlayer2D.new()
 		p.name = "Player%d" % i
+		p.max_distance = 500
 		add_child(p)
 		players.append(p)
 

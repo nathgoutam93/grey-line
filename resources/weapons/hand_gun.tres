@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://cop5hxltvyjt7"]
 
+[ext_resource type="Texture2D" uid="uid://cryn75s375yji" path="res://assets/sprites/icons/pistol_icon.png" id="1_44syu"]
 [ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_btwah"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_tir7r"]
 [ext_resource type="AudioStream" uid="uid://bitxru3wkgfat" path="res://assets/sounds/pistol-shot.mp3" id="2_e5hq6"]
@@ -27,6 +28,7 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 [resource]
 script = ExtResource("1_tir7r")
 name = "pistol"
+icon = ExtResource("1_44syu")
 damage = 50
 mag_size = 10
 reload_duration = 1.0

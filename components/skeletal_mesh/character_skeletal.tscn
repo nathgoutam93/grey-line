@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://c6bubi5tu41qm"]
+[gd_scene format=3 uid="uid://c6bubi5tu41qm"]
 
 [ext_resource type="Texture2D" uid="uid://dy52bv6pn8l3" path="res://assets/sprites/character/torso.png" id="1_1u1ua"]
 [ext_resource type="Script" uid="uid://d3xt03q27kmaq" path="res://components/skeletal_mesh/character_skeletal.gd" id="1_jtl51"]
@@ -2736,80 +2736,80 @@ _data = {
 &"pistol_shoot": SubResource("Animation_rhg0w")
 }
 
-[node name="PlayerMesh" type="Node2D" node_paths=PackedStringArray("hand_socket", "anim_player")]
+[node name="PlayerMesh" type="Node2D" unique_id=1121639645 node_paths=PackedStringArray("hand_socket", "anim_player")]
 material = SubResource("ShaderMaterial_rhg0w")
 script = ExtResource("1_jtl51")
 hand_socket = NodePath("Skeleton2D/torso/arm_right/forearm_right/fist_right/hand_socket")
 anim_player = NodePath("AnimationPlayer")
 
-[node name="Skeleton2D" type="Skeleton2D" parent="."]
+[node name="Skeleton2D" type="Skeleton2D" parent="." unique_id=1901747054]
 
-[node name="torso" type="Bone2D" parent="Skeleton2D"]
+[node name="torso" type="Bone2D" parent="Skeleton2D" unique_id=22875114]
 position = Vector2(0, 7)
 rotation = -0.269067
 scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 122, 210)
 
-[node name="head" type="Bone2D" parent="Skeleton2D/torso"]
+[node name="head" type="Bone2D" parent="Skeleton2D/torso" unique_id=507333425]
 position = Vector2(16.0553, -1.79664)
 rotation = 0.226602
 rest = Transform2D(1, 0, 0, 1, 25, 0)
 
-[node name="arm_left" type="Bone2D" parent="Skeleton2D/torso"]
+[node name="arm_left" type="Bone2D" parent="Skeleton2D/torso" unique_id=764856452]
 position = Vector2(-6.78629, -50.6256)
 rotation = 0.0301888
 scale = Vector2(0.999995, 0.999995)
 rest = Transform2D(1, 0, 0, 1, -1, -56)
 
-[node name="forearm_left" type="Bone2D" parent="Skeleton2D/torso/arm_left"]
+[node name="forearm_left" type="Bone2D" parent="Skeleton2D/torso/arm_left" unique_id=96970761]
 position = Vector2(58.3316, -19.7591)
 rotation = 0.964395
-scale = Vector2(0.999997, 0.999997)
+scale = Vector2(0.9999969, 0.9999969)
 rest = Transform2D(1, 0, 0, 1, 66, -15)
 
-[node name="fist_left" type="Bone2D" parent="Skeleton2D/torso/arm_left/forearm_left"]
+[node name="fist_left" type="Bone2D" parent="Skeleton2D/torso/arm_left/forearm_left" unique_id=1615428521]
 position = Vector2(38.6534, 14.4441)
 rotation = 0.274696
-scale = Vector2(0.999995, 0.999995)
+scale = Vector2(0.9999949, 0.9999949)
 rest = Transform2D(1, 0, 0, 1, 52, 12)
 
-[node name="arm_right" type="Bone2D" parent="Skeleton2D/torso"]
+[node name="arm_right" type="Bone2D" parent="Skeleton2D/torso" unique_id=78460221]
 position = Vector2(4.50971, 52.694)
 rotation = 0.0667697
 scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 0, 52)
 
-[node name="forearm_right" type="Bone2D" parent="Skeleton2D/torso/arm_right"]
+[node name="forearm_right" type="Bone2D" parent="Skeleton2D/torso/arm_right" unique_id=887229596]
 position = Vector2(63.9411, 21.5298)
 rotation = -0.736883
 scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 74, 20)
 
-[node name="fist_right" type="Bone2D" parent="Skeleton2D/torso/arm_right/forearm_right"]
+[node name="fist_right" type="Bone2D" parent="Skeleton2D/torso/arm_right/forearm_right" unique_id=730953089]
 position = Vector2(43.5607, -6.24307)
 rotation = -0.460999
 scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 46, -8)
 
-[node name="hand_socket" type="Node2D" parent="Skeleton2D/torso/arm_right/forearm_right/fist_right"]
+[node name="hand_socket" type="Node2D" parent="Skeleton2D/torso/arm_right/forearm_right/fist_right" unique_id=462497711]
 position = Vector2(19.5678, 16.1525)
 rotation = 1.46398
 
-[node name="TEST_WEAPON_SPRITE" type="Sprite2D" parent="Skeleton2D/torso/arm_right/forearm_right/fist_right/hand_socket"]
+[node name="TEST_WEAPON_SPRITE" type="Sprite2D" parent="Skeleton2D/torso/arm_right/forearm_right/fist_right/hand_socket" unique_id=1551115955]
 visible = false
 z_index = 1
 texture = ExtResource("2_y6eb8")
 
-[node name="backpack" type="Bone2D" parent="Skeleton2D/torso"]
+[node name="backpack" type="Bone2D" parent="Skeleton2D/torso" unique_id=1112695709]
 position = Vector2(-59, 0)
 rotation = 0.0393244
-scale = Vector2(0.999981, 0.999981)
+scale = Vector2(0.99998087, 0.99998087)
 rest = Transform2D(1, 0, 0, 1, -59, 0)
 
-[node name="polygons" type="Node2D" parent="."]
+[node name="polygons" type="Node2D" parent="." unique_id=2047498411]
 use_parent_material = true
 
-[node name="torso" type="Polygon2D" parent="polygons"]
+[node name="torso" type="Polygon2D" parent="polygons" unique_id=1349814358]
 use_parent_material = true
 position = Vector2(129, 210)
 offset = Vector2(-47, -100)
@@ -2819,7 +2819,7 @@ polygon = PackedVector2Array(0.346161, 56.141, 0.084137, 142.871, 23.6663, 176.4
 uv = PackedVector2Array(0.346161, 56.141, 0.084137, 142.871, 23.6663, 176.41, 72.4028, 176.41, 88.3862, 137.63, 87.6002, 56.403, 72.4028, 16.3134, 23.9283, 15.7893)
 bones = ["torso", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0.84, 0.84, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0.84, 0.84, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)]
 
-[node name="backpack" type="Polygon2D" parent="polygons"]
+[node name="backpack" type="Polygon2D" parent="polygons" unique_id=1610413840]
 visible = false
 use_parent_material = true
 position = Vector2(81, 206)
@@ -2830,7 +2830,7 @@ polygon = PackedVector2Array(16.6956, 25.6201, 16.4206, 104.295, 40.3533, 121.35
 uv = PackedVector2Array(16.6956, 25.6201, 16.4206, 104.295, 40.3533, 121.351, 72.2636, 121.626, 143.512, 114.199, 147.638, 82.5635, 87.9437, 78.1621, 87.9437, 53.129, 149.839, 41.8503, 143.237, 13.2411, 59.3344, 4.43825, 35.9519, 11.0404)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)]
 
-[node name="arm_l" type="Polygon2D" parent="polygons"]
+[node name="arm_l" type="Polygon2D" parent="polygons" unique_id=1330971372]
 use_parent_material = true
 position = Vector2(158, 142)
 offset = Vector2(-42, -36)
@@ -2840,7 +2840,7 @@ polygon = PackedVector2Array(11.2247, 21.8316, 40.1972, 7.70299, 79.3638, 9.4914
 uv = PackedVector2Array(11.2247, 21.8316, 40.1972, 7.70299, 79.3638, 9.49141, 92.2405, 44.1869, 31.7916, 64.9327, 6.93246, 47.9426)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(1, 1, 1, 1, 1, 1), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0.42, 1, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0)]
 
-[node name="hand_fist_l" type="Polygon2D" parent="polygons"]
+[node name="hand_fist_l" type="Polygon2D" parent="polygons" unique_id=1579161584]
 use_parent_material = true
 position = Vector2(248, 141)
 offset = Vector2(-18, -33)
@@ -2850,7 +2850,7 @@ polygon = PackedVector2Array(4.59157, 20.7326, 32.4779, 15.7566, 51.5526, 22.494
 uv = PackedVector2Array(4.59157, 20.7326, 32.4779, 15.7566, 51.5526, 22.4949, 49.5829, 50.796, 19.7269, 55.2536, 2.41457, 35.7643)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(1, 1, 1, 1, 1, 1), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0)]
 
-[node name="forearm_l" type="Polygon2D" parent="polygons"]
+[node name="forearm_l" type="Polygon2D" parent="polygons" unique_id=546548725]
 use_parent_material = true
 position = Vector2(201, 141)
 offset = Vector2(-14, -31)
@@ -2860,7 +2860,7 @@ polygon = PackedVector2Array(1.16661, 10.5085, -2.785, 46.073, 50.5617, 51.5065,
 uv = PackedVector2Array(1.93666, 11.792, -2.01495, 47.3564, 51.3318, 52.7899, 64.9977, 22.4942, 23.9998, 8.82824)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(1, 1, 1, 1, 1), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 1, 1, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0)]
 
-[node name="arm_r" type="Polygon2D" parent="polygons"]
+[node name="arm_r" type="Polygon2D" parent="polygons" unique_id=1195647508]
 use_parent_material = true
 position = Vector2(150, 271)
 offset = Vector2(-33, 39)
@@ -2871,7 +2871,7 @@ polygon = PackedVector2Array(5.7283, -23.0958, 48.4223, -8.08946, 83.7188, -12.9
 uv = PackedVector2Array(5.7283, -23.0958, 48.4223, -8.08946, 83.7188, -12.9507, 91.539, -43.8087, 30.0343, -64.3103, 7.41915, -52.897)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(1, 1, 1, 1, 1, 1), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0.42, 0.42, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0)]
 
-[node name="hand_r_hold_knife" type="Polygon2D" parent="polygons"]
+[node name="hand_r_hold_knife" type="Polygon2D" parent="polygons" unique_id=885000823]
 z_index = 2
 use_parent_material = true
 position = Vector2(251, 278)
@@ -2883,7 +2883,7 @@ polygon = PackedVector2Array(4.75394, -38.5458, 22.3115, -54.8493, 43.492, -53.1
 uv = PackedVector2Array(4.75394, -38.5458, 22.3115, -54.8493, 43.492, -53.1771, 53.9429, -38.9639, 48.7871, -18.8981, 14.0901, -16.2505, 3.77853, -22.3818)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0)]
 
-[node name="hand_r_hold_gun" type="Polygon2D" parent="polygons"]
+[node name="hand_r_hold_gun" type="Polygon2D" parent="polygons" unique_id=2017191427]
 use_parent_material = true
 position = Vector2(250, 277)
 offset = Vector2(-19, 31)
@@ -2894,7 +2894,7 @@ polygon = PackedVector2Array(4.75394, -38.5458, 22.3115, -54.8493, 43.492, -53.1
 uv = PackedVector2Array(4.75394, -38.5458, 22.3115, -54.8493, 43.492, -53.1771, 53.9429, -38.9639, 48.7871, -18.8981, 14.0901, -16.2505, 3.77853, -22.3818)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0)]
 
-[node name="forearm_r" type="Polygon2D" parent="polygons"]
+[node name="forearm_r" type="Polygon2D" parent="polygons" unique_id=389483756]
 z_index = 2
 use_parent_material = true
 position = Vector2(209, 281)
@@ -2906,7 +2906,7 @@ polygon = PackedVector2Array(-1.85281, -46.1277, 54.1125, -52.2719, 64.3973, -24
 uv = PackedVector2Array(-1.85281, -46.1277, 54.1125, -52.2719, 64.3973, -24.4896, 21.9224, -10.732, -4.25704, -15.1398)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(1, 1, 1, 1, 1), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0.84, 0.84, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0)]
 
-[node name="head" type="Polygon2D" parent="polygons"]
+[node name="head" type="Polygon2D" parent="polygons" unique_id=1598254580]
 z_index = 6
 use_parent_material = true
 position = Vector2(131, 206)
@@ -2918,9 +2918,7 @@ polygon = PackedVector2Array(0.166588, 28.3005, -0.323914, 67.05, 23.7106, 80.29
 uv = PackedVector2Array(0.166588, 28.3005, -0.323914, 67.05, 23.7106, 80.2935, 56.0836, 80.13, 94.3425, 67.2135, 95.16, 27.156, 54.7756, 16.2015, 23.2201, 15.711)
 bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)]
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_jtl51")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=442184521]
+libraries/ = SubResource("AnimationLibrary_jtl51")
 
-[node name="VisionResponsive" parent="." instance=ExtResource("11_q5eky")]
+[node name="VisionResponsive" parent="." unique_id=1122948380 instance=ExtResource("11_q5eky")]

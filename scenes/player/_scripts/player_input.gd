@@ -40,6 +40,15 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("weapon_switch"):
 		player.request_switch_weapon_next.rpc_id(1)
 
+	if Input.is_action_just_pressed("primary"):
+		player.request_switch_weapon_slot.rpc_id(1, WeaponManager.WeaponSlot.PRIMARY)
+
+	if Input.is_action_just_pressed("secondary"):
+		player.request_switch_weapon_slot.rpc_id(1, WeaponManager.WeaponSlot.SECONDARY)
+
+	if Input.is_action_just_pressed("malee"):
+		player.request_switch_weapon_slot.rpc_id(1, WeaponManager.WeaponSlot.MELEE)
+
 	if Input.is_action_just_pressed("drop_weapon"):
 		player.request_drop_weapon.rpc_id(1)
 

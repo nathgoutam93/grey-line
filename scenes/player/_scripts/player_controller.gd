@@ -8,13 +8,13 @@ class_name PlayerController
 @export_group("Components")
 @export var hitbox: CollisionShape2D
 @export var skeletal_character: PlayerMesh
+@export var player_input: PlayerInput
 @export var movement_component: MovementCompoent
 @export var health_component: HealthComponent
 @export var weapon_manager: WeaponManager
 @export var sound_pool: SoundPool
 @export var footstep_player: AudioStreamPlayer2D
 @export var camera_shake: CameraShake
-@export var player_input: PlayerInput
 
 @export var hud: CanvasLayer
 @export var camera: Camera2D
@@ -148,6 +148,13 @@ func request_switch_weapon_next():
 	_remote_switch_weapon.rpc()
 
 @rpc("any_peer", "call_local")
+func request_switch_weapon_slot(slot: int):
+	if not _is_valid_owner_request():
+		return
+
+	_remote_switch_weapon_slot.rpc(slot)
+
+@rpc("any_peer", "call_local")
 func request_drop_weapon():
 	if not _is_valid_owner_request():
 		return
@@ -162,11 +169,11 @@ func request_interact():
 	var target_path: NodePath = NodePath("")
 	if interactables.size() > 0 and interactables[0]:
 		target_path = interactables[0].get_path()
-	remote_interact.rpc(target_path)
+	_remote_interact.rpc(target_path)
 
 
 @rpc("authority", "call_local")
-func remote_interact(target_path: NodePath):
+func _remote_interact(target_path: NodePath):
 	if target_path == NodePath(""):
 		return
 	var interactable = get_node_or_null(target_path)
@@ -193,14 +200,44 @@ func _remote_switch_weapon():
 	weapon_manager.switch_to_next_weapon()
 
 @rpc("authority", "call_local", "reliable")
+func _remote_switch_weapon_slot(slot: int):
+	weapon_manager.switch_to_slot(slot)
+
+@rpc("authority", "call_local", "reliable")
 func _remote_drop_weapon():
 	weapon_manager.drop_weapon()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_pickup(pickup_path: NodePath):
-	var weapon_pickup = get_node(pickup_path)
-	if (weapon_manager.pickup_weapon(weapon_pickup)):
+	var weapon_pickup := _resolve_pickup_node(pickup_path)
+	if weapon_pickup == null:
+		push_warning("Pickup node not found for path: %s" % [String(pickup_path)])
+		return
+
+	if weapon_manager.pickup_weapon(weapon_pickup):
 		weapon_pickup.queue_free()
+
+func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
+	var scene_root := get_tree().current_scene
+	if scene_root:
+		var map_node := scene_root.find_child("Map", true, false)
+		if map_node:
+			var from_map := map_node.get_node_or_null(pickup_path) as WeaponPickup
+			if from_map:
+				return from_map
+
+	var from_root := get_tree().root.get_node_or_null(pickup_path) as WeaponPickup
+	if from_root:
+		return from_root
+
+	var pickup_name := String(pickup_path).get_file()
+	if pickup_name == "":
+		return null
+
+	if scene_root:
+		return scene_root.find_child(pickup_name, true, false) as WeaponPickup
+
+	return null
 
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):

@@ -56,7 +56,15 @@ func can_auto_pickup(player):
 func pickup_weapon(player):
 	if not multiplayer.is_server():
 		return
-	player._remote_pickup.rpc(get_path())
+
+	var pickup_path: NodePath = get_path()
+	var scene_root := get_tree().current_scene
+	if scene_root:
+		var map_node := scene_root.find_child("Map", true, false)
+		if map_node and map_node.is_ancestor_of(self):
+			pickup_path = map_node.get_path_to(self)
+
+	player._remote_pickup.rpc(pickup_path)
 
 func show_message(text):
 	print(text)

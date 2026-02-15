@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_0lkds"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_sbf7q"]
+[ext_resource type="Texture2D" uid="uid://cpt33xvq86am3" path="res://assets/sprites/icons/rifle_icon.png" id="1_wwuao"]
 [ext_resource type="AudioStream" uid="uid://cdjgbvnegkgkh" path="res://assets/sounds/rifle-shoot.mp3" id="2_p2jh4"]
 [ext_resource type="PackedScene" uid="uid://bt7txyxfcccff" path="res://scenes/weapon_pickup/rifle_pickup.tscn" id="3_ys2y7"]
 [ext_resource type="AudioStream" uid="uid://b101cpd0hbkcx" path="res://assets/sounds/rifle-reload.mp3" id="4_dggia"]
@@ -27,8 +28,9 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 [resource]
 script = ExtResource("1_sbf7q")
 name = "rifle"
+icon = ExtResource("1_wwuao")
 weapon_type = 0
-damage = 25
+damage = 20
 mag_size = 25
 reload_duration = 1.4
 equip_duration = 0.5

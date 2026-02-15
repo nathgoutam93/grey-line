@@ -8,15 +8,12 @@
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
 [ext_resource type="PackedScene" uid="uid://4isysde6lgiy" path="res://components/weapon_manager/weapon_manager.tscn" id="5_gx1jg"]
 [ext_resource type="Resource" uid="uid://bc18r0r4gbkx3" path="res://resources/weapons/rifle.tres" id="9_myrg7"]
-[ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="10_h17s1"]
-[ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="10_je7p5"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
 [ext_resource type="Script" uid="uid://btw8i1fo6337l" path="res://scenes/player/_scripts/player_input.gd" id="13_gx1jg"]
 [ext_resource type="PackedScene" uid="uid://c6bubi5tu41qm" path="res://components/skeletal_mesh/character_skeletal.tscn" id="13_u5how"]
-[ext_resource type="Texture2D" uid="uid://da5pqg6ohyfqs" path="res://assets/sprites/hud/shape_1 (Custom).png" id="14_kvlxm"]
+[ext_resource type="PackedScene" uid="uid://c13vwx621xxak" path="res://scenes/player/player_hud.tscn" id="13_ugbui"]
 [ext_resource type="PackedScene" uid="uid://bdyn3d05wtfee" path="res://components/camera_shake/camera_shake.tscn" id="181_ooe3s"]
 [ext_resource type="PackedScene" uid="uid://dt3c830kdvwu6" path="res://components/sound_pool/sound_pool.tscn" id="187_ooe3s"]
-[ext_resource type="Script" uid="uid://mm1vvtgplxa3" path="res://scenes/player/_scripts/hud.gd" id="201_5o5no"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_gx1jg"]
 light_mode = 2
@@ -24,9 +21,6 @@ light_mode = 2
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5i508"]
 radius = 18.0
 height = 54.0
-
-[sub_resource type="LabelSettings" id="LabelSettings_je7p5"]
-font_size = 8
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fm80t"]
 properties/0/path = NodePath(".:input_vector")
@@ -50,22 +44,23 @@ properties/3/path = NodePath("WeaponManager:current_slot")
 properties/3/spawn = true
 properties/3/replication_mode = 2
 
-[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("hitbox", "skeletal_character", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "player_input", "hud", "camera", "audio_listner") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("hitbox", "skeletal_character", "player_input", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
 collision_layer = 2
+collision_mask = 3
 motion_mode = 1
 script = ExtResource("1_cedje")
 speed = 250.0
 hitbox = NodePath("HitBox")
 skeletal_character = NodePath("PlayerMesh")
+player_input = NodePath("PlayerInput")
 movement_component = NodePath("MovementComponent")
 health_component = NodePath("Health")
 weapon_manager = NodePath("WeaponManager")
 sound_pool = NodePath("SoundPool")
 footstep_player = NodePath("Footsteps")
 camera_shake = NodePath("Camera2D/CameraShake")
-player_input = NodePath("PlayerInput")
 hud = NodePath("HUD")
 camera = NodePath("Camera2D")
 audio_listner = NodePath("Camera2D/AudioListener2D")
@@ -77,7 +72,6 @@ shape = SubResource("CapsuleShape2D_5i508")
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2034022886]
 enabled = false
 zoom = Vector2(0.5, 0.5)
-rotation_smoothing_enabled = true
 
 [node name="CameraShake" parent="Camera2D" unique_id=1871293477 instance=ExtResource("181_ooe3s")]
 
@@ -102,112 +96,12 @@ player_input = NodePath("../PlayerInput")
 [node name="Footsteps" type="AudioStreamPlayer2D" parent="." unique_id=1931870781]
 stream = ExtResource("3_m8vw7")
 volume_db = -20.0
+max_distance = 500.0
 
 [node name="SoundPool" parent="." unique_id=351196777 instance=ExtResource("187_ooe3s")]
 pool_size = 3
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=1705118506]
-script = ExtResource("201_5o5no")
-
-[node name="Control" type="Control" parent="HUD" unique_id=94047674]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control" unique_id=1226619341]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -87.5
-offset_top = -23.0
-offset_right = 87.5
-grow_horizontal = 2
-grow_vertical = 0
-alignment = 1
-
-[node name="Panel" type="Control" parent="HUD/Control/HBoxContainer" unique_id=1790326385]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="hp" type="Label" parent="HUD/Control/HBoxContainer/Panel" unique_id=548193126]
-layout_mode = 0
-offset_left = -45.0
-offset_top = -20.0
-offset_right = -17.0
-offset_bottom = 3.0
-text = "100"
-
-[node name="TextureRect" type="TextureRect" parent="HUD/Control/HBoxContainer/Panel" unique_id=1782070255]
-layout_mode = 0
-offset_left = -60.0
-offset_top = -40.0
-offset_right = 40.0
-offset_bottom = 10.0
-texture = ExtResource("14_kvlxm")
-expand_mode = 1
-
-[node name="Panel3" type="Control" parent="HUD/Control/HBoxContainer" unique_id=1143777574]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="weapon_name" type="Label" parent="HUD/Control/HBoxContainer/Panel3" unique_id=853865757]
-layout_mode = 0
-offset_top = -20.0
-offset_right = 64.0
-offset_bottom = 3.0
-text = "Weapon"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Panel2" type="Control" parent="HUD/Control/HBoxContainer" unique_id=1184221924]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Control/HBoxContainer/Panel2" unique_id=516350813]
-layout_mode = 0
-offset_left = 70.0
-offset_top = -20.0
-offset_right = 123.0
-offset_bottom = 3.0
-
-[node name="ammo_left" type="Label" parent="HUD/Control/HBoxContainer/Panel2/HBoxContainer" unique_id=1472230339]
-layout_mode = 2
-text = "12"
-
-[node name="Label" type="Label" parent="HUD/Control/HBoxContainer/Panel2/HBoxContainer" unique_id=181973341]
-layout_mode = 2
-text = "/"
-
-[node name="mag_size" type="Label" parent="HUD/Control/HBoxContainer/Panel2/HBoxContainer" unique_id=1309342777]
-layout_mode = 2
-text = "36"
-
-[node name="TextureRect" type="TextureRect" parent="HUD/Control/HBoxContainer/Panel2" unique_id=836951792]
-layout_mode = 0
-offset_left = 20.0
-offset_top = -40.0
-offset_right = 120.0
-offset_bottom = 10.0
-texture = ExtResource("14_kvlxm")
-expand_mode = 1
-flip_h = true
-
-[node name="FpsCounter" parent="HUD/Control" unique_id=1412295425 instance=ExtResource("10_je7p5")]
-layout_mode = 0
-offset_left = 7.0
-offset_top = 6.0
-offset_right = 61.0
-offset_bottom = 29.0
-text = "FPS: 60"
-label_settings = SubResource("LabelSettings_je7p5")
-
-[node name="crosshair" parent="HUD" unique_id=560736327 instance=ExtResource("10_h17s1")]
+[node name="HUD" parent="." unique_id=1187812725 instance=ExtResource("13_ugbui")]
 
 [node name="PlayerInput" type="MultiplayerSynchronizer" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
 root_path = NodePath(".")

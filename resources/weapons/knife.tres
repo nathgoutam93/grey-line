@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://hai2ryfmmjjp"]
 
+[ext_resource type="Texture2D" uid="uid://o3djqpfqvq8w" path="res://assets/sprites/knife.png" id="1_dcolt"]
 [ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_g2qi5"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_taet3"]
 [ext_resource type="AudioStream" uid="uid://dihdrxvq6vygt" path="res://assets/sounds/knife-attack.mp3" id="2_wupm6"]
@@ -25,8 +26,10 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 [resource]
 script = ExtResource("1_taet3")
 name = "knife"
+icon = ExtResource("1_dcolt")
 weapon_type = 2
 damage = 100
+d_range = 30.0
 uses_ammo = false
 is_reloadable = false
 reload_duration = 0.0

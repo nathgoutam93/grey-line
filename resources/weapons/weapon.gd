@@ -4,6 +4,7 @@ class_name Weapon
 enum WeaponType {PRIMARY, SECONDARY, MELEE}
 
 @export var name: String
+@export var icon: Texture2D
 
 @export var weapon_type: WeaponType = WeaponType.SECONDARY
 
