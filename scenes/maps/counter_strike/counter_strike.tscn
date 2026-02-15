@@ -16,6 +16,7 @@
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
 [ext_resource type="PackedScene" uid="uid://bo0618n7gadoc" path="res://scenes/ui/deathmatch/leaderboard.tscn" id="14_k00yj"]
+[ext_resource type="Texture2D" uid="uid://dyvurudpwy4vt" path="res://assets/sprites/hud/shape_2.png" id="15_kifs8"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mflnu"]
 polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
@@ -1946,13 +1947,43 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Leaderboard" parent="UI/Control" unique_id=1482750033 instance=ExtResource("14_k00yj")]
-layout_mode = 0
-anchors_preset = 0
+layout_mode = 1
+offset_left = -160.0
+offset_right = 160.0
 
-[node name="DeathmatchGameMode" parent="." unique_id=515007015 node_paths=PackedStringArray("leaderboard", "map") instance=ExtResource("3_mflnu")]
+[node name="MatchTimerLabel" type="Label" parent="UI/Control" unique_id=214325901]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -52.0
+offset_right = 52.0
+offset_bottom = 34.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "10:00"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="UI/Control" unique_id=489517290]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -102.0
+offset_top = 1.0
+offset_right = 98.0
+offset_bottom = 41.0
+grow_horizontal = 2
+texture = ExtResource("15_kifs8")
+expand_mode = 1
+
+[node name="DeathmatchGameMode" parent="." unique_id=515007015 node_paths=PackedStringArray("leaderboard", "map", "match_timer_label") instance=ExtResource("3_mflnu")]
 player_scene = ExtResource("3_b3xq6")
-leaderboard = NodePath("")
+leaderboard = NodePath("../UI/Control/Leaderboard")
 map = NodePath("../Map")
+match_timer_label = NodePath("../UI/Control/MatchTimerLabel")
+match_duration_seconds = 300
+score_limit = 10
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=712465194]
 _spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")

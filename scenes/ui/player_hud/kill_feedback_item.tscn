@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[node name="KillFeedbackItem" type="Label"]
+layout_mode = 0
+offset_right = 68.0
+offset_bottom = 16.0
+text = "KILL +1"
+horizontal_alignment = 1

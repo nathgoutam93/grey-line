@@ -1,6 +1,8 @@
 extends CanvasLayer
 
 @onready var _player: PlayerController = get_parent()
+@onready var kill_feedback_container: VBoxContainer = get_node("KillFeedbackLayer/KillFeedbackContainer")
+@onready var kill_feed_container: VBoxContainer = get_node("KillFeedLayer/KillFeedContainer")
 
 @onready var health_label: Label = get_node("Control/HBoxContainer/Panel/hp")
 @onready var ammo_panel: Control = get_node("Control/HBoxContainer/Panel2/HBoxContainer")
@@ -14,6 +16,9 @@ const HUD_WEAPON_SLOTS := [
 	WeaponManager.WeaponSlot.SECONDARY,
 	WeaponManager.WeaponSlot.MELEE
 ]
+
+@export var kill_feedback_item_scene: PackedScene
+@export var kill_feed_item_scene: PackedScene
 
 var _slot_nodes_by_slot := {}
 
@@ -92,3 +97,82 @@ func _process(_delta: float) -> void:
 		return
 	ammo_left_label.text = str(_player.weapon_manager.get_ammo_in_mag())
 	mag_size_label.text = str(_player.weapon_manager.get_ammo_reserve())
+
+func show_kill_feedback() -> void:
+	if not visible:
+		return
+
+	var feedback := _spawn_kill_feedback_item()
+	if feedback == null:
+		return
+
+	feedback.modulate = Color(1.0, 0.35, 0.35, 1.0)
+	feedback.scale = Vector2(0.9, 0.9)
+
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(feedback, "position:y", feedback.position.y - 12.0, 0.35)
+	tween.tween_property(feedback, "modulate:a", 0.0, 0.35).set_delay(0.2)
+	tween.tween_property(feedback, "scale", Vector2(1.0, 1.0), 0.15)
+	tween.set_parallel(false)
+	tween.tween_callback(feedback.queue_free)
+
+func _spawn_kill_feedback_item() -> Control:
+	var item: Control = null
+
+	if kill_feedback_item_scene:
+		item = kill_feedback_item_scene.instantiate() as Control
+
+	if item == null:
+		var fallback := Label.new()
+		fallback.text = "KILL +1"
+		fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		item = fallback
+
+	kill_feedback_container.add_child(item)
+	return item
+
+func show_kill_feed_toast(killer_name: String, victim_name: String) -> void:
+	if not visible:
+		return
+
+	var item := _spawn_kill_feed_item()
+	if item == null:
+		return
+
+	var text := "%s killed %s" % [killer_name, victim_name]
+	if item.has_node("MarginContainer/Text"):
+		var label := item.get_node("MarginContainer/Text") as Label
+		if label:
+			label.text = text
+	elif item is Label:
+		(item as Label).text = text
+
+	item.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	var show_tween := create_tween()
+	show_tween.tween_property(item, "modulate:a", 1.0, 0.16)
+
+	var expire_tween := create_tween()
+	expire_tween.tween_interval(2.8)
+	expire_tween.tween_property(item, "modulate:a", 0.0, 0.25)
+	expire_tween.tween_callback(item.queue_free)
+
+func _spawn_kill_feed_item() -> Control:
+	var item: Control = null
+
+	if kill_feed_item_scene:
+		item = kill_feed_item_scene.instantiate() as Control
+
+	if item == null:
+		var fallback := Label.new()
+		fallback.text = "A killed B"
+		item = fallback
+
+	kill_feed_container.add_child(item)
+
+	while kill_feed_container.get_child_count() > 5:
+		var oldest := kill_feed_container.get_child(0)
+		if oldest:
+			oldest.queue_free()
+
+	return item

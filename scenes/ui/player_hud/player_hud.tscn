@@ -5,12 +5,16 @@
 [ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="3_2a5y5"]
 [ext_resource type="PackedScene" uid="uid://blpgeyjx58w50" path="res://scenes/ui/weapon_slot/weapon_slot.tscn" id="3_m5iw4"]
 [ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="4_cqj5h"]
+[ext_resource type="PackedScene" path="res://scenes/ui/player_hud/kill_feedback_item.tscn" id="5_7wk8i"]
+[ext_resource type="PackedScene" path="res://scenes/ui/player_hud/kill_feed_item.tscn" id="6_i4s2j"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_je7p5"]
 font_size = 8
 
 [node name="HUD" type="CanvasLayer" unique_id=1187812725]
 script = ExtResource("1_sqnk8")
+kill_feedback_item_scene = ExtResource("5_7wk8i")
+kill_feed_item_scene = ExtResource("6_i4s2j")
 
 [node name="Control" type="Control" parent="." unique_id=1600243029]
 layout_mode = 3
@@ -125,3 +129,45 @@ text = "FPS: 60"
 label_settings = SubResource("LabelSettings_je7p5")
 
 [node name="crosshair" parent="." unique_id=1829500786 instance=ExtResource("4_cqj5h")]
+
+[node name="KillFeedbackLayer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="KillFeedbackContainer" type="VBoxContainer" parent="KillFeedbackLayer"]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 80.0
+offset_right = 80.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_constants/separation = 4
+
+[node name="KillFeedLayer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="KillFeedContainer" type="VBoxContainer" parent="KillFeedLayer"]
+layout_mode = 1
+anchors_preset = 9
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 40.0
+offset_right = -16.0
+offset_bottom = 220.0
+grow_horizontal = 0
+theme_override_constants/separation = 4
