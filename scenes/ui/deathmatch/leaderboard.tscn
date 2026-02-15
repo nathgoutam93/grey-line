@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bo0618n7gadoc"]
+
+[ext_resource type="PackedScene" uid="uid://kod8vstgicqx" path="res://scenes/ui/deathmatch/player_score.tscn" id="1_d54bu"]
+[ext_resource type="Script" uid="uid://bv2b00a7o5m55" path="res://scenes/ui/deathmatch/leaderboard.gd" id="1_jjsm1"]
+
+[node name="Leaderboard" type="Panel" unique_id=1482750033]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jjsm1")
+player_score_scene = ExtResource("1_d54bu")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=698842629]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 500.0
+
+[node name="HBoxContainer" parent="VBoxContainer" unique_id=1469261586 instance=ExtResource("1_d54bu")]
+layout_mode = 2

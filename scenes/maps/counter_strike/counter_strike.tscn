@@ -15,6 +15,7 @@
 [ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
+[ext_resource type="PackedScene" uid="uid://bo0618n7gadoc" path="res://scenes/ui/deathmatch/leaderboard.tscn" id="14_k00yj"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_mflnu"]
 polygon = PackedVector2Array(-376.25, -362.5, 385, -361.25, 390, -12, 427.5, -12, 427.5, 348.75, -272.5, 347.5, -380, 98.7501)
@@ -1938,18 +1939,29 @@ centered = false
 
 [node name="Control" type="Control" parent="UI" unique_id=1307998354]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Control" unique_id=155331878]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="Leaderboard" parent="UI/Control" unique_id=1482750033 instance=ExtResource("14_k00yj")]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="DeathmatchGameMode" parent="." unique_id=515007015 node_paths=PackedStringArray("kd_stats_container", "map") instance=ExtResource("3_mflnu")]
+[node name="DeathmatchGameMode" parent="." unique_id=515007015 node_paths=PackedStringArray("leaderboard", "map") instance=ExtResource("3_mflnu")]
 player_scene = ExtResource("3_b3xq6")
-kd_stats_container = NodePath("../UI/Control/VBoxContainer")
+leaderboard = NodePath("../UI/Control/Leaderboard")
 map = NodePath("../Map")
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=712465194]

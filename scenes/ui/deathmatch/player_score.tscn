@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://kod8vstgicqx"]
+
+[node name="HBoxContainer" type="HBoxContainer" unique_id=1469261586]
+custom_minimum_size = Vector2(300, 30)
+
+[node name="Panel" type="Panel" parent="." unique_id=331255514]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="name" type="Label" parent="Panel" unique_id=808572970]
+layout_mode = 0
+offset_left = 10.0
+offset_right = 57.0
+offset_bottom = 23.0
+text = "Name"
+
+[node name="Panel3" type="Panel" parent="." unique_id=2053091992]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="kda" type="Label" parent="Panel3" unique_id=2104051628]
+layout_mode = 0
+offset_left = 10.0
+offset_right = 51.0
+offset_bottom = 23.0
+text = "K D A"
+
+[node name="Panel2" type="Panel" parent="." unique_id=1519669758]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="loadout" type="Label" parent="Panel2" unique_id=1285315024]
+layout_mode = 0
+offset_left = 10.0
+offset_right = 74.0
+offset_bottom = 23.0
+text = "Loadout"

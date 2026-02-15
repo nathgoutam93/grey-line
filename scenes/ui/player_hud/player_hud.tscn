@@ -106,13 +106,13 @@ offset_bottom = 123.0
 grow_horizontal = 0
 grow_vertical = 2
 
-[node name="WeaponSlot" parent="Control/VBoxContainer" unique_id=1434248854 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot3" parent="Control/VBoxContainer" unique_id=1931268970 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
 [node name="WeaponSlot2" parent="Control/VBoxContainer" unique_id=273435493 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="WeaponSlot3" parent="Control/VBoxContainer" unique_id=1931268970 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot" parent="Control/VBoxContainer" unique_id=1434248854 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
 [node name="FpsCounter" parent="Control" unique_id=738888706 instance=ExtResource("3_2a5y5")]
