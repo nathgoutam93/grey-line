@@ -9,13 +9,14 @@ func _ready() -> void:
 	MaskViewProvider.set_viewport(self)
 
 func _process(_delta: float) -> void:
-	if not player_camera:
+	if not is_instance_valid(player_camera):
 		return
 
-	if (get_camera_2d()):
-		get_camera_2d().global_position = player_camera.global_position
+	var viewport_camera := get_camera_2d()
+	if is_instance_valid(viewport_camera):
+		viewport_camera.global_position = player_camera.global_position
 
-	if los:
+	if is_instance_valid(los):
 		los.global_position = player_camera.global_position
 		los.offset = Vector2(-los_offset, 0)
 

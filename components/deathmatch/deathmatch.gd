@@ -4,8 +4,12 @@ extends Node
 @export var leaderboard: DeathmatchLeaderboard
 @export var map: Node2D
 @export var match_timer_label: Label
+@export var match_result_overlay: Control
+@export var match_result_label: Label
 @export_range(30, 3600, 1, "or_greater") var match_duration_seconds := 600
 @export_range(1, 200, 1, "or_greater") var score_limit := 25
+@export_range(0.5, 10.0, 0.1, "or_greater") var post_match_result_duration_seconds := 2.0
+@export var post_match_scene : PackedScene
 
 @onready var spawn_points := map.get_node("SpawnPoints").get_children()
 
@@ -21,6 +25,8 @@ const TIMER_REFRESH_INTERVAL := 1.0
 func _ready():
 	if is_instance_valid(leaderboard):
 		leaderboard.visible = false
+	if is_instance_valid(match_result_overlay):
+		match_result_overlay.visible = false
 
 	match_time_remaining = float(match_duration_seconds)
 	_update_match_timer_ui_local(_format_match_time(match_time_remaining))
@@ -303,7 +309,8 @@ func _get_multiplayer_manager() -> Node:
 func _sync_match_state_to_peer(peer_id: int) -> void:
 	_update_stats.rpc_id(peer_id, player_stats)
 	if match_ended:
-		_update_match_timer_ui.rpc_id(peer_id, _winner_text(winning_peer_id))
+		_update_match_timer_ui.rpc_id(peer_id, "")
+		_show_match_end_ui_and_return.rpc_id(peer_id, winning_peer_id, player_stats)
 		return
 	_update_match_timer_ui.rpc_id(peer_id, _format_match_time(match_time_remaining))
 
@@ -317,8 +324,13 @@ func _end_match(winner_id: int, reason: String) -> void:
 	match_ended = true
 	winning_peer_id = winner_id
 
+	_refresh_all_player_combat_data()
+	var final_stats := player_stats.duplicate(true)
+
 	print("Match ended by %s. Winner: %s" % [reason, _winner_name(winner_id)])
-	_update_match_timer_ui.rpc(_winner_text(winner_id))
+	_update_stats.rpc(final_stats)
+	_update_match_timer_ui.rpc("")
+	_show_match_end_ui_and_return.rpc(winner_id, final_stats)
 	_despawn_all_players()
 
 func _despawn_all_players() -> void:
@@ -337,6 +349,35 @@ func _update_match_timer_ui(text: String) -> void:
 func _update_match_timer_ui_local(text: String) -> void:
 	if is_instance_valid(match_timer_label):
 		match_timer_label.text = text
+
+@rpc("call_local", "reliable")
+func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:
+	if is_instance_valid(leaderboard):
+		leaderboard.populate_leaderboard(final_stats)
+		leaderboard.visible = false
+
+	if is_instance_valid(match_result_overlay):
+		match_result_overlay.visible = true
+
+	if is_instance_valid(match_result_label):
+		match_result_label.text = _local_match_result_text(winner_id)
+
+	_clear_local_fow_camera_reference()
+
+	if OS.has_feature("dedicated_server"):
+		return
+
+	await get_tree().create_timer(post_match_result_duration_seconds).timeout
+	call_deferred("_change_to_post_match_scene")
+
+func _clear_local_fow_camera_reference() -> void:
+	var mask_viewport := MaskViewProvider.viewport
+	if is_instance_valid(mask_viewport):
+		mask_viewport.set("player_camera", null)
+
+func _change_to_post_match_scene() -> void:
+	if post_match_scene:
+		get_tree().change_scene_to_packed(post_match_scene)
 
 func _format_match_time(total_seconds: float) -> String:
 	var clamped_seconds := maxi(0, int(ceil(total_seconds)))
@@ -358,6 +399,11 @@ func _winner_name(winner_id: int) -> String:
 			return identifier
 
 	return _player_identifier(winner_id)
+
+func _local_match_result_text(winner_id: int) -> String:
+	if winner_id > 0 and multiplayer.get_unique_id() == winner_id:
+		return "VICTORY"
+	return "DEFEAT"
 
 func _resolve_time_limit_winner_id() -> int:
 	var best_peer_id := -1
