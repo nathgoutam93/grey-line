@@ -145,7 +145,7 @@ func _exit_tree() -> void:
 
 func _new_player_stats(peer_id: int) -> Dictionary:
 	return {
-		"player_identifier": peer_id,
+		"player_identifier": _player_identifier(peer_id),
 		"kills": 0,
 		"deaths": 0,
 		"loadout": {},
@@ -197,9 +197,10 @@ func _refresh_player_combat_data(peer_id: int, player: PlayerController = null) 
 
 	var stats: Dictionary = player_stats[peer_id]
 	var has_changed := false
+	var identifier := _player_identifier(peer_id)
 
-	if stats.get("player_identifier", -1) != peer_id:
-		stats["player_identifier"] = peer_id
+	if stats.get("player_identifier", "") != identifier:
+		stats["player_identifier"] = identifier
 		has_changed = true
 	if stats.get("loadout", {}) != loadout_payload:
 		stats["loadout"] = loadout_payload
@@ -217,3 +218,17 @@ func _refresh_all_player_combat_data() -> bool:
 		if _refresh_player_combat_data(int(peer_id)):
 			has_any_change = true
 	return has_any_change
+
+func _player_identifier(peer_id: int) -> String:
+	var multiplayer_manager := _get_multiplayer_manager()
+	if multiplayer_manager and multiplayer_manager.has_method("get_player_name"):
+		var player_name := String(multiplayer_manager.get_player_name(peer_id)).strip_edges()
+		if player_name != "":
+			return player_name
+	return str(peer_id)
+
+func _get_multiplayer_manager() -> Node:
+	var nodes := get_tree().get_nodes_in_group("multiplayer_manager")
+	if nodes.is_empty():
+		return null
+	return nodes[0]

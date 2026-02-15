@@ -26,7 +26,10 @@ func populate_leaderboard(stats_payload: Dictionary) -> void:
 		var kda_label: Label = row.get_node("Panel3/kda")
 		var loadout_label: Label = row.get_node("Panel2/loadout")
 
-		name_label.text = "%d" % int(peer_id)
+		var player_identifier := String(player_stat.get("player_identifier", str(peer_id)))
+		if player_identifier.strip_edges() == "":
+			player_identifier = str(peer_id)
+		name_label.text = player_identifier
 		kda_label.text = "%d / %d" % [kills, deaths]
 		loadout_label.text = "%s" % [current_weapon_name]
 

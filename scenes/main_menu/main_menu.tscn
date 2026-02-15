@@ -67,6 +67,23 @@ offset_right = 120.0
 offset_bottom = -19.0
 grow_horizontal = 2
 grow_vertical = 2
+placeholder_text = "Host/IP address"
+alignment = 1
+
+[node name="player_name" type="LineEdit" parent="UI/Control" unique_id=1754721834]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -115.0
+offset_top = -86.0
+offset_right = 120.0
+offset_bottom = -55.0
+grow_horizontal = 2
+grow_vertical = 2
+placeholder_text = "Player name"
 alignment = 1
 
 [connection signal="pressed" from="UI/Control/join" to="MultiplayerManager" method="join_game"]
