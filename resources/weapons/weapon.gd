@@ -12,6 +12,7 @@ enum WeaponType {PRIMARY, SECONDARY, MELEE}
 @export var d_range := 1000.0
 
 @export var mag_size := 0
+@export var mag_count := 4
 @export var uses_ammo := true
 
 @export var is_reloadable := true
@@ -44,6 +45,7 @@ func to_dict() -> Dictionary:
 		"damage": damage,
 		"d_range": d_range,
 		"mag_size": mag_size,
+		"mag_count": mag_count,
 		"uses_ammo": uses_ammo,
 		"is_reloadable": is_reloadable,
 		"reload_duration": reload_duration,
@@ -64,6 +66,7 @@ static func new_from_dict(dict: Dictionary) -> Weapon:
 	w.damage = dict["damage"]
 	w.d_range = dict["d_range"]
 	w.mag_size = dict["mag_size"]
+	w.mag_count = dict.get("mag_count", 4)
 	w.uses_ammo = dict["uses_ammo"]
 	w.is_reloadable = dict["is_reloadable"]
 	w.reload_duration = dict["reload_duration"]

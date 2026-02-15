@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var _player: PlayerController = get_parent()
 
 @onready var health_label: Label = get_node("Control/HBoxContainer/Panel/hp")
+@onready var ammo_panel: Control = get_node("Control/HBoxContainer/Panel2/HBoxContainer")
 @onready var ammo_left_label: Label = get_node("Control/HBoxContainer/Panel2/HBoxContainer/ammo_left")
 @onready var mag_size_label: Label = get_node("Control/HBoxContainer/Panel2/HBoxContainer/mag_size")
 @onready var slot_container: VBoxContainer = get_node("Control/VBoxContainer")
@@ -92,5 +93,10 @@ func _process(_delta: float) -> void:
 		return
 
 	health_label.text = str(_player.health_component.current_health)
+	var current_weapon := _player.weapon_manager.current_weapon
+	var uses_ammo := current_weapon != null and current_weapon.data != null and current_weapon.data.uses_ammo
+	ammo_panel.visible = uses_ammo
+	if not uses_ammo:
+		return
 	ammo_left_label.text = str(_player.weapon_manager.get_ammo_in_mag())
-	mag_size_label.text = str(_player.weapon_manager.get_mag_size())
+	mag_size_label.text = str(_player.weapon_manager.get_ammo_reserve())

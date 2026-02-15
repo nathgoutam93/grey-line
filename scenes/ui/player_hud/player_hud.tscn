@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c13vwx621xxak"]
 
-[ext_resource type="Script" uid="uid://mm1vvtgplxa3" path="res://scenes/player/_scripts/hud.gd" id="1_sqnk8"]
+[ext_resource type="Script" uid="uid://mm1vvtgplxa3" path="res://scenes/ui/player_hud/hud.gd" id="1_sqnk8"]
 [ext_resource type="Texture2D" uid="uid://da5pqg6ohyfqs" path="res://assets/sprites/hud/shape_1 (Custom).png" id="2_m5iw4"]
 [ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="3_2a5y5"]
 [ext_resource type="PackedScene" uid="uid://blpgeyjx58w50" path="res://scenes/ui/weapon_slot/weapon_slot.tscn" id="3_m5iw4"]

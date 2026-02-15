@@ -52,6 +52,9 @@ func get_ammo_in_mag() -> int:
 func get_mag_size() -> int:
 	return current_weapon.data.mag_size if current_weapon else 0
 
+func get_ammo_reserve() -> int:
+	return current_weapon.ammo_reserve if current_weapon else 0
+
 func get_weapon_in_slot(slot: int):
 	return weapon_slots.get(slot)
 
@@ -113,6 +116,7 @@ func pickup_weapon(pickup: WeaponPickup):
 	var wi = pickup.weapon_data.weapon_scene.instantiate()
 	wi.set_weapon_data(pickup.weapon_data)
 	wi.ammo_in_mag = pickup.ammo_in_mag
+	wi.ammo_reserve = pickup.ammo_reserve
 	wi.player = player
 	skeletal_character.hand_socket.add_child(wi)
 	wi.unequip()

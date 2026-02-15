@@ -26,6 +26,9 @@ properties/1/replication_mode = 1
 properties/2/path = NodePath(".:ammo_in_mag")
 properties/2/spawn = true
 properties/2/replication_mode = 1
+properties/3/path = NodePath(".:ammo_reserve")
+properties/3/spawn = true
+properties/3/replication_mode = 1
 
 [node name="BasePickup" type="RigidBody2D" node_paths=PackedStringArray("interactable_component")]
 material = SubResource("ShaderMaterial_pc2pn")

@@ -5,6 +5,7 @@ var data: Weapon
 var mode: WeaponAttackMode
 
 var ammo_in_mag := 0
+var ammo_reserve := 0
 var is_auto_reload := false
 var is_reloading := false
 var is_firing := false
@@ -25,7 +26,13 @@ var player: PlayerController
 func set_weapon_data(w: Weapon):
 	data = w
 	mode = data.mode
-	ammo_in_mag = data.mag_size
+	if data.uses_ammo:
+		var total_ammo : int =  data.mag_size * max(data.mag_count, 1)
+		ammo_in_mag = min(data.mag_size, total_ammo)
+		ammo_reserve = max(total_ammo - ammo_in_mag, 0)
+	else:
+		ammo_in_mag = 0
+		ammo_reserve = 0
 
 func _shoot_raycast() -> void:
 	var origin = global_position
@@ -87,6 +94,8 @@ func drop_weapon_pickup():
 		pickup.set_weapon_data(data)
 	if "ammo_in_mag" in pickup:
 		pickup.ammo_in_mag = ammo_in_mag
+	if "ammo_reserve" in pickup:
+		pickup.ammo_reserve = ammo_reserve
 
 	var map_node = get_tree().current_scene.find_child("Map", true, false)
 	map_node.add_child.call_deferred(pickup, true)
@@ -120,13 +129,18 @@ func equip():
 	await get_tree().create_timer(data.equip_duration).timeout
 	_unlock()
 
-	if ammo_in_mag <= 0:
+	if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
 		await reload()
 
 
 func reload(auto: bool = false) -> void:
 	if is_locked or not data.is_reloadable:
 		return
+	if data.uses_ammo:
+		if ammo_in_mag >= data.mag_size:
+			return
+		if ammo_reserve <= 0:
+			return
 	
 	_lock()
 	is_auto_reload = auto
@@ -142,7 +156,13 @@ func reload(auto: bool = false) -> void:
 	await get_tree().create_timer(data.reload_duration).timeout
 
 	if is_reloading:
-		ammo_in_mag = data.mag_size
+		if data.uses_ammo:
+			var ammo_needed : int = max(data.mag_size - ammo_in_mag, 0)
+			var ammo_loaded : int = min(ammo_needed, ammo_reserve)
+			ammo_in_mag += ammo_loaded
+			ammo_reserve -= ammo_loaded
+		else:
+			ammo_in_mag = data.mag_size
 		is_reloading = false
 		_unlock()
 
@@ -183,8 +203,9 @@ func single_shoot() -> bool:
 		if is_reloading:
 			return false
 		if ammo_in_mag <= 0:
-			_unlock()
-			await reload(true) # ⬅️ Auto reload when empty
+			if ammo_reserve > 0:
+				_unlock()
+				await reload(true) # Auto reload when empty
 			return false
 
 		ammo_in_mag -= 1
@@ -210,9 +231,9 @@ func single_shoot() -> bool:
 
 	await get_tree().create_timer(data.mode.cooldown).timeout
 
-	if data.uses_ammo and ammo_in_mag <= 0:
+	if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
 		_unlock()
-		await reload(true) # ⬅️ Auto reload when empty
+		await reload(true) # Auto reload when empty
 		return false
 
 	return true

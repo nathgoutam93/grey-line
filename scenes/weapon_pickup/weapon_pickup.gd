@@ -5,6 +5,7 @@ class_name WeaponPickup
 
 var weapon_data: Weapon
 var ammo_in_mag := 0
+var ammo_reserve := 0
 var _weapon_data_dict: Dictionary = {}
 var weapon_data_dict: Dictionary:
 	get:
@@ -25,11 +26,12 @@ func _ready():
 	freeze = true
 
 @rpc("authority", "call_local")
-func initialize_weapon(data: Dictionary, ammo: int):
+func initialize_weapon(data: Dictionary, ammo: int, reserve: int = 0):
 	await get_tree().process_frame
 	weapon_data_dict = data
 	weapon_data = Weapon.new_from_dict(data)
 	ammo_in_mag = ammo
+	ammo_reserve = reserve
 
 
 func set_weapon_data(data: Weapon):
