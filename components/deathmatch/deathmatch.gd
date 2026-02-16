@@ -10,7 +10,7 @@ extends Node
 @export_range(30, 3600, 1, "or_greater") var match_duration_seconds := 600
 @export_range(1, 200, 1, "or_greater") var score_limit := 25
 @export_range(0.5, 10.0, 0.1, "or_greater") var post_match_result_duration_seconds := 2.0
-@export var post_match_scene : PackedScene
+@export_file("*.tscn") var post_match_scene_path := "res://scenes/main_menu/main_menu.tscn"
 
 var spawn_points: Array[Node2D] = []
 
@@ -21,6 +21,9 @@ var match_time_remaining := 0.0
 var match_ended := false
 var winning_peer_id := -1
 var touch_leaderboard_visible := false
+var post_match_transition_started := false
+var post_match_transition_deadline_msec := -1
+var post_match_scene_change_requested := false
 const STATS_REFRESH_INTERVAL := 0.35
 const TIMER_REFRESH_INTERVAL := 1.0
 
@@ -51,6 +54,13 @@ func _ready():
 
 
 func _process(delta: float) -> void:
+	if post_match_transition_started:
+		_try_execute_post_match_transition()
+		return
+
+	if not _has_active_multiplayer_peer():
+		return
+
 	if is_instance_valid(leaderboard):
 		if _is_local_touch_input_mode():
 			leaderboard.visible = touch_leaderboard_visible
@@ -88,6 +98,8 @@ func _on_connected():
 
 func _on_disconnected():
 	print("Disconnected from server.")
+	if match_ended or post_match_transition_started:
+		call_deferred("_change_to_post_match_scene")
 
 func _on_connection_failed():
 	print("Failed to connect to server.")
@@ -136,6 +148,11 @@ func register_death(victim_id: int, killer_id: int):
 
 @rpc("authority", "call_local", "reliable")
 func _notify_local_kill_feedback() -> void:
+	if not _has_active_multiplayer_peer():
+		return
+	if not is_instance_valid(map):
+		return
+
 	var local_peer_id := multiplayer.get_unique_id()
 	var local_player := map.get_node_or_null(str(local_peer_id)) as PlayerController
 	if local_player == null or local_player.hud == null:
@@ -147,6 +164,11 @@ func _notify_local_kill_feedback() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _notify_kill_feed(killer_name: String, victim_name: String) -> void:
+	if not _has_active_multiplayer_peer():
+		return
+	if not is_instance_valid(map):
+		return
+
 	var local_peer_id := multiplayer.get_unique_id()
 	var local_player := map.get_node_or_null(str(local_peer_id)) as PlayerController
 	if local_player == null or local_player.hud == null:
@@ -177,13 +199,19 @@ func _setup_player(peer_id, player_path: NodePath):
 	await get_tree().process_frame
 	if match_ended:
 		return
-	var player = get_node(player_path) as PlayerController
+	if not is_instance_valid(map):
+		return
+
+	var player := get_node_or_null(player_path) as PlayerController
+	if player == null:
+		# Player can despawn before setup RPC executes (e.g. match end or disconnect).
+		return
 
 	if player:
 		player.owner_peer_id = peer_id
 		player.player_input.set_authority(peer_id)
 
-		if multiplayer.is_server():
+		if _has_active_multiplayer_peer() and multiplayer.is_server():
 			if not player_stats.has(peer_id):
 				player_stats[peer_id] = _new_player_stats(peer_id)
 			_refresh_player_combat_data(peer_id, player)
@@ -191,7 +219,7 @@ func _setup_player(peer_id, player_path: NodePath):
 			player.health_component.die.connect(func(killer_id: int): register_death(peer_id, killer_id))
 			player.tree_exited.connect(_on_player_tree_exited.bind(peer_id))
 
-		if peer_id == multiplayer.get_unique_id():
+		if _has_active_multiplayer_peer() and peer_id == multiplayer.get_unique_id():
 			player.setup_locals()
 			MaskViewProvider.viewport.player_camera = player.camera
 			MaskViewProvider.viewport.player = player
@@ -199,6 +227,9 @@ func _setup_player(peer_id, player_path: NodePath):
 # Spawn a player on server, will autospawn on client by MultiplayerSpawner Node
 func spawn_player(peer_id: int):
 	if match_ended:
+		return
+
+	if not is_instance_valid(map):
 		return
 
 	if spawn_points.is_empty():
@@ -226,16 +257,17 @@ func _cache_spawn_points() -> void:
 			spawn_points.append(child)
 
 func _on_player_tree_exited(peer_id: int) -> void:
-	if not multiplayer.is_server() or match_ended:
+	if not is_inside_tree():
+		return
+	if not _has_active_multiplayer_peer() or not multiplayer.is_server() or match_ended:
 		return
 	spawn_player(peer_id)
 
 func _exit_tree() -> void:
-	if not multiplayer.is_server():
-		return
-
-	multiplayer.peer_connected.disconnect(_on_peer_connected)
-	multiplayer.peer_disconnected.disconnect(_on_peer_disconnected)
+	if multiplayer.peer_connected.is_connected(_on_peer_connected):
+		multiplayer.peer_connected.disconnect(_on_peer_connected)
+	if multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
+		multiplayer.peer_disconnected.disconnect(_on_peer_disconnected)
 
 
 func _new_player_stats(peer_id: int) -> Dictionary:
@@ -278,6 +310,8 @@ func _refresh_player_combat_data(peer_id: int, player: PlayerController = null) 
 		player_stats[peer_id] = _new_player_stats(peer_id)
 
 	if player == null:
+		if not is_instance_valid(map):
+			return false
 		player = map.get_node_or_null(str(peer_id)) as PlayerController
 
 	var loadout_payload := {}
@@ -353,16 +387,6 @@ func _end_match(winner_id: int, reason: String) -> void:
 	_update_stats.rpc(final_stats)
 	_update_match_timer_ui.rpc("")
 	_show_match_end_ui_and_return.rpc(winner_id, final_stats)
-	_despawn_all_players()
-
-func _despawn_all_players() -> void:
-	if not is_instance_valid(map):
-		return
-
-	for child in map.get_children():
-		var player := child as PlayerController
-		if player:
-			player.queue_free()
 
 @rpc("call_local", "reliable")
 func _update_match_timer_ui(text: String) -> void:
@@ -372,7 +396,20 @@ func _update_match_timer_ui_local(text: String) -> void:
 	if is_instance_valid(match_timer_label):
 		match_timer_label.text = text
 
+func _has_active_multiplayer_peer() -> bool:
+	var mp := get_multiplayer()
+	if mp == null:
+		return false
+	var peer := mp.multiplayer_peer
+	if peer == null:
+		return false
+	if peer.has_method("get_connection_status"):
+		return peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
+	return true
+
 func _is_local_touch_input_mode() -> bool:
+	if not _has_active_multiplayer_peer():
+		return false
 	if not is_instance_valid(map):
 		return false
 	var local_player := map.get_node_or_null(str(multiplayer.get_unique_id())) as PlayerController
@@ -382,6 +419,11 @@ func _is_local_touch_input_mode() -> bool:
 
 @rpc("call_local", "reliable")
 func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:
+	if post_match_transition_started:
+		return
+	post_match_transition_started = true
+	post_match_transition_deadline_msec = Time.get_ticks_msec() + int(post_match_result_duration_seconds * 1000.0)
+
 	if is_instance_valid(leaderboard):
 		leaderboard.populate_leaderboard(final_stats)
 		leaderboard.visible = false
@@ -393,13 +435,9 @@ func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> v
 	if is_instance_valid(match_result_label):
 		match_result_label.text = _local_match_result_text(winner_id)
 
-	_clear_local_fow_camera_reference()
-
 	if OS.has_feature("dedicated_server"):
 		return
-
-	await get_tree().create_timer(post_match_result_duration_seconds).timeout
-	call_deferred("_change_to_post_match_scene")
+	_try_execute_post_match_transition()
 
 func _clear_local_fow_camera_reference() -> void:
 	var mask_viewport := MaskViewProvider.viewport
@@ -407,9 +445,34 @@ func _clear_local_fow_camera_reference() -> void:
 		mask_viewport.set("player_camera", null)
 		mask_viewport.set("player", null)
 
-func _change_to_post_match_scene() -> void:
-	if post_match_scene:
-		get_tree().change_scene_to_packed(post_match_scene)
+func _change_to_post_match_scene() -> bool:
+	if not is_inside_tree():
+		return false
+	_clear_local_fow_camera_reference()
+	var multiplayer_manager := _get_multiplayer_manager()
+	if multiplayer_manager and multiplayer_manager.has_method("return_to_lobby_after_match"):
+		multiplayer_manager.call_deferred("return_to_lobby_after_match")
+		return true
+	var target_scene_path := post_match_scene_path.strip_edges()
+	if target_scene_path != "":
+		var error := get_tree().change_scene_to_file(target_scene_path)
+		if error != OK:
+			push_warning("Failed to change to post match scene '%s': %s" % [target_scene_path, error])
+			return false
+		return true
+	return false
+
+func _try_execute_post_match_transition() -> void:
+	if post_match_transition_deadline_msec < 0:
+		return
+	if Time.get_ticks_msec() < post_match_transition_deadline_msec:
+		return
+	if post_match_scene_change_requested:
+		return
+	post_match_scene_change_requested = true
+	var changed := _change_to_post_match_scene()
+	if not changed:
+		post_match_scene_change_requested = false
 
 func _format_match_time(total_seconds: float) -> String:
 	var clamped_seconds := maxi(0, int(ceil(total_seconds)))
@@ -433,7 +496,7 @@ func _winner_name(winner_id: int) -> String:
 	return _player_identifier(winner_id)
 
 func _local_match_result_text(winner_id: int) -> String:
-	if winner_id > 0 and multiplayer.get_unique_id() == winner_id:
+	if winner_id > 0 and _has_active_multiplayer_peer() and multiplayer.get_unique_id() == winner_id:
 		return "VICTORY"
 	return "DEFEAT"
 

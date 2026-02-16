@@ -3,7 +3,7 @@ extends Node
 @export var port: int = 3000
 @export var max_players: int = 8
 @export var address: String = "127.0.0.1"
-@export var map_scene: PackedScene = preload("res://scenes/maps/counter_strike/counter_strike.tscn")
+@export var map_scene_path: String = "res://scenes/maps/counter_strike/counter_strike.tscn"
 @export var enable_lan_discovery: bool = true
 @export var discovery_port: int = 3001
 @export var discovery_timeout_seconds: float = 0.4
@@ -20,23 +20,42 @@ var local_player_name := ""
 var player_names := {}
 var discovery_listener: PacketPeerUDP
 var discovery_listener_active := false
+const DEFAULT_PLAYER_NAME := "Player"
 
 func _ready():
 	add_to_group("multiplayer_manager")
 
-	local_player_name = _resolve_local_player_name()
-	if player_name_input and player_name_input.text.strip_edges() == "":
-		player_name_input.text = local_player_name
-	if hostname_input and hostname_input.text.strip_edges() == "":
-		hostname_input.text = address
-	_set_manual_join_visible(false)
-	_set_discovery_status("Auto-discover LAN host")
+	# Returning to main menu should always start from a clean lobby state.
+	var existing_peer := multiplayer.multiplayer_peer
+	if existing_peer != null:
+		if existing_peer.has_method("close"):
+			existing_peer.close()
+		multiplayer.multiplayer_peer = null
+	if ui_layer:
+		ui_layer.show()
 
-	multiplayer.connected_to_server.connect(_on_connected_to_server)
+	_apply_default_player_name()
+	if hostname_input and hostname_input.text.strip_edges() == "" and not _is_loopback_address(address):
+		hostname_input.text = address
+	_set_manual_join_visible(_is_android_platform())
+	if _is_android_platform():
+		_set_discovery_status("Enter host/IP manually on Android.")
+	else:
+		_set_discovery_status("Auto-discover LAN host")
+
+	if not multiplayer.connected_to_server.is_connected(_on_connected_to_server):
+		multiplayer.connected_to_server.connect(_on_connected_to_server)
+	if not multiplayer.connection_failed.is_connected(_on_connection_failed):
+		multiplayer.connection_failed.connect(_on_connection_failed)
+	if not multiplayer.server_disconnected.is_connected(_on_server_disconnected):
+		multiplayer.server_disconnected.connect(_on_server_disconnected)
 
 	if OS.has_feature("dedicated_server"):
 		local_player_name = "DedicatedServer"
 		host_game()
+
+	# Some Android builds can alter LineEdit state after initial _ready().
+	call_deferred("_apply_default_player_name")
 
 func _process(_delta: float) -> void:
 	if not discovery_listener_active or discovery_listener == null:
@@ -60,7 +79,7 @@ func host_game():
 	var peer = ENetMultiplayerPeer.new()
 	var error = peer.create_server(port, max_players)
 	if error != OK:
-		push_error("Failed to start server: %s" % error)
+		push_error("Failed to start server: %s (%s)" % [error, error_string(error)])
 		return
 
 	multiplayer.multiplayer_peer = peer
@@ -87,6 +106,11 @@ func join_game():
 		_connect_to_server(target_address, target_port)
 		return
 
+	if _is_android_platform():
+		_set_manual_join_visible(true)
+		_set_discovery_status("Enter host/IP manually on Android.")
+		return
+
 	_set_discovery_status("Searching LAN hosts...")
 	var discovered_host := await _discover_lan_host()
 	if discovered_host.is_empty():
@@ -103,15 +127,14 @@ func _connect_to_server(target_address: String, target_port: int) -> void:
 	var peer = ENetMultiplayerPeer.new()
 	var error = peer.create_client(target_address, target_port)
 	if error != OK:
-		push_error("Failed to connect to server: %s" % error)
+		push_error("Failed to connect to server: %s (%s)" % [error, error_string(error)])
 		_set_manual_join_visible(true)
 		_set_discovery_status("Connect failed. Enter host/IP manually.")
 		return
 
 	multiplayer.multiplayer_peer = peer
 	print("Connecting to server at %s:%d..." % [target_address, target_port])
-
-	_start_game()
+	_set_discovery_status("Connecting to %s:%d..." % [target_address, target_port])
 
 func _get_target_address() -> String:
 	if hostname_input:
@@ -123,10 +146,23 @@ func _get_target_address() -> String:
 
 func _on_connected_to_server() -> void:
 	rpc_id(1, "_register_player_name", local_player_name)
+	_start_game()
 
 func _on_peer_disconnected(id: int) -> void:
 	if multiplayer.is_server():
 		player_names.erase(id)
+
+func _on_connection_failed() -> void:
+	_set_manual_join_visible(true)
+	_set_discovery_status("Connection failed. Enter host/IP manually.")
+	if ui_layer:
+		ui_layer.show()
+
+func _on_server_disconnected() -> void:
+	_set_manual_join_visible(true)
+	_set_discovery_status("Disconnected from server.")
+	if ui_layer:
+		ui_layer.show()
 
 @rpc("any_peer", "reliable")
 func _register_player_name(raw_name: String) -> void:
@@ -151,23 +187,51 @@ func _resolve_local_player_name() -> String:
 		raw_name = "DedicatedServer"
 	else:
 		raw_name = OS.get_environment("USER")
+		if raw_name.strip_edges() == "":
+			raw_name = OS.get_environment("USERNAME")
 	if raw_name.strip_edges() == "":
-		raw_name = "Player"
-	return _sanitize_player_name(raw_name, multiplayer.get_unique_id())
+		raw_name = DEFAULT_PLAYER_NAME
+	var peer_id := 1
+	if multiplayer.multiplayer_peer != null:
+		peer_id = multiplayer.get_unique_id()
+	return _sanitize_player_name(raw_name, peer_id)
 
 func _sanitize_player_name(raw_name: String, peer_id: int) -> String:
 	var cleaned := raw_name.strip_edges()
 	if cleaned == "":
-		cleaned = "Player %d" % peer_id
+		cleaned = DEFAULT_PLAYER_NAME
 	return cleaned.substr(0, 24)
+
+func _load_map_scene() -> PackedScene:
+	if map_scene_path.strip_edges() == "":
+		push_error("No map_scene_path configured on MultiplayerManager.")
+		return null
+
+	var loaded := load(map_scene_path)
+	if loaded is PackedScene:
+		return loaded
+
+	push_error("Failed to load map scene at path: %s" % map_scene_path)
+	return null
+
+func _apply_default_player_name() -> void:
+	local_player_name = _resolve_local_player_name()
+	if player_name_input == null:
+		push_warning("player_name LineEdit not found at ../UI/Control/player_name")
+		return
+
+	if player_name_input.text.strip_edges() == "":
+		player_name_input.text = local_player_name
+	if player_name_input.placeholder_text.strip_edges() == "":
+		player_name_input.placeholder_text = local_player_name
 
 func _start_game():
 	if ui_layer:
 		ui_layer.hide()
 
 	if multiplayer.is_server():
+		var map_scene := _load_map_scene()
 		if map_scene == null:
-			push_error("No map_scene configured on MultiplayerManager.")
 			return
 		_change_level.call_deferred(map_scene)
 
@@ -178,6 +242,28 @@ func _change_level(scene: PackedScene):
 
 	level.add_child(scene.instantiate())
 
+func return_to_lobby_after_match() -> void:
+	_stop_lan_discovery_listener()
+
+	var existing_peer := multiplayer.multiplayer_peer
+	if existing_peer != null:
+		if existing_peer.has_method("close"):
+			existing_peer.close()
+		multiplayer.multiplayer_peer = null
+
+	player_names.clear()
+	if ui_layer:
+		ui_layer.show()
+	_set_manual_join_visible(_is_android_platform())
+	if _is_android_platform():
+		_set_discovery_status("Enter host/IP manually on Android.")
+	else:
+		_set_discovery_status("Auto-discover LAN host")
+
+	for c in level.get_children():
+		level.remove_child(c)
+		c.queue_free()
+
 func _set_manual_join_visible(visible: bool) -> void:
 	if hostname_input:
 		hostname_input.visible = visible
@@ -185,6 +271,13 @@ func _set_manual_join_visible(visible: bool) -> void:
 func _set_discovery_status(text: String) -> void:
 	if discovery_status_label:
 		discovery_status_label.text = text
+
+func _is_android_platform() -> bool:
+	return OS.get_name() == "Android"
+
+func _is_loopback_address(value: String) -> bool:
+	var trimmed := value.strip_edges()
+	return trimmed == "" or trimmed == "127.0.0.1" or trimmed == "localhost"
 
 func _start_lan_discovery_listener() -> void:
 	if not enable_lan_discovery:
@@ -224,7 +317,7 @@ func _discover_lan_host() -> Dictionary:
 	probe.set_broadcast_enabled(true)
 	probe.set_dest_address("255.255.255.255", discovery_port)
 
-	for _attempt in discovery_attempts:
+	for _attempt in range(discovery_attempts):
 		var request := "%s:DISCOVER" % discovery_token
 		var send_error := probe.put_packet(request.to_utf8_buffer())
 		if send_error != OK:

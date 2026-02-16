@@ -84,9 +84,9 @@ size_flags_horizontal = 3
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Control/HBoxContainer/Panel2" unique_id=895847977]
 layout_mode = 0
-offset_left = 70.0
+offset_left = 66.49999
 offset_top = -20.0
-offset_right = 123.0
+offset_right = 119.500015
 offset_bottom = 3.0
 
 [node name="ammo_left" type="Label" parent="Control/HBoxContainer/Panel2/HBoxContainer" unique_id=721156976]
@@ -103,9 +103,9 @@ text = "36"
 
 [node name="TextureRect" type="TextureRect" parent="Control/HBoxContainer/Panel2" unique_id=90148416]
 layout_mode = 0
-offset_left = 20.0
+offset_left = 17.29
 offset_top = -40.0
-offset_right = 120.0
+offset_right = 117.29
 offset_bottom = 10.0
 texture = ExtResource("2_m5iw4")
 expand_mode = 1
@@ -153,9 +153,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -40.0
-offset_top = -42.0
+offset_top = 20.0
 offset_right = 40.0
-offset_bottom = 42.0
+offset_bottom = 104.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 4
@@ -309,8 +309,8 @@ texture_normal = ExtResource("11_x4jlu")
 shape = SubResource("RectangleShape2D_5si8t")
 
 [node name="Reload" type="TouchScreenButton" parent="Controls" unique_id=2131536144]
-modulate = Color(1, 1, 1, 0.39215687)
-position = Vector2(302, 244)
+modulate = Color(1, 1, 1, 0.3)
+position = Vector2(114, 88)
 scale = Vector2(0.6, 0.6)
 texture_normal = ExtResource("12_5si8t")
 shape = SubResource("CircleShape2D_limek")

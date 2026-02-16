@@ -50,8 +50,19 @@ func _resolve_look_joystick() -> VirtualJoystick:
 func get_look_joystick() -> VirtualJoystick:
 	return look_joystick
 
+func _local_peer_id_or_zero() -> int:
+	var peer := multiplayer.multiplayer_peer
+	if peer == null:
+		return 0
+	if peer.has_method("get_connection_status") and peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+		return 0
+	return multiplayer.get_unique_id()
+
 func _update_visibility() -> void:
-	var should_be_local_hud := _player.is_local_player or _player.owner_peer_id == multiplayer.get_unique_id()
+	var should_be_local_hud := _player.is_local_player
+	if not should_be_local_hud:
+		var local_peer_id := _local_peer_id_or_zero()
+		should_be_local_hud = local_peer_id != 0 and _player.owner_peer_id == local_peer_id
 	if _visibility_initialized and should_be_local_hud == _is_local_hud:
 		return
 

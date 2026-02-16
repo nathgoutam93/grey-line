@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://dcvdgg2588plj" path="res://components/deathmatch/deathmatch.gd" id="1_5osu2"]
 [ext_resource type="PackedScene" uid="uid://bo0618n7gadoc" path="res://scenes/ui/deathmatch/leaderboard.tscn" id="2_0ul0j"]
 [ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="2_cvc4k"]
-[ext_resource type="PackedScene" uid="uid://bglb3r2wa4lrs" path="res://scenes/main_menu/main_menu.tscn" id="2_moinr"]
 [ext_resource type="Texture2D" uid="uid://dyvurudpwy4vt" path="res://assets/sprites/hud/shape_2.png" id="3_moinr"]
 
 [node name="DeathmatchGameMode" type="Node" unique_id=1766349449 node_paths=PackedStringArray("leaderboard", "match_timer_label", "match_result_overlay", "match_result_label")]
@@ -16,7 +15,7 @@ match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
 match_duration_seconds = 300
 score_limit = 10
 post_match_result_duration_seconds = 5.0
-post_match_scene = ExtResource("2_moinr")
+post_match_scene_path = "res://scenes/main_menu/main_menu.tscn"
 
 [node name="MatchResultLayer" type="CanvasLayer" parent="." unique_id=16716851]
 layer = 10

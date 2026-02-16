@@ -1936,6 +1936,7 @@ centered = false
 [node name="DeathmatchGameMode" parent="." unique_id=1766349449 node_paths=PackedStringArray("map", "spawn_point_container") instance=ExtResource("3_mflnu")]
 map = NodePath("../Map")
 spawn_point_container = NodePath("../Map/SpawnPoints")
+score_limit = 3
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=712465194]
 _spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
