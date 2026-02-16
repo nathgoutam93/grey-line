@@ -65,6 +65,7 @@ hud = NodePath("HUD")
 camera = NodePath("Camera2D")
 audio_listner = NodePath("Camera2D/AudioListener2D")
 metadata/_edit_vertical_guides_ = [-39.0]
+metadata/surface_type = "flesh"
 
 [node name="HitBox" type="CollisionShape2D" parent="." unique_id=1690495568]
 shape = SubResource("CapsuleShape2D_5i508")

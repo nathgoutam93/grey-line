@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://fhjkwli6g3oc"]
+
+[ext_resource type="PackedScene" uid="uid://f62fgcti4f8i" path="res://scenes/impact/default.tscn" id="1_ks06d"]
+
+[sub_resource type="Gradient" id="Gradient_blood"]
+offsets = PackedFloat32Array(0, 0.78, 1)
+colors = PackedColorArray(0.65, 0.05, 0.05, 1, 0.95, 0.2, 0.2, 0.9, 0.4, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_blood"]
+gradient = SubResource("Gradient_blood")
+
+[sub_resource type="Curve" id="Curve_blood"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_blood"]
+curve = SubResource("Curve_blood")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_blood"]
+lifetime_randomness = 0.27
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(0, 0, 1)
+emission_shape = 3
+emission_box_extents = Vector3(3, 1, 1)
+direction = Vector3(0, -1, 0)
+spread = 90.0
+initial_velocity_max = 100.0
+radial_velocity_min = -50.42
+radial_velocity_max = 50.0
+gravity = Vector3(0, 98, 0)
+scale_curve = SubResource("CurveTexture_blood")
+color_ramp = SubResource("GradientTexture1D_blood")
+
+[node name="ImpactParticle" unique_id=96093393 instance=ExtResource("1_ks06d")]
+
+[node name="GPUParticles2D" parent="." index="0"]
+amount = 15
+lifetime = 0.5
+process_material = SubResource("ParticleProcessMaterial_blood")

@@ -146,14 +146,13 @@ func show_kill_feedback() -> void:
 	if feedback == null:
 		return
 
-	feedback.modulate = Color(1.0, 0.35, 0.35, 1.0)
 	feedback.scale = Vector2(0.9, 0.9)
 
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(feedback, "position:y", feedback.position.y - 12.0, 0.35)
-	tween.tween_property(feedback, "modulate:a", 0.0, 0.35).set_delay(0.2)
-	tween.tween_property(feedback, "scale", Vector2(1.0, 1.0), 0.15)
+	tween.tween_property(feedback, "position:y", feedback.position.y - 12.0, 0.3)
+	tween.tween_property(feedback, "modulate:a", 0.0, 0.35).set_delay(1)
+	tween.tween_property(feedback, "scale", Vector2(1.0, 1.0), 0.2)
 	tween.set_parallel(false)
 	tween.tween_callback(feedback.queue_free)
 

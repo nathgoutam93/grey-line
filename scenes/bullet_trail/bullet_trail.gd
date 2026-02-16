@@ -4,6 +4,7 @@ var speed := 4000.0
 var start_point: Vector2
 var end_point: Vector2
 var normal: Vector2
+var surface_type: String = "default"
 
 @export var impact_spawner: ImpactSpawner2D
 
@@ -18,5 +19,5 @@ func _ready():
 
 
 func _on_hit():
-	impact_spawner.spawn_impact_effect(end_point, normal)
+	impact_spawner.spawn_impact_effect(end_point, normal, surface_type)
 	queue_free()

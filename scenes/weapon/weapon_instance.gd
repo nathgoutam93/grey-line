@@ -42,9 +42,10 @@ func _shoot_raycast() -> void:
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(origin, end_point)
 	var result = space_state.intersect_ray(query)
+	var surface_type := _resolve_surface_type(result)
 
 	if data.uses_ammo:
-		_create_bullet_trail(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO)
+		_create_bullet_trail(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO, surface_type)
 
 
 	# draw_debug_line(origin, result.position if result else end_point)
@@ -251,11 +252,40 @@ func _play_equip_sound():
 	if sound_pool:
 		sound_pool.play_stream(data.sounds.equip_sound)
 
-func _create_bullet_trail(start: Vector2, end: Vector2, normal) -> void:
+func _resolve_surface_type(result: Dictionary) -> String:
+	if result.is_empty():
+		return "default"
+
+	var collider = result.get("collider")
+	if collider == null:
+		return "default"
+
+	if collider is PlayerController:
+		return "flesh"
+
+	if collider.has_method("get_impact_surface_type"):
+		var from_method = collider.call("get_impact_surface_type")
+		if from_method is String and not from_method.is_empty():
+			return from_method
+
+	if collider.has_meta("surface_type"):
+		var from_meta = collider.get_meta("surface_type")
+		if from_meta is String and not from_meta.is_empty():
+			return from_meta
+
+	for group_name in collider.get_groups():
+		var group_as_string := str(group_name)
+		if group_as_string.begins_with("surface_"):
+			return group_as_string.trim_prefix("surface_")
+
+	return "default"
+
+func _create_bullet_trail(start: Vector2, end: Vector2, normal, surface_type: String = "default") -> void:
 	var trail = BulletTrailScene.instantiate()
 	trail.start_point = start
 	trail.end_point = end
 	trail.normal = normal
+	trail.surface_type = surface_type
 	get_tree().current_scene.add_child(trail)
 
 		
