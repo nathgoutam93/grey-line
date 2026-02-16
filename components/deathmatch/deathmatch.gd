@@ -186,6 +186,7 @@ func _setup_player(peer_id, player_path: NodePath):
 		if peer_id == multiplayer.get_unique_id():
 			player.setup_locals()
 			MaskViewProvider.viewport.player_camera = player.camera
+			MaskViewProvider.viewport.player = player
 
 # Spawn a player on server, will autospawn on client by MultiplayerSpawner Node
 func spawn_player(peer_id: int):
@@ -374,6 +375,7 @@ func _clear_local_fow_camera_reference() -> void:
 	var mask_viewport := MaskViewProvider.viewport
 	if is_instance_valid(mask_viewport):
 		mask_viewport.set("player_camera", null)
+		mask_viewport.set("player", null)
 
 func _change_to_post_match_scene() -> void:
 	if post_match_scene:

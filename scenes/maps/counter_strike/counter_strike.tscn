@@ -1986,7 +1986,7 @@ match_timer_label = NodePath("../UI/Control/MatchTimerLabel")
 match_result_overlay = NodePath("MatchResultLayer/MatchResultOverlay")
 match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
 match_duration_seconds = 300
-score_limit = 2
+score_limit = 5
 post_match_scene = ExtResource("18_rq4m3")
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=712465194]

@@ -7,6 +7,17 @@
 [ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="4_cqj5h"]
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud/kill_feedback_item.tscn" id="5_7wk8i"]
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud/kill_feed_item.tscn" id="6_i4s2j"]
+[ext_resource type="Script" uid="uid://c5d584uasjvqq" path="res://addons/virtual_joystick/virtual_joystick.gd" id="8_d3tj2"]
+[ext_resource type="Texture2D" uid="uid://bm30au8mjfc2f" path="res://addons/virtual_joystick/textures/joystick_base_outline.png" id="9_h1x2m"]
+[ext_resource type="Texture2D" uid="uid://cergiajn1nce" path="res://assets/sprites/icons/shapes at 26-02-16 16.53.50 (Custom).png" id="10_h1x2m"]
+[ext_resource type="Texture2D" uid="uid://dt13r06u87fib" path="res://addons/virtual_joystick/textures/joystick_tip_arrows.png" id="10_x4jlu"]
+[ext_resource type="Texture2D" uid="uid://bv3tmnyrolkun" path="res://assets/sprites/icons/swap_btn.png" id="11_x4jlu"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_x4jlu"]
+radius = 40.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5si8t"]
+size = Vector2(80, 80)
 
 [sub_resource type="LabelSettings" id="LabelSettings_je7p5"]
 font_size = 8
@@ -119,18 +130,9 @@ layout_mode = 2
 [node name="WeaponSlot" parent="Control/VBoxContainer" unique_id=1434248854 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="FpsCounter" parent="Control" unique_id=738888706 instance=ExtResource("3_2a5y5")]
-layout_mode = 0
-offset_left = 7.0
-offset_top = 6.0
-offset_right = 61.0
-offset_bottom = 29.0
-text = "FPS: 60"
-label_settings = SubResource("LabelSettings_je7p5")
-
 [node name="crosshair" parent="." unique_id=1829500786 instance=ExtResource("4_cqj5h")]
 
-[node name="KillFeedbackLayer" type="Control" parent="."]
+[node name="KillFeedbackLayer" type="Control" parent="." unique_id=37248392]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -139,9 +141,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="KillFeedbackContainer" type="VBoxContainer" parent="KillFeedbackLayer"]
+[node name="KillFeedbackContainer" type="VBoxContainer" parent="KillFeedbackLayer" unique_id=375886739]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -80.0
@@ -151,7 +153,7 @@ offset_bottom = 120.0
 grow_horizontal = 2
 theme_override_constants/separation = 4
 
-[node name="KillFeedLayer" type="Control" parent="."]
+[node name="KillFeedLayer" type="Control" parent="." unique_id=1598663193]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -160,14 +162,152 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="KillFeedContainer" type="VBoxContainer" parent="KillFeedLayer"]
+[node name="KillFeedContainer" type="VBoxContainer" parent="KillFeedLayer" unique_id=1528718915]
 layout_mode = 1
-anchors_preset = 9
+anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = -260.0
 offset_top = 40.0
 offset_right = -16.0
 offset_bottom = 220.0
 grow_horizontal = 0
+grow_vertical = 2
 theme_override_constants/separation = 4
+
+[node name="Controls" type="Control" parent="." unique_id=1221929392]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MovementJoystick" type="Control" parent="Controls" unique_id=2076348419]
+modulate = Color(1, 1, 1, 0.19607843)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = -164.0
+offset_right = 148.0
+offset_bottom = -64.0
+grow_vertical = 0
+script = ExtResource("8_d3tj2")
+action_left = "move_left"
+action_right = "move_right"
+action_up = "move_up"
+action_down = "move_down"
+
+[node name="Base" type="TextureRect" parent="Controls/MovementJoystick" unique_id=1248026477]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(100, 100)
+mouse_force_pass_scroll_events = false
+texture = ExtResource("9_h1x2m")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Tip" type="TextureRect" parent="Controls/MovementJoystick/Base" unique_id=2073210442]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -25.0
+offset_right = 25.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(50, 50)
+texture = ExtResource("10_x4jlu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LookJoystick" type="Control" parent="Controls" unique_id=485504410]
+modulate = Color(1, 1, 1, 0.19607843)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 453.0
+offset_top = -168.0
+offset_right = 553.0
+offset_bottom = -68.0
+grow_vertical = 0
+script = ExtResource("8_d3tj2")
+joystick_mode = 1
+use_input_actions = false
+
+[node name="Base" type="TextureRect" parent="Controls/LookJoystick" unique_id=780463249]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(100, 100)
+mouse_force_pass_scroll_events = false
+texture = ExtResource("9_h1x2m")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Tip" type="TextureRect" parent="Controls/LookJoystick/Base" unique_id=1473905318]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -25.0
+offset_right = 25.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(50, 50)
+texture = ExtResource("10_x4jlu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Shoot" type="TouchScreenButton" parent="Controls" unique_id=1526842705]
+modulate = Color(1, 1, 1, 0.5882353)
+position = Vector2(38, 16)
+texture_normal = ExtResource("10_h1x2m")
+shape = SubResource("CircleShape2D_x4jlu")
+action = "shoot"
+
+[node name="Swap" type="TouchScreenButton" parent="Controls" unique_id=1494978597]
+position = Vector2(570, 115)
+scale = Vector2(0.6, 0.6)
+texture_normal = ExtResource("11_x4jlu")
+shape = SubResource("RectangleShape2D_5si8t")
+action = "scroll_up"
+
+[node name="FpsCounter" parent="." unique_id=738888706 instance=ExtResource("3_2a5y5")]
+offset_left = 7.0
+offset_top = 6.0
+offset_right = 61.0
+offset_bottom = 29.0
+text = "FPS: 60"
+label_settings = SubResource("LabelSettings_je7p5")

@@ -1,6 +1,14 @@
 [gd_scene format=3 uid="uid://bglb3r2wa4lrs"]
 
 [ext_resource type="PackedScene" uid="uid://dnijy4kf8kg8f" path="res://components/multiplayer/multiplayer_manager.tscn" id="1_fsom3"]
+[ext_resource type="Texture2D" uid="uid://b73f3g1jo0kbp" path="res://assets/sprites/icons/join_btn.png" id="2_ob46e"]
+[ext_resource type="Texture2D" uid="uid://bgyfv7fwytm4t" path="res://assets/sprites/icons/host_btn.png" id="3_uqeha"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wem23"]
+size = Vector2(1200, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3ovsr"]
+size = Vector2(1200, 200)
 
 [node name="MainMenu" type="Node2D" unique_id=2110683862]
 
@@ -23,36 +31,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="join" type="Button" parent="UI/Control" unique_id=631652916]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 12.0
-offset_top = -15.0
-offset_right = 117.0
-offset_bottom = 16.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Join Session
-"
+[node name="join" type="TouchScreenButton" parent="UI/Control" unique_id=1581238594]
+position = Vector2(169, 161)
+scale = Vector2(0.11450382, 0.109890096)
+texture_normal = ExtResource("2_ob46e")
+shape = SubResource("RectangleShape2D_wem23")
 
-[node name="host" type="Button" parent="UI/Control" unique_id=312586170]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -113.0
-offset_top = -14.0
-offset_right = -6.0
-offset_bottom = 17.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Host Session"
+[node name="host" type="TouchScreenButton" parent="UI/Control" unique_id=1343624285]
+position = Vector2(322, 160)
+scale = Vector2(0.10131853, 0.1181319)
+texture_normal = ExtResource("3_uqeha")
+shape = SubResource("RectangleShape2D_3ovsr")
 
 [node name="hostname" type="LineEdit" parent="UI/Control" unique_id=1631949165]
 layout_mode = 1
@@ -61,10 +50,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -115.0
-offset_top = -50.0
-offset_right = 120.0
-offset_bottom = -19.0
+offset_left = -133.0
+offset_top = -48.0
+offset_right = 133.0
+offset_bottom = -17.0
 grow_horizontal = 2
 grow_vertical = 2
 placeholder_text = "Host/IP address"
@@ -77,9 +66,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -115.0
+offset_left = -133.0
 offset_top = -86.0
-offset_right = 120.0
+offset_right = 131.0
 offset_bottom = -55.0
 grow_horizontal = 2
 grow_vertical = 2

@@ -1,6 +1,8 @@
 extends CanvasLayer
 
 @onready var _player: PlayerController = get_parent()
+@onready var crosshair: Node2D = get_node_or_null("Controls/crosshair")
+@onready var look_joystick: VirtualJoystick = _resolve_look_joystick()
 @onready var kill_feedback_container: VBoxContainer = get_node("KillFeedbackLayer/KillFeedbackContainer")
 @onready var kill_feed_container: VBoxContainer = get_node("KillFeedLayer/KillFeedContainer")
 
@@ -11,6 +13,7 @@ extends CanvasLayer
 @onready var primary_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot")
 @onready var secondary_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot2")
 @onready var melee_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot3")
+
 const HUD_WEAPON_SLOTS := [
 	WeaponManager.WeaponSlot.PRIMARY,
 	WeaponManager.WeaponSlot.SECONDARY,
@@ -33,6 +36,16 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_sync_weapon_slots()
 	_update_visibility()
+
+func _resolve_look_joystick() -> VirtualJoystick:
+	var node := get_node_or_null("Controls/LookJoystick")
+	if node is VirtualJoystick:
+		return node
+
+	return null
+
+func get_look_joystick() -> VirtualJoystick:
+	return look_joystick
 
 func _update_visibility() -> void:
 	var is_local_hud := _player.is_local_player or _player.owner_peer_id == multiplayer.get_unique_id()
@@ -83,6 +96,7 @@ func _update_slot_selection_visual() -> void:
 			slot_ui.modulate = Color(0.55, 0.55, 0.55, 0.7)
 
 func _process(_delta: float) -> void:
+	_update_crosshair()
 	_update_visibility()
 	_sync_weapon_slots()
 	_update_slot_selection_visual()
@@ -97,6 +111,18 @@ func _process(_delta: float) -> void:
 		return
 	ammo_left_label.text = str(_player.weapon_manager.get_ammo_in_mag())
 	mag_size_label.text = str(_player.weapon_manager.get_ammo_reserve())
+
+func _update_crosshair() -> void:
+	if not crosshair:
+		return
+	if not is_instance_valid(_player) or not is_instance_valid(_player.player_input):
+		return
+
+	var aim_screen_pos := _player.player_input.get_aim_screen_position()
+	if crosshair.has_method("set_aim_screen_position"):
+		crosshair.call("set_aim_screen_position", aim_screen_pos)
+	else:
+		crosshair.position = aim_screen_pos
 
 func show_kill_feedback() -> void:
 	if not visible:

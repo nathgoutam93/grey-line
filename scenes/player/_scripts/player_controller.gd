@@ -148,6 +148,13 @@ func request_switch_weapon_next():
 	_remote_switch_weapon.rpc()
 
 @rpc("any_peer", "call_local")
+func request_switch_weapon_previous():
+	if not _is_valid_owner_request():
+		return
+
+	_remote_switch_weapon_previous.rpc()
+
+@rpc("any_peer", "call_local")
 func request_switch_weapon_slot(slot: int):
 	if not _is_valid_owner_request():
 		return
@@ -198,6 +205,10 @@ func _remote_reload():
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon():
 	weapon_manager.switch_to_next_weapon()
+
+@rpc("authority", "call_local", "reliable")
+func _remote_switch_weapon_previous():
+	weapon_manager.switch_to_previous_weapon()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon_slot(slot: int):
