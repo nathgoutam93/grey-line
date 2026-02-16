@@ -5,8 +5,11 @@ extends Node
 @export var map: Node2D
 @export var spawn_point_container: Node
 @export var match_timer_label: Label
+@export var timer_toggle_control: Control
+@export var timer_touch_toggle_button: TouchScreenButton
 @export var match_result_overlay: Control
 @export var match_result_label: Label
+@export var leave_game_button: Button
 @export_range(30, 3600, 1, "or_greater") var match_duration_seconds := 600
 @export_range(1, 200, 1, "or_greater") var score_limit := 25
 @export_range(0.5, 10.0, 0.1, "or_greater") var post_match_result_duration_seconds := 2.0
@@ -34,6 +37,16 @@ func _ready():
 		leaderboard.visible = false
 	if is_instance_valid(match_result_overlay):
 		match_result_overlay.visible = false
+	if is_instance_valid(leave_game_button):
+		leave_game_button.visible = false
+		if not leave_game_button.pressed.is_connected(_on_leave_game_pressed):
+			leave_game_button.pressed.connect(_on_leave_game_pressed)
+	if is_instance_valid(timer_toggle_control):
+		if not timer_toggle_control.gui_input.is_connected(_on_timer_toggle_gui_input):
+			timer_toggle_control.gui_input.connect(_on_timer_toggle_gui_input)
+	if is_instance_valid(timer_touch_toggle_button):
+		if not timer_touch_toggle_button.pressed.is_connected(_on_timer_touch_toggle_pressed):
+			timer_touch_toggle_button.pressed.connect(_on_timer_touch_toggle_pressed)
 
 	match_time_remaining = float(match_duration_seconds)
 	_update_match_timer_ui_local(_format_match_time(match_time_remaining))
@@ -62,11 +75,9 @@ func _process(delta: float) -> void:
 		return
 
 	if is_instance_valid(leaderboard):
-		if _is_local_touch_input_mode():
-			leaderboard.visible = touch_leaderboard_visible
-		else:
-			touch_leaderboard_visible = false
-			leaderboard.visible = Input.is_action_pressed("stats")
+		leaderboard.visible = touch_leaderboard_visible
+	if is_instance_valid(leave_game_button):
+		leave_game_button.visible = touch_leaderboard_visible and not OS.has_feature("dedicated_server")
 
 	if not multiplayer.is_server():
 		return
@@ -103,6 +114,35 @@ func _on_disconnected():
 
 func _on_connection_failed():
 	print("Failed to connect to server.")
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("stats"):
+		_toggle_hud_menu_visibility()
+		get_viewport().set_input_as_handled()
+
+func _on_timer_toggle_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			_toggle_hud_menu_visibility()
+			get_viewport().set_input_as_handled()
+			return
+
+func _on_timer_touch_toggle_pressed() -> void:
+	_toggle_hud_menu_visibility()
+
+func _toggle_hud_menu_visibility() -> void:
+	if match_ended or post_match_transition_started:
+		return
+	touch_leaderboard_visible = not touch_leaderboard_visible
+
+func _on_leave_game_pressed() -> void:
+	if post_match_scene_change_requested:
+		return
+	post_match_scene_change_requested = true
+	var changed := _change_to_post_match_scene()
+	if not changed:
+		post_match_scene_change_requested = false
 
 
 func _on_peer_connected(id: int):
@@ -428,6 +468,8 @@ func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> v
 		leaderboard.populate_leaderboard(final_stats)
 		leaderboard.visible = false
 	touch_leaderboard_visible = false
+	if is_instance_valid(leave_game_button):
+		leave_game_button.visible = false
 
 	if is_instance_valid(match_result_overlay):
 		match_result_overlay.visible = true

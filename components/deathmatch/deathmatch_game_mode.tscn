@@ -5,17 +5,22 @@
 [ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="2_cvc4k"]
 [ext_resource type="Texture2D" uid="uid://dyvurudpwy4vt" path="res://assets/sprites/hud/shape_2.png" id="3_moinr"]
 
-[node name="DeathmatchGameMode" type="Node" unique_id=1766349449 node_paths=PackedStringArray("leaderboard", "match_timer_label", "match_result_overlay", "match_result_label")]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_moinr"]
+size = Vector2(180, 30)
+
+[node name="DeathmatchGameMode" type="Node" unique_id=1766349449 node_paths=PackedStringArray("leaderboard", "match_timer_label", "timer_toggle_control", "timer_touch_toggle_button", "match_result_overlay", "match_result_label", "leave_game_button")]
 script = ExtResource("1_5osu2")
 player_scene = ExtResource("2_cvc4k")
 leaderboard = NodePath("MatchResultLayer/Control/Leaderboard")
 match_timer_label = NodePath("MatchResultLayer/Control/Timer/MatchTimerLabel")
+timer_toggle_control = NodePath("MatchResultLayer/Control/Timer")
+timer_touch_toggle_button = NodePath("MatchResultLayer/Control/Timer/TouchScreenButton")
 match_result_overlay = NodePath("MatchResultLayer/MatchResultOverlay")
 match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
+leave_game_button = NodePath("MatchResultLayer/Control/LeaveGameButton")
 match_duration_seconds = 300
 score_limit = 10
 post_match_result_duration_seconds = 5.0
-post_match_scene_path = "res://scenes/main_menu/main_menu.tscn"
 
 [node name="MatchResultLayer" type="CanvasLayer" parent="." unique_id=16716851]
 layer = 10
@@ -68,7 +73,21 @@ grow_vertical = 2
 [node name="Leaderboard" parent="MatchResultLayer/Control" unique_id=1482750033 instance=ExtResource("2_0ul0j")]
 layout_mode = 1
 offset_left = -160.0
+offset_top = -137.0
 offset_right = 160.0
+offset_bottom = 163.0
+
+[node name="LeaveGameButton" type="Button" parent="MatchResultLayer/Control" unique_id=676020495]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -155.0
+offset_top = 301.0
+offset_right = -19.0
+offset_bottom = 339.0
+grow_horizontal = 0
+text = "Leave Game"
 
 [node name="Timer" type="TextureRect" parent="MatchResultLayer/Control" unique_id=744819879]
 layout_mode = 1
@@ -79,6 +98,7 @@ offset_left = -100.0
 offset_right = 100.0
 offset_bottom = 40.0
 grow_horizontal = 2
+mouse_filter = 0
 texture = ExtResource("3_moinr")
 expand_mode = 1
 
@@ -95,3 +115,8 @@ grow_horizontal = 2
 theme_override_font_sizes/font_size = 24
 text = "10:00"
 horizontal_alignment = 1
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="MatchResultLayer/Control/Timer" unique_id=1906934821]
+position = Vector2(102, 16)
+shape = SubResource("RectangleShape2D_moinr")
+visibility_mode = 1
