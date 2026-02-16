@@ -168,6 +168,13 @@ func _register_player_name(raw_name: String) -> void:
 func get_player_name(peer_id: int) -> String:
 	return String(player_names.get(peer_id, "Player %d" % peer_id))
 
+func is_peer_connected(peer_id: int) -> bool:
+	if multiplayer.multiplayer_peer == null:
+		return false
+	if peer_id == multiplayer.get_unique_id():
+		return true
+	return multiplayer.get_peers().has(peer_id)
+
 func _set_player_name_for_peer(peer_id: int, raw_name: String) -> void:
 	player_names[peer_id] = _sanitize_player_name(raw_name, peer_id)
 

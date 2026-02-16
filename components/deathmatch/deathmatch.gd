@@ -301,7 +301,19 @@ func _on_player_tree_exited(peer_id: int) -> void:
 		return
 	if not _has_active_multiplayer_peer() or not multiplayer.is_server() or match_ended:
 		return
+	if not _should_respawn_peer(peer_id):
+		return
 	spawn_player(peer_id)
+
+func _should_respawn_peer(peer_id: int) -> bool:
+	if peer_id == multiplayer.get_unique_id():
+		return true
+
+	var multiplayer_manager := get_tree().get_first_node_in_group("multiplayer_manager")
+	if multiplayer_manager != null and multiplayer_manager.has_method("is_peer_connected"):
+		return bool(multiplayer_manager.call("is_peer_connected", peer_id))
+
+	return multiplayer.get_peers().has(peer_id)
 
 func _exit_tree() -> void:
 	if multiplayer.peer_connected.is_connected(_on_peer_connected):
