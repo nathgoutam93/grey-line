@@ -3,6 +3,7 @@ extends Node
 @export var player_scene: PackedScene
 @export var leaderboard: DeathmatchLeaderboard
 @export var map: Node2D
+@export var spawn_point_container: Node
 @export var match_timer_label: Label
 @export var match_result_overlay: Control
 @export var match_result_label: Label
@@ -11,7 +12,7 @@ extends Node
 @export_range(0.5, 10.0, 0.1, "or_greater") var post_match_result_duration_seconds := 2.0
 @export var post_match_scene : PackedScene
 
-@onready var spawn_points := map.get_node("SpawnPoints").get_children()
+var spawn_points: Array[Node2D] = []
 
 var player_stats := {} # Format: { peer_id: { "kills": 0, "deaths": 0 } }
 var stats_refresh_elapsed := 0.0
@@ -19,10 +20,13 @@ var timer_refresh_elapsed := 0.0
 var match_time_remaining := 0.0
 var match_ended := false
 var winning_peer_id := -1
+var touch_leaderboard_visible := false
 const STATS_REFRESH_INTERVAL := 0.35
 const TIMER_REFRESH_INTERVAL := 1.0
 
 func _ready():
+	_cache_spawn_points()
+
 	if is_instance_valid(leaderboard):
 		leaderboard.visible = false
 	if is_instance_valid(match_result_overlay):
@@ -48,7 +52,11 @@ func _ready():
 
 func _process(delta: float) -> void:
 	if is_instance_valid(leaderboard):
-		leaderboard.visible = Input.is_action_pressed("stats")
+		if _is_local_touch_input_mode():
+			leaderboard.visible = touch_leaderboard_visible
+		else:
+			touch_leaderboard_visible = false
+			leaderboard.visible = Input.is_action_pressed("stats")
 
 	if not multiplayer.is_server():
 		return
@@ -193,6 +201,10 @@ func spawn_player(peer_id: int):
 	if match_ended:
 		return
 
+	if spawn_points.is_empty():
+		push_warning("No spawn points configured. Set Deathmatch.spawn_point_container in the editor.")
+		return
+
 	var spawn_point = spawn_points.pick_random()
 
 	var player_instance = player_scene.instantiate()
@@ -203,6 +215,15 @@ func spawn_player(peer_id: int):
 	
 	print("Spawned player for peer %d at %s" % [peer_id, spawn_point.global_position])
 	player_instance.ready.connect(func(): rpc("_setup_player", peer_id, player_instance.get_path()))
+
+func _cache_spawn_points() -> void:
+	spawn_points.clear()
+	if not is_instance_valid(spawn_point_container):
+		return
+
+	for child in spawn_point_container.get_children():
+		if child is Node2D:
+			spawn_points.append(child)
 
 func _on_player_tree_exited(peer_id: int) -> void:
 	if not multiplayer.is_server() or match_ended:
@@ -351,11 +372,20 @@ func _update_match_timer_ui_local(text: String) -> void:
 	if is_instance_valid(match_timer_label):
 		match_timer_label.text = text
 
+func _is_local_touch_input_mode() -> bool:
+	if not is_instance_valid(map):
+		return false
+	var local_player := map.get_node_or_null(str(multiplayer.get_unique_id())) as PlayerController
+	if local_player == null or local_player.player_input == null:
+		return false
+	return local_player.player_input.input_mode == PlayerInput.InputMode.TOUCH
+
 @rpc("call_local", "reliable")
 func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:
 	if is_instance_valid(leaderboard):
 		leaderboard.populate_leaderboard(final_stats)
 		leaderboard.visible = false
+	touch_leaderboard_visible = false
 
 	if is_instance_valid(match_result_overlay):
 		match_result_overlay.visible = true

@@ -1,7 +1,7 @@
 extends Sprite2D
 
 func _ready() -> void:
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN) # MOUSE_MODE_CONFINED_HIDDEN
+	pass
 
 func set_aim_screen_position(screen_pos: Vector2) -> void:
 	position = screen_pos

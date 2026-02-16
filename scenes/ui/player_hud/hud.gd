@@ -1,8 +1,9 @@
 extends CanvasLayer
 
 @onready var _player: PlayerController = get_parent()
-@onready var crosshair: Node2D = get_node_or_null("Controls/crosshair")
+@onready var crosshair: Node2D = get_node_or_null("crosshair")
 @onready var look_joystick: VirtualJoystick = _resolve_look_joystick()
+@onready var controls_root: Control = get_node_or_null("Controls")
 @onready var kill_feedback_container: VBoxContainer = get_node("KillFeedbackLayer/KillFeedbackContainer")
 @onready var kill_feed_container: VBoxContainer = get_node("KillFeedLayer/KillFeedContainer")
 
@@ -24,6 +25,8 @@ const HUD_WEAPON_SLOTS := [
 @export var kill_feed_item_scene: PackedScene
 
 var _slot_nodes_by_slot := {}
+var _is_local_hud := false
+var _visibility_initialized := false
 
 func _ready() -> void:
 	_slot_nodes_by_slot = {
@@ -48,8 +51,19 @@ func get_look_joystick() -> VirtualJoystick:
 	return look_joystick
 
 func _update_visibility() -> void:
-	var is_local_hud := _player.is_local_player or _player.owner_peer_id == multiplayer.get_unique_id()
-	visible = is_local_hud
+	var should_be_local_hud := _player.is_local_player or _player.owner_peer_id == multiplayer.get_unique_id()
+	if _visibility_initialized and should_be_local_hud == _is_local_hud:
+		return
+
+	_visibility_initialized = true
+	_is_local_hud = should_be_local_hud
+	visible = _is_local_hud
+	_set_controls_input_enabled(_is_local_hud)
+
+func _set_controls_input_enabled(is_enabled: bool) -> void:
+	if not is_instance_valid(controls_root):
+		return
+	controls_root.process_mode = Node.PROCESS_MODE_INHERIT if is_enabled else Node.PROCESS_MODE_DISABLED
 
 func _sync_weapon_slots() -> void:
 	if not _player or not _player.weapon_manager:

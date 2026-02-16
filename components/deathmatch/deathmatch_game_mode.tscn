@@ -1,14 +1,27 @@
-[gd_scene load_steps=2 format=3 uid="uid://cpm02yyoj8p5m"]
+[gd_scene format=3 uid="uid://cpm02yyoj8p5m"]
 
 [ext_resource type="Script" uid="uid://dcvdgg2588plj" path="res://components/deathmatch/deathmatch.gd" id="1_5osu2"]
+[ext_resource type="PackedScene" uid="uid://bo0618n7gadoc" path="res://scenes/ui/deathmatch/leaderboard.tscn" id="2_0ul0j"]
+[ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="2_cvc4k"]
+[ext_resource type="PackedScene" uid="uid://bglb3r2wa4lrs" path="res://scenes/main_menu/main_menu.tscn" id="2_moinr"]
+[ext_resource type="Texture2D" uid="uid://dyvurudpwy4vt" path="res://assets/sprites/hud/shape_2.png" id="3_moinr"]
 
-[node name="DeathmatchGameMode" type="Node"]
+[node name="DeathmatchGameMode" type="Node" unique_id=1766349449 node_paths=PackedStringArray("leaderboard", "match_timer_label", "match_result_overlay", "match_result_label")]
 script = ExtResource("1_5osu2")
+player_scene = ExtResource("2_cvc4k")
+leaderboard = NodePath("MatchResultLayer/Control/Leaderboard")
+match_timer_label = NodePath("MatchResultLayer/Control/Timer/MatchTimerLabel")
+match_result_overlay = NodePath("MatchResultLayer/MatchResultOverlay")
+match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
+match_duration_seconds = 300
+score_limit = 10
+post_match_result_duration_seconds = 5.0
+post_match_scene = ExtResource("2_moinr")
 
-[node name="MatchResultLayer" type="CanvasLayer" parent="."]
+[node name="MatchResultLayer" type="CanvasLayer" parent="." unique_id=16716851]
 layer = 10
 
-[node name="MatchResultOverlay" type="Control" parent="MatchResultLayer"]
+[node name="MatchResultOverlay" type="Control" parent="MatchResultLayer" unique_id=1710306076]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -18,7 +31,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Backdrop" type="ColorRect" parent="MatchResultLayer/MatchResultOverlay"]
+[node name="Backdrop" type="ColorRect" parent="MatchResultLayer/MatchResultOverlay" unique_id=1912982252]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,7 +40,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.72)
 
-[node name="ResultLabel" type="Label" parent="MatchResultLayer/MatchResultOverlay"]
+[node name="ResultLabel" type="Label" parent="MatchResultLayer/MatchResultOverlay" unique_id=1170241155]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -44,3 +57,42 @@ theme_override_font_sizes/font_size = 64
 text = "VICTORY"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Control" type="Control" parent="MatchResultLayer" unique_id=1038102638]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Leaderboard" parent="MatchResultLayer/Control" unique_id=1482750033 instance=ExtResource("2_0ul0j")]
+layout_mode = 1
+offset_left = -160.0
+offset_right = 160.0
+
+[node name="Timer" type="TextureRect" parent="MatchResultLayer/Control" unique_id=744819879]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_right = 100.0
+offset_bottom = 40.0
+grow_horizontal = 2
+texture = ExtResource("3_moinr")
+expand_mode = 1
+
+[node name="MatchTimerLabel" type="Label" parent="MatchResultLayer/Control/Timer" unique_id=610854681]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -50.0
+offset_top = -1.0
+offset_right = 54.0
+offset_bottom = 33.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "10:00"
+horizontal_alignment = 1

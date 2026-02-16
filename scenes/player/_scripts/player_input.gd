@@ -24,6 +24,7 @@ func get_aim_world_position() -> Vector2:
 var _aim_screen_pos := Vector2.ZERO
 var _aim_initialized := false
 var _touch_shoot_was_pressed := false
+var _touch_reload_was_pressed := false
 var _touch_swap_was_pressed := false
 var _touch_aim_dir := Vector2.RIGHT
 
@@ -38,6 +39,9 @@ func set_authority(peer_id: int):
 func _ready() -> void:
 	set_process(false)
 	_apply_input_mode()
+	
+	if not _is_touch_mode():
+		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN) # MOUSE_MODE_CONFINED_HIDDEN
 
 func _process(delta: float) -> void:
 	_update_aim(delta)
@@ -106,6 +110,7 @@ func _is_touch_mode() -> bool:
 func _apply_input_mode() -> void:
 	_aim_initialized = false
 	_touch_shoot_was_pressed = false
+	_touch_reload_was_pressed = false
 	_touch_swap_was_pressed = false
 	_touch_aim_dir = Vector2.RIGHT
 
@@ -133,6 +138,12 @@ func _process_touch_input() -> void:
 	if not is_shoot_pressed and _touch_shoot_was_pressed:
 		player.request_stop_fire.rpc_id(1)
 	_touch_shoot_was_pressed = is_shoot_pressed
+	
+	var reload_button := _resolve_touch_button("Reload")
+	var is_reload_pressed := reload_button != null and reload_button.is_pressed()
+	if is_reload_pressed and not _touch_reload_was_pressed:
+		player.request_reload.rpc_id(1)
+	_touch_reload_was_pressed = is_reload_pressed
 
 	var swap_button := _resolve_touch_button("Swap")
 	var is_swap_pressed := swap_button != null and swap_button.is_pressed()

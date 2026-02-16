@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c3rrf5gx284my"]
 
-[node name="KillFeedbackItem" type="Label"]
-layout_mode = 0
+[ext_resource type="Texture2D" uid="uid://dftxphlfbhlqq" path="res://assets/sprites/icons/kill_icon.png" id="1_vwl3c"]
+
+[node name="KillFeedbackItem" type="TextureRect" unique_id=185016589]
 offset_right = 68.0
-offset_bottom = 16.0
-text = "KILL +1"
-horizontal_alignment = 1
+offset_bottom = 23.0
+texture = ExtResource("1_vwl3c")
