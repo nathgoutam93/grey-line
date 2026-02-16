@@ -45,6 +45,7 @@ func _ready():
 
 func setup_locals():
 	is_local_player = true
+	Input.emulate_mouse_from_touch = false
 	camera.enabled = true
 	camera.make_current()
 	audio_listner.make_current()
