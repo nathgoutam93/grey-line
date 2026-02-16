@@ -37,11 +37,8 @@ func _ready():
 	_apply_default_player_name()
 	if hostname_input and hostname_input.text.strip_edges() == "" and not _is_loopback_address(address):
 		hostname_input.text = address
-	_set_manual_join_visible(_is_android_platform())
-	if _is_android_platform():
-		_set_discovery_status("Enter host/IP manually on Android.")
-	else:
-		_set_discovery_status("Auto-discover LAN host")
+	_set_manual_join_visible(false)
+	_set_discovery_status("Auto-discover LAN host")
 
 	if not multiplayer.connected_to_server.is_connected(_on_connected_to_server):
 		multiplayer.connected_to_server.connect(_on_connected_to_server)
@@ -104,11 +101,6 @@ func join_game():
 			_set_discovery_status("Enter host/IP manually.")
 			return
 		_connect_to_server(target_address, target_port)
-		return
-
-	if _is_android_platform():
-		_set_manual_join_visible(true)
-		_set_discovery_status("Enter host/IP manually on Android.")
 		return
 
 	_set_discovery_status("Searching LAN hosts...")
@@ -254,11 +246,8 @@ func return_to_lobby_after_match() -> void:
 	player_names.clear()
 	if ui_layer:
 		ui_layer.show()
-	_set_manual_join_visible(_is_android_platform())
-	if _is_android_platform():
-		_set_discovery_status("Enter host/IP manually on Android.")
-	else:
-		_set_discovery_status("Auto-discover LAN host")
+	_set_manual_join_visible(false)
+	_set_discovery_status("Auto-discover LAN host")
 
 	for c in level.get_children():
 		level.remove_child(c)
