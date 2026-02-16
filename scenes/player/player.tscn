@@ -107,7 +107,6 @@ pool_size = 3
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_fm80t")
 script = ExtResource("13_gx1jg")
-input_mode = 1
 player = NodePath("..")
 
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=213592159]

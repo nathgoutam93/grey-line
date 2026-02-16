@@ -8,8 +8,9 @@ enum InputMode {
 
 @export var input_vector := Vector2()
 @export var mouse_pos := Vector2()
-@export var touch_look_speed := 1400.0
 @export var touch_aim_distance := 1200.0
+@export_range(0.0, 1.0) var touch_aim_deadzone := 0.2
+@export var touch_crosshair_radius := 180.0
 @export var input_mode: InputMode = InputMode.MOUSE_KEYBOARD:
 	set(value):
 		input_mode = value
@@ -24,6 +25,7 @@ var _aim_screen_pos := Vector2.ZERO
 var _aim_initialized := false
 var _touch_shoot_was_pressed := false
 var _touch_swap_was_pressed := false
+var _touch_aim_dir := Vector2.RIGHT
 
 func get_aim_screen_position() -> Vector2:
 	return _aim_screen_pos
@@ -45,7 +47,7 @@ func _process(delta: float) -> void:
 	else:
 		_process_mouse_keyboard_input()
 
-func _update_aim(delta: float) -> void:
+func _update_aim(_delta: float) -> void:
 	if not is_instance_valid(player):
 		return
 
@@ -63,16 +65,13 @@ func _update_aim(delta: float) -> void:
 
 	if _is_touch_mode():
 		var look_joystick := _resolve_look_joystick()
-		if look_joystick != null and look_joystick.is_pressed:
-			_aim_screen_pos += look_joystick.output * touch_look_speed * delta
-		_aim_screen_pos.x = clampf(_aim_screen_pos.x, 0.0, screen_size.x)
-		_aim_screen_pos.y = clampf(_aim_screen_pos.y, 0.0, screen_size.y)
+		if look_joystick != null:
+			var look_output := look_joystick.output
+			if look_output.length() >= touch_aim_deadzone:
+				_touch_aim_dir = look_output.normalized()
 
-		var look_dir := _aim_screen_pos - screen_half
-		if look_dir.length_squared() > 0.0001:
-			mouse_pos = player.global_position + (look_dir.normalized() * touch_aim_distance)
-		else:
-			mouse_pos = player.global_position + Vector2.RIGHT * touch_aim_distance
+		mouse_pos = player.global_position + (_touch_aim_dir * touch_aim_distance)
+		_aim_screen_pos = screen_half + (_touch_aim_dir * touch_crosshair_radius)
 		return
 
 	_aim_screen_pos = viewport.get_mouse_position()
@@ -108,6 +107,7 @@ func _apply_input_mode() -> void:
 	_aim_initialized = false
 	_touch_shoot_was_pressed = false
 	_touch_swap_was_pressed = false
+	_touch_aim_dir = Vector2.RIGHT
 
 	_set_touch_controls_visible(_is_touch_mode())
 
