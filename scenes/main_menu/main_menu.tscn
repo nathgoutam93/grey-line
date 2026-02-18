@@ -11,19 +11,18 @@ size = Vector2(1200, 200)
 size = Vector2(1200, 200)
 
 [sub_resource type="LabelSettings" id="LabelSettings_ob46e"]
-font_size = 10
+font_size = 48
 
 [node name="MainMenu" type="Node2D" unique_id=2110683862]
 
 [node name="Level" type="Node2D" parent="." unique_id=1986656895]
 
 [node name="LevelSpawner" type="MultiplayerSpawner" parent="." unique_id=1202549893]
-_spawnable_scenes = PackedStringArray("res://scenes/maps/counter_strike/counter_strike.tscn")
+_spawnable_scenes = PackedStringArray("uid://dyyv6g2s66fwh")
 spawn_path = NodePath("../Level")
 spawn_limit = 1
 
 [node name="MultiplayerManager" parent="." unique_id=652982671 instance=ExtResource("1_fsom3")]
-map_scene_path = "res://scenes/maps/counter_strike/counter_strike.tscn"
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=454486105]
 
@@ -35,18 +34,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="join" type="TouchScreenButton" parent="UI/Control" unique_id=1581238594]
-position = Vector2(169, 244)
-scale = Vector2(0.11450382, 0.109890096)
-texture_normal = ExtResource("2_ob46e")
-shape = SubResource("RectangleShape2D_wem23")
-
-[node name="host" type="TouchScreenButton" parent="UI/Control" unique_id=1343624285]
-position = Vector2(322, 243)
-scale = Vector2(0.10131853, 0.1181319)
-texture_normal = ExtResource("3_uqeha")
-shape = SubResource("RectangleShape2D_3ovsr")
-
 [node name="hostname" type="LineEdit" parent="UI/Control" unique_id=1631949165]
 visible = false
 layout_mode = 1
@@ -55,12 +42,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -133.0
-offset_top = 34.0
-offset_right = 133.0
-offset_bottom = 65.0
+offset_left = -482.0
+offset_top = -64.0
+offset_right = 518.0
+offset_bottom = 36.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_font_sizes/font_size = 48
 placeholder_text = "Host/IP address"
 alignment = 1
 
@@ -71,15 +59,42 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -133.0
-offset_top = -140.0
-offset_right = 131.0
-offset_bottom = -109.0
+offset_left = -482.0
+offset_top = -299.0
+offset_right = 518.0
+offset_bottom = -199.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_font_sizes/font_size = 48
 text = "Player"
 placeholder_text = "Player name"
 alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Control" unique_id=1795477928]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="join" type="TouchScreenButton" parent="UI/Control/HBoxContainer" unique_id=1581238594]
+position = Vector2(-631, 80)
+scale = Vector2(0.5, 0.5)
+texture_normal = ExtResource("2_ob46e")
+shape = SubResource("RectangleShape2D_wem23")
+
+[node name="host" type="TouchScreenButton" parent="UI/Control/HBoxContainer" unique_id=1343624285]
+position = Vector2(16, 79.000015)
+scale = Vector2(0.5, 0.5)
+texture_normal = ExtResource("3_uqeha")
+shape = SubResource("RectangleShape2D_3ovsr")
 
 [node name="discovery_status" type="Label" parent="UI/Control" unique_id=870321114]
 layout_mode = 1
@@ -89,14 +104,14 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -178.0
-offset_top = 111.0
+offset_top = 262.0
 offset_right = 182.0
-offset_bottom = 140.0
+offset_bottom = 306.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Auto-discover LAN host"
 label_settings = SubResource("LabelSettings_ob46e")
 horizontal_alignment = 1
 
-[connection signal="pressed" from="UI/Control/join" to="MultiplayerManager" method="join_game"]
-[connection signal="pressed" from="UI/Control/host" to="MultiplayerManager" method="host_game"]
+[connection signal="pressed" from="UI/Control/HBoxContainer/join" to="MultiplayerManager" method="join_game"]
+[connection signal="pressed" from="UI/Control/HBoxContainer/host" to="MultiplayerManager" method="host_game"]

@@ -1,23 +1,23 @@
-[gd_scene load_steps=4 format=3 uid="uid://c5nxfr3byaung"]
+[gd_scene format=3 uid="uid://c5nxfr3byaung"]
 
 [ext_resource type="Script" uid="uid://cn0nbsf4jbfxl" path="res://components/fog_of_war_mask_view/fow_viewport_controller.gd" id="1_sd87i"]
 [ext_resource type="Material" uid="uid://bwlqofbrbiull" path="res://materials/all_white.tres" id="2_eo6a7"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="9_66gr1"]
 
-[node name="MaskView" type="SubViewport" node_paths=PackedStringArray("los")]
+[node name="MaskView" type="SubViewport" unique_id=1947570349 node_paths=PackedStringArray("los")]
 transparent_bg = true
-size = Vector2i(1280, 720)
+size = Vector2i(3840, 2160)
 render_target_update_mode = 4
 script = ExtResource("1_sd87i")
 los = NodePath("LOS")
 
-[node name="Level" type="Node2D" parent="."]
+[node name="Level" type="Node2D" parent="." unique_id=1051732667]
 material = ExtResource("2_eo6a7")
 
-[node name="LOS" type="PointLight2D" parent="."]
+[node name="LOS" type="PointLight2D" parent="." unique_id=127657443]
 position = Vector2(291, -1802)
 blend_mode = 1
 shadow_enabled = true
 texture = ExtResource("9_66gr1")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=45476838]

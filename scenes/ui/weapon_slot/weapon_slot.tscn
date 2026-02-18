@@ -4,10 +4,8 @@
 
 [sub_resource type="LabelSettings" id="LabelSettings_h4hdm"]
 line_spacing = 1.0
-font_size = 8
 
 [sub_resource type="LabelSettings" id="LabelSettings_e6okb"]
-font_size = 8
 
 [node name="WeaponSlot" type="Panel" unique_id=1777084631]
 self_modulate = Color(1, 1, 1, 0)
@@ -17,17 +15,18 @@ size_flags_vertical = 3
 
 [node name="icon" type="TextureRect" parent="." unique_id=1053525201]
 layout_mode = 1
-offset_right = 50.0
-offset_bottom = 25.0
+offset_right = 150.0
+offset_bottom = 50.0
 texture = ExtResource("1_h4hdm")
 expand_mode = 2
 flip_h = true
 
 [node name="name" type="Label" parent="." unique_id=352515408]
 layout_mode = 1
-offset_top = 25.0
-offset_right = 50.0
-offset_bottom = 39.0
+offset_left = 1.0
+offset_top = 50.0
+offset_right = 151.0
+offset_bottom = 75.0
 text = "Knife"
 label_settings = SubResource("LabelSettings_h4hdm")
 horizontal_alignment = 1
@@ -35,9 +34,9 @@ vertical_alignment = 1
 
 [node name="key" type="Label" parent="." unique_id=1974264623]
 layout_mode = 1
-offset_left = 50.0
-offset_right = 56.0
-offset_bottom = 40.0
+offset_left = 150.0
+offset_right = 160.0
+offset_bottom = 75.0
 text = "1"
 label_settings = SubResource("LabelSettings_e6okb")
 horizontal_alignment = 2
