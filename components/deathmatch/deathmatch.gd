@@ -51,6 +51,9 @@ func _ready():
 	match_time_remaining = float(match_duration_seconds)
 	_update_match_timer_ui_local(_format_match_time(match_time_remaining))
 
+	if not _has_active_multiplayer_peer():
+		return
+
 	if not multiplayer.is_server():
 		multiplayer.connected_to_server.connect(_on_connected)
 		multiplayer.server_disconnected.connect(_on_disconnected)

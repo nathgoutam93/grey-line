@@ -6,11 +6,23 @@ var mirror_map := {}
 func _ready():
     get_tree().connect("node_added", _on_node_added)
 
+    var fow := _resolve_fow_viewport()
+    if fow:
+        set_fow_viewport(fow)
+
+func _resolve_fow_viewport() -> Viewport:
+    if is_instance_valid(MaskViewProvider.viewport):
+        return MaskViewProvider.viewport
+
     var cs = get_tree().get_current_scene()
-    if cs:
-        var fow = cs.get_node_or_null("MaskView")
-        if fow:
-            set_fow_viewport(fow)
+    if cs == null:
+        return null
+
+    var fow = cs.find_child("FowMaskView", true, false) as Viewport
+    if fow:
+        return fow
+
+    return cs.find_child("MaskView", true, false) as Viewport
 
 func set_fow_viewport(viewport: Viewport) -> void:
     fow_vp = viewport

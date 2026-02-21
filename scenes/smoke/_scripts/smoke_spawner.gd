@@ -9,6 +9,16 @@ func spawn_smoke_at(pos: Vector2):
 	smoke.global_position = pos
 	
 	var mask = mask_smoke_scene.instantiate()
-	get_tree().current_scene.get_node('MaskView/Level').add_child(mask)
+	var viewport := MaskViewProvider.viewport
+	if not is_instance_valid(viewport):
+		push_warning("Mask viewport not found; skipping mask smoke spawn")
+		return
+
+	var level := viewport.get_node_or_null("Level")
+	if level == null:
+		push_warning("Mask viewport Level node not found; skipping mask smoke spawn")
+		return
+
+	level.add_child(mask)
 	mask.global_position = pos
 	

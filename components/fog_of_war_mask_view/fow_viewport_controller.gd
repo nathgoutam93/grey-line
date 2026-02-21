@@ -16,10 +16,21 @@ func _process(_delta: float) -> void:
 	var viewport_camera := get_camera_2d()
 	if is_instance_valid(viewport_camera):
 		viewport_camera.global_position = player_camera.global_position
+		viewport_camera.ignore_rotation = player_camera.ignore_rotation
+		if not viewport_camera.ignore_rotation:
+			viewport_camera.global_rotation = player_camera.global_rotation
 
 	if is_instance_valid(los):
-		los.global_position = player_camera.global_position
+		if is_instance_valid(player):
+			los.global_position = player.global_position
+		else:
+			los.global_position = player_camera.global_position
 		los.offset = Vector2(-los_offset, 0)
+
+		if is_instance_valid(player) and is_instance_valid(player.player_input):
+			if player.player_input.input_mode == PlayerInput.InputMode.MOUSE_KEYBOARD:
+				los.global_rotation = player.global_rotation
+				return
 
 		var aim_world_pos := player_camera.get_global_mouse_position()
 		if is_instance_valid(player) and is_instance_valid(player.player_input) and player.player_input.has_method("get_aim_world_position"):

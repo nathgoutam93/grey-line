@@ -24,6 +24,7 @@ const DEFAULT_PLAYER_NAME := "Player"
 
 func _ready():
 	add_to_group("multiplayer_manager")
+	_release_mouse_capture()
 
 	# Returning to main menu should always start from a clean lobby state.
 	var existing_peer := multiplayer.multiplayer_peer
@@ -70,6 +71,7 @@ func _process(_delta: float) -> void:
 
 func _exit_tree() -> void:
 	_stop_lan_discovery_listener()
+	_release_mouse_capture()
 
 
 func host_game():
@@ -147,12 +149,14 @@ func _on_peer_disconnected(id: int) -> void:
 func _on_connection_failed() -> void:
 	_set_manual_join_visible(true)
 	_set_discovery_status("Connection failed. Enter host/IP manually.")
+	_release_mouse_capture()
 	if ui_layer:
 		ui_layer.show()
 
 func _on_server_disconnected() -> void:
 	_set_manual_join_visible(true)
 	_set_discovery_status("Disconnected from server.")
+	_release_mouse_capture()
 	if ui_layer:
 		ui_layer.show()
 
@@ -243,6 +247,7 @@ func _change_level(scene: PackedScene):
 
 func return_to_lobby_after_match() -> void:
 	_stop_lan_discovery_listener()
+	_release_mouse_capture()
 
 	var existing_peer := multiplayer.multiplayer_peer
 	if existing_peer != null:
@@ -267,6 +272,9 @@ func _set_manual_join_visible(visible: bool) -> void:
 func _set_discovery_status(text: String) -> void:
 	if discovery_status_label:
 		discovery_status_label.text = text
+
+func _release_mouse_capture() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _is_android_platform() -> bool:
 	return OS.get_name() == "Android"

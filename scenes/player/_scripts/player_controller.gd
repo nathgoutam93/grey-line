@@ -2,8 +2,11 @@ extends CharacterBody2D
 class_name PlayerController
 
 @export_group("Stats")
-@export_range(100, 300) var speed: float = 200
+@export_range(100, 300) var speed: float = 300
 @export_range(0.1, 1) var slow_walk_multiplier := 0.5
+@export var mouse_turn_sensitivity: float = 0.01
+@export var camera_boom_distance: float = 250.0
+@export var camera_rotates_with_player: bool = true
 
 @export_group("Components")
 @export var hitbox: CollisionShape2D
@@ -43,6 +46,11 @@ func _ready():
 	if health_component and not health_component.is_connected("die", _on_die):
 		health_component.connect("die", _on_die)
 
+	if camera:
+		camera.ignore_rotation = not camera_rotates_with_player
+		camera.offset = Vector2.ZERO
+		camera.position = Vector2(camera_boom_distance, 0.0)
+
 func setup_locals():
 	is_local_player = true
 	Input.emulate_mouse_from_touch = false
@@ -71,24 +79,12 @@ func _on_die(_killer_id: int):
 
 
 func _process(_delta: float) -> void:
-	if is_slow_walking:
-		footstep_player.volume_db = -40.0
-	else:
-		footstep_player.volume_db = -10.0
-
-	if movement_component.is_moving:
-		if not footstep_player.playing:
-			footstep_player.play();
-	else:
-		if footstep_player.playing:
-			footstep_player.stop();
+	if footstep_player and footstep_player.playing:
+		footstep_player.stop()
 
 	if weapon_manager and weapon_manager.current_weapon and not weapon_manager.current_weapon.is_locked:
-		if movement_component.is_moving:
-			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("move", ""))
-		else:
-			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("idle", ""))
-	
+		skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("idle", ""))
+
 func _physics_process(_delta: float) -> void:
 	pass
 

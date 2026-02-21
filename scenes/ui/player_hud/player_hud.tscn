@@ -4,7 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://da5pqg6ohyfqs" path="res://assets/sprites/hud/shape_1 (Custom).png" id="2_m5iw4"]
 [ext_resource type="PackedScene" uid="uid://wtqekk5k5spy" path="res://components/fps_counter/fps_counter.tscn" id="3_2a5y5"]
 [ext_resource type="PackedScene" uid="uid://blpgeyjx58w50" path="res://scenes/ui/weapon_slot/weapon_slot.tscn" id="3_m5iw4"]
-[ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="4_cqj5h"]
 [ext_resource type="PackedScene" uid="uid://c3rrf5gx284my" path="res://scenes/ui/player_hud/kill_feedback_item.tscn" id="5_7wk8i"]
 [ext_resource type="PackedScene" uid="uid://dbndbaytnqqum" path="res://scenes/ui/player_hud/kill_feed_item.tscn" id="6_i4s2j"]
 [ext_resource type="Script" uid="uid://c5d584uasjvqq" path="res://addons/virtual_joystick/virtual_joystick.gd" id="8_d3tj2"]
@@ -149,8 +148,6 @@ layout_mode = 2
 
 [node name="WeaponSlot" parent="Control/VBoxContainer" unique_id=1434248854 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
-
-[node name="crosshair" parent="." unique_id=1829500786 instance=ExtResource("4_cqj5h")]
 
 [node name="KillFeedbackLayer" type="Control" parent="." unique_id=37248392]
 layout_mode = 3

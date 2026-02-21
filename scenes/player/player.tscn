@@ -52,6 +52,7 @@ collision_mask = 3
 motion_mode = 1
 script = ExtResource("1_cedje")
 speed = 250.0
+camera_boom_distance = 300.0
 hitbox = NodePath("HitBox")
 skeletal_character = NodePath("PlayerMesh")
 player_input = NodePath("PlayerInput")
@@ -71,6 +72,8 @@ metadata/surface_type = "flesh"
 shape = SubResource("CapsuleShape2D_5i508")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2034022886]
+rotation = 1.5707964
+ignore_rotation = false
 enabled = false
 
 [node name="CameraShake" parent="Camera2D" unique_id=1871293477 instance=ExtResource("181_ooe3s")]
@@ -107,7 +110,6 @@ pool_size = 3
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_fm80t")
 script = ExtResource("13_gx1jg")
-input_mode = 1
 player = NodePath("..")
 
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=213592159]

@@ -27,6 +27,9 @@ var _touch_shoot_was_pressed := false
 var _touch_reload_was_pressed := false
 var _touch_swap_was_pressed := false
 var _touch_aim_dir := Vector2.RIGHT
+var _mouse_look_delta_x := 0.0
+var _look_angle := 0.0
+var _was_local_player := false
 
 func get_aim_screen_position() -> Vector2:
 	return _aim_screen_pos
@@ -35,13 +38,18 @@ func set_authority(peer_id: int):
 	set_multiplayer_authority(peer_id)
 	if peer_id == multiplayer.get_unique_id():
 		set_process(true)
+		set_process_input(true)
+	else:
+		set_process_input(false)
 
 func _ready() -> void:
 	set_process(false)
+	set_process_input(false)
 	_apply_input_mode()
-	
-	if not _is_touch_mode():
-		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN) # MOUSE_MODE_CONFINED_HIDDEN
+
+func _exit_tree() -> void:
+	if _was_local_player or _can_control_mouse_capture():
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _process(delta: float) -> void:
 	_update_aim(delta)
@@ -66,6 +74,7 @@ func _update_aim(_delta: float) -> void:
 		_aim_initialized = true
 		_aim_screen_pos = screen_half
 		mouse_pos = player.get_global_mouse_position()
+		_look_angle = player.global_rotation
 
 	if _is_touch_mode():
 		var look_joystick := _resolve_look_joystick()
@@ -78,8 +87,9 @@ func _update_aim(_delta: float) -> void:
 		_aim_screen_pos = screen_half + (_touch_aim_dir * touch_crosshair_radius)
 		return
 
-	_aim_screen_pos = viewport.get_mouse_position()
-	mouse_pos = player.get_global_mouse_position()
+	_aim_screen_pos = screen_half
+	var look_dir := Vector2.RIGHT.rotated(_look_angle)
+	mouse_pos = player.global_position + (look_dir * touch_aim_distance)
 
 func _resolve_look_joystick() -> VirtualJoystick:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
@@ -113,6 +123,8 @@ func _apply_input_mode() -> void:
 	_touch_reload_was_pressed = false
 	_touch_swap_was_pressed = false
 	_touch_aim_dir = Vector2.RIGHT
+	if is_instance_valid(player):
+		_look_angle = player.global_rotation
 
 	_set_touch_controls_visible(_is_touch_mode())
 
@@ -192,6 +204,49 @@ func _process_mouse_keyboard_input() -> void:
 
 	if Input.is_action_just_pressed("pickup"):
 		player.request_interact.rpc_id(1)
+
+func _input(event: InputEvent) -> void:
+	if not _can_control_mouse_capture():
+		return
+
+	if _is_touch_mode():
+		return
+
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_ESCAPE:
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+			return
+
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT:
+			if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+			return
+
+	if event is InputEventMouseMotion:
+		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+			_mouse_look_delta_x += event.relative.x
+			if is_instance_valid(player):
+				_look_angle += event.relative.x * player.mouse_turn_sensitivity
+
+func consume_mouse_look_delta_x() -> float:
+	var look_delta := _mouse_look_delta_x
+	_mouse_look_delta_x = 0.0
+	return look_delta
+
+func on_local_player_spawned() -> void:
+	_was_local_player = true
+	if _can_control_mouse_capture() and not _is_touch_mode():
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func _can_control_mouse_capture() -> bool:
+	if get_multiplayer_authority() != multiplayer.get_unique_id():
+		return false
+	if not is_instance_valid(player):
+		return false
+	return player.is_local_player
 
 func _set_touch_controls_visible(is_visible: bool) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):

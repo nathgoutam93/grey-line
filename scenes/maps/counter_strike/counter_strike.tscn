@@ -1928,8 +1928,8 @@ texture = SubResource("ViewportTexture_k00yj")
 centered = false
 
 [node name="FOVDebugView" type="Sprite2D" parent="CanvasLayer" unique_id=215542524]
-visible = false
-position = Vector2(0, 159)
+modulate = Color(1, 1, 1, 0.60400003)
+position = Vector2(100, 250)
 scale = Vector2(0.1, 0.1)
 texture = SubResource("ViewportTexture_rq4m3")
 centered = false
