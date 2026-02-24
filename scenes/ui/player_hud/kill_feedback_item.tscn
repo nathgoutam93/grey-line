@@ -3,6 +3,16 @@
 [ext_resource type="Texture2D" uid="uid://dftxphlfbhlqq" path="res://assets/sprites/icons/kill_icon.png" id="1_vwl3c"]
 
 [node name="KillFeedbackItem" type="TextureRect" unique_id=185016589]
-offset_right = 200.0
-offset_bottom = 200.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
 texture = ExtResource("1_vwl3c")

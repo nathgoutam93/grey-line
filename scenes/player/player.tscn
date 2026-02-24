@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://btw8i1fo6337l" path="res://scenes/player/_scripts/player_input.gd" id="13_gx1jg"]
 [ext_resource type="PackedScene" uid="uid://c6bubi5tu41qm" path="res://components/skeletal_mesh/character_skeletal.tscn" id="13_u5how"]
 [ext_resource type="PackedScene" uid="uid://c13vwx621xxak" path="res://scenes/ui/player_hud/player_hud.tscn" id="13_ugbui"]
+[ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="15_fcs02"]
 [ext_resource type="PackedScene" uid="uid://bdyn3d05wtfee" path="res://components/camera_shake/camera_shake.tscn" id="181_ooe3s"]
 [ext_resource type="PackedScene" uid="uid://dt3c830kdvwu6" path="res://components/sound_pool/sound_pool.tscn" id="187_ooe3s"]
 
@@ -44,7 +45,7 @@ properties/3/path = NodePath("WeaponManager:current_slot")
 properties/3/spawn = true
 properties/3/replication_mode = 2
 
-[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("hitbox", "skeletal_character", "player_input", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("crosshair", "hitbox", "skeletal_character", "player_input", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
 collision_layer = 2
@@ -53,6 +54,7 @@ motion_mode = 1
 script = ExtResource("1_cedje")
 speed = 250.0
 camera_boom_distance = 300.0
+crosshair = NodePath("crosshair")
 hitbox = NodePath("HitBox")
 skeletal_character = NodePath("PlayerMesh")
 player_input = NodePath("PlayerInput")
@@ -82,6 +84,13 @@ zoom = Vector2(0.5, 0.5)
 [node name="AudioListener2D" type="AudioListener2D" parent="Camera2D" unique_id=1130780519]
 
 [node name="Health" parent="." unique_id=808461477 instance=ExtResource("5_fm80t")]
+
+[node name="crosshair" parent="." unique_id=1943534926 instance=ExtResource("15_fcs02")]
+idle_color = Color(1, 1, 1, 0.25)
+max_spread_angle = 6.0
+max_speed = 250.0
+line_length = 1000.0
+cone_segments = 12
 
 [node name="PlayerMesh" parent="." unique_id=721801445 instance=ExtResource("13_u5how")]
 position = Vector2(-5, 0)

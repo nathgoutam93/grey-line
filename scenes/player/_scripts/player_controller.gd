@@ -9,6 +9,7 @@ class_name PlayerController
 @export var camera_rotates_with_player: bool = true
 
 @export_group("Components")
+@export var crosshair : Crosshair
 @export var hitbox: CollisionShape2D
 @export var skeletal_character: PlayerMesh
 @export var player_input: PlayerInput
@@ -79,6 +80,12 @@ func _on_die(_killer_id: int):
 
 
 func _process(_delta: float) -> void:
+	if crosshair:
+		var spread_velocity := velocity
+		if is_local_player and is_instance_valid(player_input):
+			spread_velocity = player_input.input_vector * get_speed()
+		crosshair.player_velocity = spread_velocity
+	
 	if footstep_player and footstep_player.playing:
 		footstep_player.stop()
 
