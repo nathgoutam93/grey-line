@@ -23,19 +23,20 @@ font_size = 48
 font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_m752x"]
-font_size = 48
+font_size = 32
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_x4jlu"]
 radius = 100.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5si8t"]
-size = Vector2(80, 80)
+size = Vector2(200, 200)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_limek"]
-radius = 40.0
+radius = 80.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_je7p5"]
-font_size = 48
+font_size = 32
+font_color = Color(1, 1, 0, 1)
 
 [node name="HUD" type="CanvasLayer" unique_id=1187812725]
 script = ExtResource("1_sqnk8")
@@ -80,8 +81,8 @@ label_settings = SubResource("LabelSettings_5si8t")
 [node name="TextureRect" type="TextureRect" parent="Control/HBoxContainer/Panel" unique_id=42301993]
 layout_mode = 0
 offset_left = -407.5
-offset_top = -130.0
-offset_right = 40.0
+offset_top = -106.0
+offset_right = -58.5
 offset_bottom = 10.0
 texture = ExtResource("2_m5iw4")
 expand_mode = 1
@@ -118,9 +119,9 @@ label_settings = SubResource("LabelSettings_m752x")
 
 [node name="TextureRect" type="TextureRect" parent="Control/HBoxContainer/Panel2" unique_id=90148416]
 layout_mode = 0
-offset_left = 17.29
-offset_top = -126.0
-offset_right = 490.50003
+offset_left = 107.0
+offset_top = -106.0
+offset_right = 456.0
 offset_bottom = 10.0
 texture = ExtResource("2_m5iw4")
 expand_mode = 1
@@ -128,17 +129,17 @@ flip_h = true
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=74728659]
 layout_mode = 1
-anchors_preset = 6
+anchors_preset = 3
 anchor_left = 1.0
-anchor_top = 0.5
+anchor_top = 1.0
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -270.0
-offset_top = 260.0
-offset_right = -70.0
-offset_bottom = 485.0
+anchor_bottom = 1.0
+offset_left = -216.0
+offset_top = -261.0
+offset_right = -38.0
+offset_bottom = -36.0
 grow_horizontal = 0
-grow_vertical = 2
+grow_vertical = 0
 
 [node name="WeaponSlot3" parent="Control/VBoxContainer" unique_id=1931268970 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
@@ -191,7 +192,7 @@ anchor_bottom = 1.0
 offset_left = -570.0
 offset_top = 80.0
 offset_right = -70.0
-offset_bottom = -600.0
+offset_bottom = -440.0
 grow_horizontal = 0
 grow_vertical = 2
 theme_override_constants/separation = 4
@@ -210,10 +211,10 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 187.0
-offset_top = -501.0
-offset_right = 437.0
-offset_bottom = -251.0
+offset_left = 101.0
+offset_top = -383.0
+offset_right = 351.0
+offset_bottom = -133.0
 grow_vertical = 0
 script = ExtResource("8_d3tj2")
 action_left = "move_left"
@@ -258,72 +259,21 @@ texture = ExtResource("10_x4jlu")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LookJoystick" type="Control" parent="Controls" unique_id=485504410]
-modulate = Color(1, 1, 1, 0.19607843)
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 1400.0
-offset_top = -630.0
-offset_right = 1650.0
-offset_bottom = -380.0
-grow_vertical = 0
-script = ExtResource("8_d3tj2")
-use_input_actions = false
-
-[node name="Base" type="TextureRect" parent="Controls/LookJoystick" unique_id=780463249]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -125.0
-offset_top = -125.0
-offset_right = 125.0
-offset_bottom = 125.0
-grow_horizontal = 2
-grow_vertical = 2
-pivot_offset = Vector2(100, 100)
-mouse_force_pass_scroll_events = false
-texture = ExtResource("9_h1x2m")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Tip" type="TextureRect" parent="Controls/LookJoystick/Base" unique_id=1473905318]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -100.0
-offset_right = 100.0
-offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-pivot_offset = Vector2(50, 50)
-texture = ExtResource("10_x4jlu")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="Shoot" type="TouchScreenButton" parent="Controls" unique_id=1526842705]
 modulate = Color(1, 1, 1, 0.5882353)
-position = Vector2(149, 83)
+position = Vector2(57, 40)
 texture_normal = ExtResource("10_5si8t")
 shape = SubResource("CircleShape2D_x4jlu")
 
 [node name="Swap" type="TouchScreenButton" parent="Controls" unique_id=1494978597]
-position = Vector2(1672, 650)
+position = Vector2(1100, 300)
 scale = Vector2(0.7, 0.7)
 texture_normal = ExtResource("11_x4jlu")
 shape = SubResource("RectangleShape2D_5si8t")
 
 [node name="Reload" type="TouchScreenButton" parent="Controls" unique_id=2131536144]
 modulate = Color(1, 1, 1, 0.3)
-position = Vector2(378, 274)
+position = Vector2(238, 172)
 scale = Vector2(0.7, 0.7)
 texture_normal = ExtResource("12_5si8t")
 shape = SubResource("CircleShape2D_limek")

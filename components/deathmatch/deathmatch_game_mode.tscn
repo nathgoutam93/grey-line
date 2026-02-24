@@ -79,14 +79,17 @@ offset_bottom = 163.0
 
 [node name="LeaveGameButton" type="Button" parent="MatchResultLayer/Control" unique_id=676020495]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -155.0
-offset_top = 301.0
-offset_right = -19.0
-offset_bottom = 339.0
-grow_horizontal = 0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -68.0
+offset_top = -122.0
+offset_right = 68.0
+offset_bottom = -84.0
+grow_horizontal = 2
+grow_vertical = 0
 text = "Leave Game"
 
 [node name="Timer" type="TextureRect" parent="MatchResultLayer/Control" unique_id=744819879]

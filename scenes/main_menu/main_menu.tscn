@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bglb3r2wa4lrs"]
 
-[ext_resource type="Script" path="res://scenes/main_menu/main_menu.gd" id="1_7dkgf"]
+[ext_resource type="Script" uid="uid://d4h0ggmxsaa4f" path="res://scenes/main_menu/main_menu.gd" id="1_7dkgf"]
 [ext_resource type="PackedScene" uid="uid://dnijy4kf8kg8f" path="res://components/multiplayer/multiplayer_manager.tscn" id="1_fsom3"]
 [ext_resource type="Texture2D" uid="uid://b73f3g1jo0kbp" path="res://assets/sprites/icons/join_btn.png" id="2_ob46e"]
 [ext_resource type="Texture2D" uid="uid://bgyfv7fwytm4t" path="res://assets/sprites/icons/host_btn.png" id="3_uqeha"]
@@ -12,7 +12,7 @@ size = Vector2(1200, 200)
 size = Vector2(1200, 200)
 
 [sub_resource type="LabelSettings" id="LabelSettings_ob46e"]
-font_size = 48
+font_size = 32
 
 [node name="MainMenu" type="Node2D" unique_id=2110683862]
 script = ExtResource("1_7dkgf")
@@ -45,12 +45,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -482.0
-offset_top = -64.0
+offset_top = -154.0
 offset_right = 518.0
-offset_bottom = 36.0
+offset_bottom = -54.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 32
 placeholder_text = "Host/IP address"
 alignment = 1
 
@@ -62,12 +62,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -482.0
-offset_top = -299.0
+offset_top = -20.0
 offset_right = 518.0
-offset_bottom = -199.0
+offset_bottom = 80.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 32
 text = "Player"
 placeholder_text = "Player name"
 alignment = 1
@@ -87,14 +87,14 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="join" type="TouchScreenButton" parent="UI/Control/HBoxContainer" unique_id=1581238594]
-position = Vector2(-631, 80)
-scale = Vector2(0.5, 0.5)
+position = Vector2(-537, 120)
+scale = Vector2(0.42123526, 0.3901099)
 texture_normal = ExtResource("2_ob46e")
 shape = SubResource("RectangleShape2D_wem23")
 
 [node name="host" type="TouchScreenButton" parent="UI/Control/HBoxContainer" unique_id=1343624285]
-position = Vector2(16, 79.000015)
-scale = Vector2(0.5, 0.5)
+position = Vector2(20, 120)
+scale = Vector2(0.42123526, 0.3901099)
 texture_normal = ExtResource("3_uqeha")
 shape = SubResource("RectangleShape2D_3ovsr")
 

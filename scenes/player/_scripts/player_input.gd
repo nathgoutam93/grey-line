@@ -11,6 +11,8 @@ enum InputMode {
 @export var touch_aim_distance := 1200.0
 @export_range(0.0, 1.0) var touch_aim_deadzone := 0.2
 @export var touch_crosshair_radius := 180.0
+@export_range(0.0, 1.0) var touch_look_zone_start_x := 0.5
+@export var touch_look_drag_deadzone_pixels := 18.0
 @export var input_mode: InputMode = InputMode.MOUSE_KEYBOARD:
 	set(value):
 		input_mode = value
@@ -27,6 +29,10 @@ var _touch_shoot_was_pressed := false
 var _touch_reload_was_pressed := false
 var _touch_swap_was_pressed := false
 var _touch_aim_dir := Vector2.RIGHT
+var _touch_look_pointer_id := -1
+var _touch_look_start_screen_pos := Vector2.ZERO
+var _touch_look_current_screen_pos := Vector2.ZERO
+var _touch_look_start_angle := 0.0
 var _mouse_look_delta_x := 0.0
 var _look_angle := 0.0
 var _was_local_player := false
@@ -77,11 +83,7 @@ func _update_aim(_delta: float) -> void:
 		_look_angle = player.global_rotation
 
 	if _is_touch_mode():
-		var look_joystick := _resolve_look_joystick()
-		if look_joystick != null:
-			var look_output := look_joystick.output
-			if look_output.length() >= touch_aim_deadzone:
-				_touch_aim_dir = look_output.normalized()
+		_update_touch_look_from_drag()
 
 		mouse_pos = player.global_position + (_touch_aim_dir * touch_aim_distance)
 		_aim_screen_pos = screen_half + (_touch_aim_dir * touch_crosshair_radius)
@@ -123,6 +125,10 @@ func _apply_input_mode() -> void:
 	_touch_reload_was_pressed = false
 	_touch_swap_was_pressed = false
 	_touch_aim_dir = Vector2.RIGHT
+	_touch_look_pointer_id = -1
+	_touch_look_start_screen_pos = Vector2.ZERO
+	_touch_look_current_screen_pos = Vector2.ZERO
+	_touch_look_start_angle = 0.0
 	if is_instance_valid(player):
 		_look_angle = player.global_rotation
 
@@ -206,10 +212,11 @@ func _process_mouse_keyboard_input() -> void:
 		player.request_interact.rpc_id(1)
 
 func _input(event: InputEvent) -> void:
-	if not _can_control_mouse_capture():
+	if _is_touch_mode():
+		_process_touch_look_event(event)
 		return
 
-	if _is_touch_mode():
+	if not _can_control_mouse_capture():
 		return
 
 	if event is InputEventKey:
@@ -252,8 +259,54 @@ func _set_touch_controls_visible(is_visible: bool) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
 		return
 
-	var touch_nodes := ["MovementJoystick", "LookJoystick", "Shoot", "Swap"]
+	var touch_nodes := ["MovementJoystick", "Shoot", "Swap"]
 	for node_name in touch_nodes:
 		var node := player.hud.get_node_or_null("Controls/%s" % node_name)
 		if node is CanvasItem:
 			node.visible = is_visible
+
+	var look_joystick := player.hud.get_node_or_null("Controls/LookJoystick")
+	if look_joystick is CanvasItem:
+		look_joystick.visible = false
+
+func _process_touch_look_event(event: InputEvent) -> void:
+	var viewport := get_viewport()
+	if viewport == null:
+		return
+	var screen_size := viewport.get_visible_rect().size
+	if screen_size.x <= 0.0:
+		return
+
+	if event is InputEventScreenTouch:
+		var touch_event := event as InputEventScreenTouch
+		if touch_event.pressed:
+			if _touch_look_pointer_id == -1 and touch_event.position.x >= screen_size.x * touch_look_zone_start_x:
+				_touch_look_pointer_id = touch_event.index
+				_touch_look_start_screen_pos = touch_event.position
+				_touch_look_current_screen_pos = touch_event.position
+				_touch_look_start_angle = _look_angle
+		elif touch_event.index == _touch_look_pointer_id:
+			_touch_look_pointer_id = -1
+		return
+
+	if event is InputEventScreenDrag:
+		var drag_event := event as InputEventScreenDrag
+		if drag_event.index != _touch_look_pointer_id:
+			return
+		_touch_look_current_screen_pos = drag_event.position
+		_update_touch_look_from_drag()
+
+func _update_touch_look_from_drag() -> void:
+	if _touch_look_pointer_id == -1:
+		return
+
+	var drag_x := _touch_look_current_screen_pos.x - _touch_look_start_screen_pos.x
+	if abs(drag_x) < touch_look_drag_deadzone_pixels:
+		return
+
+	if is_instance_valid(player):
+		_look_angle = _touch_look_start_angle + (drag_x * player.mouse_turn_sensitivity)
+	else:
+		_look_angle = _touch_look_start_angle + (drag_x * 0.01)
+
+	_touch_aim_dir = Vector2.RIGHT.rotated(_look_angle)

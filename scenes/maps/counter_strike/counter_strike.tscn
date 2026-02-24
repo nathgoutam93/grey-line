@@ -660,7 +660,7 @@ viewport_path = NodePath("FowMaskView")
 
 [node name="FowMaskView" type="SubViewport" parent="." unique_id=2145603682 node_paths=PackedStringArray("los")]
 transparent_bg = true
-size = Vector2i(3840, 2160)
+size = Vector2i(2560, 1440)
 render_target_update_mode = 4
 script = ExtResource("4_2nbmb")
 los = NodePath("LOS")
@@ -1286,7 +1286,6 @@ shadow_enabled = true
 texture = ExtResource("11_mflnu")
 
 [node name="Camera2D" type="Camera2D" parent="FowMaskView" unique_id=1215250904]
-zoom = Vector2(2, 2)
 
 [node name="Map" type="Node2D" parent="." unique_id=2023424144]
 
@@ -1928,6 +1927,7 @@ texture = SubResource("ViewportTexture_k00yj")
 centered = false
 
 [node name="FOVDebugView" type="Sprite2D" parent="CanvasLayer" unique_id=215542524]
+visible = false
 modulate = Color(1, 1, 1, 0.60400003)
 position = Vector2(100, 250)
 scale = Vector2(0.1, 0.1)
