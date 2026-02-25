@@ -270,7 +270,7 @@ shape = SubResource("CircleShape2D_x4jlu")
 
 [node name="Headshot" type="TouchScreenButton" parent="Controls" unique_id=711084991]
 modulate = Color(1, 1, 1, 0.5882353)
-position = Vector2(1050, 40)
+position = Vector2(379, 286)
 texture_normal = ExtResource("10_limek")
 shape = SubResource("CircleShape2D_x4jlu")
 

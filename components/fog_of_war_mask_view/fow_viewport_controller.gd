@@ -1,6 +1,9 @@
 extends SubViewport
 
-@export var player_camera: Camera2D
+@export var player_camera: Camera2D:
+	set(value):
+		player_camera = value
+		_sync_viewport_camera_zoom()
 @export var player: PlayerController
 
 @export var los: PointLight2D
@@ -8,6 +11,7 @@ extends SubViewport
 
 func _ready() -> void:
 	MaskViewProvider.set_viewport(self)
+	_sync_viewport_camera_zoom()
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(player_camera):
@@ -16,6 +20,7 @@ func _process(_delta: float) -> void:
 	var viewport_camera := get_camera_2d()
 	if is_instance_valid(viewport_camera):
 		viewport_camera.global_position = player_camera.global_position
+		viewport_camera.zoom = player_camera.zoom
 		viewport_camera.ignore_rotation = player_camera.ignore_rotation
 		if not viewport_camera.ignore_rotation:
 			viewport_camera.global_rotation = player_camera.global_rotation
@@ -36,3 +41,11 @@ func _process(_delta: float) -> void:
 		if is_instance_valid(player) and is_instance_valid(player.player_input) and player.player_input.has_method("get_aim_world_position"):
 			aim_world_pos = player.player_input.get_aim_world_position()
 		los.look_at(aim_world_pos)
+
+func _sync_viewport_camera_zoom() -> void:
+	if not is_instance_valid(player_camera):
+		return
+
+	var viewport_camera := get_camera_2d()
+	if is_instance_valid(viewport_camera):
+		viewport_camera.zoom = player_camera.zoom
