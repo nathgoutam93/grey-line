@@ -54,7 +54,10 @@ func _shoot_raycast() -> void:
 		var collider = result.collider
 
 		if collider is PlayerController:
-			collider.health_component.take_damage(data.damage, player.owner_peer_id)
+			var shape_index := int(result.get("shape", -1))
+			var is_head_hit : bool = collider.is_head_hurtbox_shape(shape_index)
+			if collider.can_register_hit(is_head_hit):
+				collider.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
 
 func _lock():
 	is_locked = true

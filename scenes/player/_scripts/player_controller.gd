@@ -1,6 +1,11 @@
 extends CharacterBody2D
 class_name PlayerController
 
+enum ShotIntent {
+	BODY,
+	HEAD
+}
+
 @export_group("Stats")
 @export_range(100, 300) var speed: float = 300
 @export_range(0.1, 1) var slow_walk_multiplier := 0.5
@@ -10,7 +15,8 @@ class_name PlayerController
 
 @export_group("Components")
 @export var crosshair : Crosshair
-@export var hitbox: CollisionShape2D
+@export var headHurtBox: CollisionShape2D
+@export var bodyHurtBox: CollisionShape2D
 @export var skeletal_character: PlayerMesh
 @export var player_input: PlayerInput
 @export var movement_component: MovementCompoent
@@ -27,6 +33,7 @@ class_name PlayerController
 @export var is_slow_walking := false
 
 var owner_peer_id: int = 1
+var current_shot_intent: int = ShotIntent.BODY
 
 var interactables: Array[Interactable]
 var is_dead := false
@@ -124,11 +131,14 @@ func request_stop_slow_walk():
 	is_slow_walking = false
 
 @rpc("any_peer", "call_local")
-func request_start_fire():
+func request_start_fire(shot_intent: int = ShotIntent.BODY):
 	if not _is_valid_owner_request():
 		return
 
-	_remote_start_fire.rpc()
+	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
+		shot_intent = ShotIntent.BODY
+
+	_remote_start_fire.rpc(shot_intent)
 	
 @rpc("any_peer", "call_local")
 func request_stop_fire():
@@ -192,9 +202,34 @@ func _remote_interact(target_path: NodePath):
 		interactable.owner_ref.on_interact(self)
 
 @rpc("authority", "call_local", "reliable")
-func _remote_start_fire():
+func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
+	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
+		shot_intent = ShotIntent.BODY
+	current_shot_intent = shot_intent
+
 	if weapon_manager.current_weapon:
 		weapon_manager.current_weapon.start_fire()
+
+func is_head_hurtbox_shape(shape_index: int) -> bool:
+	if shape_index < 0:
+		return false
+
+	var owner_id := shape_find_owner(shape_index)
+	if owner_id == -1:
+		return false
+
+	var owner_node := shape_owner_get_owner(owner_id)
+	if owner_node == headHurtBox:
+		return true
+	if owner_node == bodyHurtBox:
+		return false
+
+	return owner_node != null and String(owner_node.name).to_lower().contains("head")
+
+func can_register_hit(is_head_hit: bool) -> bool:
+	if current_shot_intent == ShotIntent.HEAD:
+		return is_head_hit
+	return not is_head_hit
 
 @rpc("authority", "call_local", "reliable")
 func _remote_stop_fire():
@@ -257,7 +292,8 @@ func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):
 	is_dead = true
-	hitbox.disabled = true
+	headHurtBox.disabled = true
+	bodyHurtBox.disabled = true
 	player_input.set_process(false)
 	set_process(false)
 	set_physics_process(false)

@@ -22,6 +22,7 @@ const HUD_WEAPON_SLOTS := [
 ]
 
 @export var kill_feedback_item_scene: PackedScene
+@export var headshot_feedback_item_scene: PackedScene
 @export var kill_feed_item_scene: PackedScene
 
 var _slot_nodes_by_slot := {}
@@ -149,11 +150,11 @@ func _update_crosshair() -> void:
 	else:
 		crosshair.position = aim_screen_pos
 
-func show_kill_feedback() -> void:
+func show_kill_feedback(is_headshot: bool = false) -> void:
 	if not visible:
 		return
 
-	var feedback := _spawn_kill_feedback_item()
+	var feedback := _spawn_kill_feedback_item(is_headshot)
 	if feedback == null:
 		return
 
@@ -167,15 +168,19 @@ func show_kill_feedback() -> void:
 	tween.set_parallel(false)
 	tween.tween_callback(feedback.queue_free)
 
-func _spawn_kill_feedback_item() -> Control:
+func _spawn_kill_feedback_item(is_headshot: bool = false) -> Control:
 	var item: Control = null
 
-	if kill_feedback_item_scene:
-		item = kill_feedback_item_scene.instantiate() as Control
+	var scene_to_use: PackedScene = kill_feedback_item_scene
+	if is_headshot and headshot_feedback_item_scene:
+		scene_to_use = headshot_feedback_item_scene
+
+	if scene_to_use:
+		item = scene_to_use.instantiate() as Control
 
 	if item == null:
 		var fallback := Label.new()
-		fallback.text = "KILL +1"
+		fallback.text = "HEADSHOT +1" if is_headshot else "KILL +1"
 		fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		item = fallback
 

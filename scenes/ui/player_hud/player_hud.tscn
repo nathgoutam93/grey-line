@@ -6,9 +6,11 @@
 [ext_resource type="PackedScene" uid="uid://blpgeyjx58w50" path="res://scenes/ui/weapon_slot/weapon_slot.tscn" id="3_m5iw4"]
 [ext_resource type="PackedScene" uid="uid://c3rrf5gx284my" path="res://scenes/ui/player_hud/kill_feedback_item.tscn" id="5_7wk8i"]
 [ext_resource type="PackedScene" uid="uid://dbndbaytnqqum" path="res://scenes/ui/player_hud/kill_feed_item.tscn" id="6_i4s2j"]
+[ext_resource type="PackedScene" uid="uid://dpuppkytuvpyf" path="res://scenes/ui/player_hud/headshot_feedback_item.tscn" id="7_k0v24"]
 [ext_resource type="Script" uid="uid://c5d584uasjvqq" path="res://addons/virtual_joystick/virtual_joystick.gd" id="8_d3tj2"]
 [ext_resource type="Texture2D" uid="uid://bm30au8mjfc2f" path="res://addons/virtual_joystick/textures/joystick_base_outline.png" id="9_h1x2m"]
 [ext_resource type="Texture2D" uid="uid://sbpe206k8tqq" path="res://assets/sprites/icons/shoot_btn.png" id="10_5si8t"]
+[ext_resource type="Texture2D" uid="uid://d0dsyxq6uk4cx" path="res://assets/sprites/icons/headshot-icon.png" id="10_limek"]
 [ext_resource type="Texture2D" uid="uid://dt13r06u87fib" path="res://addons/virtual_joystick/textures/joystick_tip_arrows.png" id="10_x4jlu"]
 [ext_resource type="Texture2D" uid="uid://bv3tmnyrolkun" path="res://assets/sprites/icons/swap_btn.png" id="11_x4jlu"]
 [ext_resource type="Texture2D" uid="uid://d2bm1lo2pb2s4" path="res://assets/sprites/icons/reload.png" id="12_5si8t"]
@@ -41,6 +43,7 @@ font_color = Color(1, 1, 0, 1)
 [node name="HUD" type="CanvasLayer" unique_id=1187812725]
 script = ExtResource("1_sqnk8")
 kill_feedback_item_scene = ExtResource("5_7wk8i")
+headshot_feedback_item_scene = ExtResource("7_k0v24")
 kill_feed_item_scene = ExtResource("6_i4s2j")
 
 [node name="Control" type="Control" parent="." unique_id=1600243029]
@@ -263,6 +266,12 @@ stretch_mode = 5
 modulate = Color(1, 1, 1, 0.5882353)
 position = Vector2(57, 40)
 texture_normal = ExtResource("10_5si8t")
+shape = SubResource("CircleShape2D_x4jlu")
+
+[node name="Headshot" type="TouchScreenButton" parent="Controls" unique_id=711084991]
+modulate = Color(1, 1, 1, 0.5882353)
+position = Vector2(1050, 40)
+texture_normal = ExtResource("10_limek")
 shape = SubResource("CircleShape2D_x4jlu")
 
 [node name="Swap" type="TouchScreenButton" parent="Controls" unique_id=1494978597]

@@ -25,7 +25,6 @@ func get_aim_world_position() -> Vector2:
 
 var _aim_screen_pos := Vector2.ZERO
 var _aim_initialized := false
-var _touch_shoot_was_pressed := false
 var _touch_reload_was_pressed := false
 var _touch_swap_was_pressed := false
 var _touch_aim_dir := Vector2.RIGHT
@@ -36,6 +35,7 @@ var _touch_look_start_angle := 0.0
 var _mouse_look_delta_x := 0.0
 var _look_angle := 0.0
 var _was_local_player := false
+var _active_fire_mode := -1
 
 func get_aim_screen_position() -> Vector2:
 	return _aim_screen_pos
@@ -121,7 +121,6 @@ func _is_touch_mode() -> bool:
 
 func _apply_input_mode() -> void:
 	_aim_initialized = false
-	_touch_shoot_was_pressed = false
 	_touch_reload_was_pressed = false
 	_touch_swap_was_pressed = false
 	_touch_aim_dir = Vector2.RIGHT
@@ -151,11 +150,14 @@ func _process_touch_input() -> void:
 
 	var shoot_button := _resolve_touch_button("Shoot")
 	var is_shoot_pressed := shoot_button != null and shoot_button.is_pressed()
-	if is_shoot_pressed and not _touch_shoot_was_pressed:
-		player.request_start_fire.rpc_id(1)
-	if not is_shoot_pressed and _touch_shoot_was_pressed:
-		player.request_stop_fire.rpc_id(1)
-	_touch_shoot_was_pressed = is_shoot_pressed
+	var headshot_button := _resolve_touch_button("Headshot")
+	var is_headshot_pressed := headshot_button != null and headshot_button.is_pressed()
+	if is_headshot_pressed:
+		_set_fire_state(true, PlayerController.ShotIntent.HEAD)
+	elif is_shoot_pressed:
+		_set_fire_state(true, PlayerController.ShotIntent.BODY)
+	else:
+		_set_fire_state(false)
 	
 	var reload_button := _resolve_touch_button("Reload")
 	var is_reload_pressed := reload_button != null and reload_button.is_pressed()
@@ -181,11 +183,14 @@ func _process_mouse_keyboard_input() -> void:
 	if Input.is_action_just_released("slow_walk"):
 		player.request_stop_slow_walk.rpc_id(1)
 
-	if Input.is_action_just_pressed("shoot"):
-		player.request_start_fire.rpc_id(1)
-
-	if Input.is_action_just_released("shoot"):
-		player.request_stop_fire.rpc_id(1)
+	var is_body_fire_pressed := Input.is_action_pressed("shoot")
+	var is_head_fire_pressed := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+	if is_head_fire_pressed:
+		_set_fire_state(true, PlayerController.ShotIntent.HEAD)
+	elif is_body_fire_pressed:
+		_set_fire_state(true, PlayerController.ShotIntent.BODY)
+	else:
+		_set_fire_state(false)
 
 	if Input.is_action_just_pressed("reload"):
 		player.request_reload.rpc_id(1)
@@ -259,7 +264,7 @@ func _set_touch_controls_visible(is_visible: bool) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
 		return
 
-	var touch_nodes := ["MovementJoystick", "Shoot", "Swap"]
+	var touch_nodes := ["MovementJoystick", "Shoot", "Headshot", "Swap"]
 	for node_name in touch_nodes:
 		var node := player.hud.get_node_or_null("Controls/%s" % node_name)
 		if node is CanvasItem:
@@ -268,6 +273,22 @@ func _set_touch_controls_visible(is_visible: bool) -> void:
 	var look_joystick := player.hud.get_node_or_null("Controls/LookJoystick")
 	if look_joystick is CanvasItem:
 		look_joystick.visible = false
+
+func _set_fire_state(is_pressed: bool, shot_mode: int = PlayerController.ShotIntent.BODY) -> void:
+	if not is_pressed:
+		if _active_fire_mode != -1:
+			player.request_stop_fire.rpc_id(1)
+			_active_fire_mode = -1
+		return
+
+	if _active_fire_mode == shot_mode:
+		return
+
+	if _active_fire_mode != -1:
+		player.request_stop_fire.rpc_id(1)
+
+	player.request_start_fire.rpc_id(1, shot_mode)
+	_active_fire_mode = shot_mode
 
 func _process_touch_look_event(event: InputEvent) -> void:
 	var viewport := get_viewport()

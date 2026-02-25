@@ -160,7 +160,7 @@ func _on_peer_disconnected(id: int):
 	_update_stats.rpc(player_stats)
 
 
-func register_death(victim_id: int, killer_id: int):
+func register_death(victim_id: int, killer_id: int, is_headshot: bool = false):
 	if not multiplayer.is_server() or match_ended:
 		return
 
@@ -171,7 +171,7 @@ func register_death(victim_id: int, killer_id: int):
 		player_stats[victim_id]["deaths"] += 1
 	if player_stats.has(killer_id) and killer_id != victim_id:
 		player_stats[killer_id]["kills"] += 1
-		_notify_local_kill_feedback.rpc_id(killer_id)
+		_notify_local_kill_feedback.rpc_id(killer_id, is_headshot)
 		if int(player_stats[killer_id].get("kills", 0)) >= score_limit:
 			_end_match(killer_id, "score limit")
 
@@ -190,7 +190,7 @@ func register_death(victim_id: int, killer_id: int):
 
 
 @rpc("authority", "call_local", "reliable")
-func _notify_local_kill_feedback() -> void:
+func _notify_local_kill_feedback(is_headshot: bool = false) -> void:
 	if not _has_active_multiplayer_peer():
 		return
 	if not is_instance_valid(map):
@@ -202,7 +202,7 @@ func _notify_local_kill_feedback() -> void:
 		return
 
 	if local_player.hud.has_method("show_kill_feedback"):
-		local_player.hud.call("show_kill_feedback")
+		local_player.hud.call("show_kill_feedback", is_headshot)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -259,7 +259,7 @@ func _setup_player(peer_id, player_path: NodePath):
 				player_stats[peer_id] = _new_player_stats(peer_id)
 			_refresh_player_combat_data(peer_id, player)
 			_update_stats.rpc(player_stats)
-			player.health_component.die.connect(func(killer_id: int): register_death(peer_id, killer_id))
+			player.health_component.die.connect(func(killer_id: int, is_headshot: bool): register_death(peer_id, killer_id, is_headshot))
 			player.tree_exited.connect(_on_player_tree_exited.bind(peer_id))
 
 		if _has_active_multiplayer_peer() and peer_id == multiplayer.get_unique_id():

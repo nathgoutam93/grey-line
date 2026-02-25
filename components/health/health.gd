@@ -5,17 +5,17 @@ class_name HealthComponent
 
 var current_health: int
 
-signal die(killer_id: int)
+signal die(killer_id: int, is_headshot: bool)
 
 func _ready():
 	current_health = max_health
 
 # Call this function to apply damage
-func take_damage(amount: int, killer_id: int):
+func take_damage(amount: int, killer_id: int, is_headshot: bool = false):
 	current_health -= amount
 	current_health = max(current_health, 0)
 	
 	print("Took damage:", amount, "Current health:", current_health)
 	
 	if current_health == 0:
-		emit_signal("die", killer_id)
+		emit_signal("die", killer_id, is_headshot)
