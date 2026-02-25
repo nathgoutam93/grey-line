@@ -57,7 +57,6 @@ collision_mask = 3
 motion_mode = 1
 script = ExtResource("1_cedje")
 speed = 250.0
-camera_boom_distance = 300.0
 crosshair = NodePath("crosshair")
 headHurtBox = NodePath("HeadHurtBox")
 bodyHurtBox = NodePath("BodyHurtBox")

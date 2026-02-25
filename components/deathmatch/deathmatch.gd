@@ -5,7 +5,6 @@ extends Node
 @export var map: Node2D
 @export var spawn_point_container: Node
 @export var match_timer_label: Label
-@export var timer_toggle_control: Control
 @export var timer_touch_toggle_button: TouchScreenButton
 @export var match_result_overlay: Control
 @export var match_result_label: Label
@@ -41,9 +40,6 @@ func _ready():
 		leave_game_button.visible = false
 		if not leave_game_button.pressed.is_connected(_on_leave_game_pressed):
 			leave_game_button.pressed.connect(_on_leave_game_pressed)
-	if is_instance_valid(timer_toggle_control):
-		if not timer_toggle_control.gui_input.is_connected(_on_timer_toggle_gui_input):
-			timer_toggle_control.gui_input.connect(_on_timer_toggle_gui_input)
 	if is_instance_valid(timer_touch_toggle_button):
 		if not timer_touch_toggle_button.pressed.is_connected(_on_timer_touch_toggle_pressed):
 			timer_touch_toggle_button.pressed.connect(_on_timer_touch_toggle_pressed)
@@ -122,14 +118,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("stats"):
 		_toggle_hud_menu_visibility()
 		get_viewport().set_input_as_handled()
-
-func _on_timer_toggle_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		var mouse_event := event as InputEventMouseButton
-		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
-			_toggle_hud_menu_visibility()
-			get_viewport().set_input_as_handled()
-			return
 
 func _on_timer_touch_toggle_pressed() -> void:
 	_toggle_hud_menu_visibility()

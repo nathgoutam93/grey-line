@@ -10,7 +10,7 @@ enum ShotIntent {
 @export_range(100, 300) var speed: float = 300
 @export_range(0.1, 1) var slow_walk_multiplier := 0.5
 @export var mouse_turn_sensitivity: float = 0.01
-@export var camera_boom_distance: float = 250.0
+@export var camera_boom_distance: float = 350.0
 @export var camera_rotates_with_player: bool = true
 
 @export_group("Components")
