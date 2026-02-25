@@ -22,6 +22,9 @@ signal shoot_action(animation_name: String, sound_stream: AudioStream)
 signal reload_action(animation_name: String, sound_stream: AudioStream)
 
 var player: PlayerController
+const ENVIRONMENT_MASK := 1 << 0 # Physics layer 0
+const BODY_HURTBOX_MASK := 1 << 4 # Physics layer 5
+const HEAD_HURTBOX_MASK := 1 << 3 # Physics layer 4
 
 func set_weapon_data(w: Weapon):
 	data = w
@@ -40,24 +43,57 @@ func _shoot_raycast() -> void:
 	var end_point = origin + direction * data.d_range
 	
 	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(origin, end_point)
-	var result = space_state.intersect_ray(query)
-	var surface_type := _resolve_surface_type(result)
+	var shot_intent := player.current_shot_intent
+
+	# World occlusion ray only.
+	# Intentional: in HEAD mode, player body colliders do not block the shot because
+	# the ray represents a head-height line (same gameplay rule as 3D perspective).
+	var occlusion_query := PhysicsRayQueryParameters2D.create(origin, end_point)
+	occlusion_query.collide_with_bodies = true
+	occlusion_query.collide_with_areas = false
+	occlusion_query.collision_mask = ENVIRONMENT_MASK
+	var occlusion_result := space_state.intersect_ray(occlusion_query)
+
+	var impact_result := occlusion_result
+	var max_hit_distance := data.d_range
+	if not occlusion_result.is_empty():
+		max_hit_distance = origin.distance_to(occlusion_result.position)
+
+	# Hurtbox ray: in HEAD mode only hit head layer, in BODY mode only hit body layer.
+	var hurtbox_query := PhysicsRayQueryParameters2D.create(origin, end_point)
+	hurtbox_query.collide_with_bodies = false
+	hurtbox_query.collide_with_areas = true
+	hurtbox_query.collision_mask = HEAD_HURTBOX_MASK if shot_intent == PlayerController.ShotIntent.HEAD else BODY_HURTBOX_MASK
+	var hurtbox_result := space_state.intersect_ray(hurtbox_query)
+	var has_unoccluded_hurtbox_hit := false
+	if not hurtbox_result.is_empty():
+		var hurtbox_distance := origin.distance_to(hurtbox_result.position)
+		if hurtbox_distance <= max_hit_distance + 0.001:
+			impact_result = hurtbox_result
+			has_unoccluded_hurtbox_hit = true
+
+	var surface_type := _resolve_surface_type(impact_result)
 
 	if data.uses_ammo:
-		_create_bullet_trail(origin, result.position if result else end_point, result.normal if result else Vector2.ZERO, surface_type)
+		_create_bullet_trail(origin, impact_result.position if impact_result else end_point, impact_result.normal if impact_result else Vector2.ZERO, surface_type)
 
+	# Damage must come from the mode-filtered hurtbox ray only.
+	if has_unoccluded_hurtbox_hit:
+		var hit_player := _resolve_hit_player(hurtbox_result.get("collider"))
+		if hit_player != null:
+			var is_head_hit := shot_intent == PlayerController.ShotIntent.HEAD
+			if player.can_register_hit(is_head_hit):
+				hit_player.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
 
-	# draw_debug_line(origin, result.position if result else end_point)
-
-	if result:
-		var collider = result.collider
-
-		if collider is PlayerController:
-			var shape_index := int(result.get("shape", -1))
-			var is_head_hit : bool = collider.is_head_hurtbox_shape(shape_index)
-			if collider.can_register_hit(is_head_hit):
-				collider.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
+func _resolve_hit_player(collider: Variant) -> PlayerController:
+	if collider is PlayerController:
+		return collider
+	if collider is Node:
+		var node := collider as Node
+		var owner := node.get_parent()
+		if owner is PlayerController:
+			return owner
+	return null
 
 func _lock():
 	is_locked = true
@@ -265,6 +301,10 @@ func _resolve_surface_type(result: Dictionary) -> String:
 
 	if collider is PlayerController:
 		return "flesh"
+	if collider is Node:
+		var node := collider as Node
+		if node.get_parent() is PlayerController:
+			return "flesh"
 
 	if collider.has_method("get_impact_surface_type"):
 		var from_method = collider.call("get_impact_surface_type")

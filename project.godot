@@ -124,8 +124,10 @@ pointing/emulate_touch_from_mouse=true
 [layer_names]
 
 2d_physics/layer_1="Environment"
-2d_physics/layer_2="Players"
-2d_physics/layer_3="Pickups"
+2d_physics/layer_2="PlayerCollision"
+2d_physics/layer_3="PickupArea"
+2d_physics/layer_4="PlayerHead"
+2d_physics/layer_5="PlayerBody"
 
 [rendering]
 

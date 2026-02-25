@@ -264,15 +264,11 @@ func _set_touch_controls_visible(is_visible: bool) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
 		return
 
-	var touch_nodes := ["MovementJoystick", "Shoot", "Headshot", "Swap"]
+	var touch_nodes := ["MovementJoystick", "Shoot", "Reload", "Headshot", "Swap"]
 	for node_name in touch_nodes:
 		var node := player.hud.get_node_or_null("Controls/%s" % node_name)
 		if node is CanvasItem:
 			node.visible = is_visible
-
-	var look_joystick := player.hud.get_node_or_null("Controls/LookJoystick")
-	if look_joystick is CanvasItem:
-		look_joystick.visible = false
 
 func _set_fire_state(is_pressed: bool, shot_mode: int = PlayerController.ShotIntent.BODY) -> void:
 	if not is_pressed:

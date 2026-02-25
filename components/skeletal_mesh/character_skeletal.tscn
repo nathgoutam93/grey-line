@@ -2764,7 +2764,7 @@ rest = Transform2D(1, 0, 0, 1, -1, -56)
 [node name="forearm_left" type="Bone2D" parent="Skeleton2D/torso/arm_left" unique_id=96970761]
 position = Vector2(58.3316, -19.7591)
 rotation = 0.964395
-scale = Vector2(0.9999969, 0.9999969)
+scale = Vector2(0.99999684, 0.99999684)
 rest = Transform2D(1, 0, 0, 1, 66, -15)
 
 [node name="fist_left" type="Bone2D" parent="Skeleton2D/torso/arm_left/forearm_left" unique_id=1615428521]
@@ -2803,7 +2803,7 @@ texture = ExtResource("2_y6eb8")
 [node name="backpack" type="Bone2D" parent="Skeleton2D/torso" unique_id=1112695709]
 position = Vector2(-59, 0)
 rotation = 0.0393244
-scale = Vector2(0.99998087, 0.99998087)
+scale = Vector2(0.9999808, 0.9999808)
 rest = Transform2D(1, 0, 0, 1, -59, 0)
 
 [node name="polygons" type="Node2D" parent="." unique_id=2047498411]

@@ -19,11 +19,16 @@
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_gx1jg"]
 light_mode = 2
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_fcs02"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5i508"]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fcs02"]
 radius = 18.0
 height = 54.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fcs02"]
+radius = 8.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5i508"]
+radius = 16.0
+height = 50.0
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fm80t"]
 properties/0/path = NodePath(".:input_vector")
@@ -73,10 +78,21 @@ audio_listner = NodePath("Camera2D/AudioListener2D")
 metadata/_edit_vertical_guides_ = [-39.0]
 metadata/surface_type = "flesh"
 
-[node name="HeadHurtBox" type="CollisionShape2D" parent="." unique_id=1317993180]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=743149453]
+shape = SubResource("CapsuleShape2D_fcs02")
+
+[node name="HeadHurtBox" type="Area2D" parent="." unique_id=990012625]
+collision_layer = 8
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HeadHurtBox" unique_id=1548986193]
 shape = SubResource("CircleShape2D_fcs02")
 
-[node name="BodyHurtBox" type="CollisionShape2D" parent="." unique_id=1690495568]
+[node name="BodyHurtBox" type="Area2D" parent="." unique_id=1376051643]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BodyHurtBox" unique_id=522946355]
 shape = SubResource("CapsuleShape2D_5i508")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2034022886]

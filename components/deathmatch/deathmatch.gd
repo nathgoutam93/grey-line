@@ -259,7 +259,7 @@ func _setup_player(peer_id, player_path: NodePath):
 				player_stats[peer_id] = _new_player_stats(peer_id)
 			_refresh_player_combat_data(peer_id, player)
 			_update_stats.rpc(player_stats)
-			player.health_component.die.connect(func(killer_id: int, is_headshot: bool): register_death(peer_id, killer_id, is_headshot))
+			player.health_component.die_detailed.connect(func(killer_id: int, is_headshot: bool): register_death(peer_id, killer_id, is_headshot))
 			player.tree_exited.connect(_on_player_tree_exited.bind(peer_id))
 
 		if _has_active_multiplayer_peer() and peer_id == multiplayer.get_unique_id():

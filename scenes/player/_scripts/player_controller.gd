@@ -15,8 +15,8 @@ enum ShotIntent {
 
 @export_group("Components")
 @export var crosshair : Crosshair
-@export var headHurtBox: CollisionShape2D
-@export var bodyHurtBox: CollisionShape2D
+@export var headHurtBox: Area2D
+@export var bodyHurtBox: Area2D
 @export var skeletal_character: PlayerMesh
 @export var player_input: PlayerInput
 @export var movement_component: MovementCompoent
@@ -210,22 +210,6 @@ func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
 	if weapon_manager.current_weapon:
 		weapon_manager.current_weapon.start_fire()
 
-func is_head_hurtbox_shape(shape_index: int) -> bool:
-	if shape_index < 0:
-		return false
-
-	var owner_id := shape_find_owner(shape_index)
-	if owner_id == -1:
-		return false
-
-	var owner_node := shape_owner_get_owner(owner_id)
-	if owner_node == headHurtBox:
-		return true
-	if owner_node == bodyHurtBox:
-		return false
-
-	return owner_node != null and String(owner_node.name).to_lower().contains("head")
-
 func can_register_hit(is_head_hit: bool) -> bool:
 	if current_shot_intent == ShotIntent.HEAD:
 		return is_head_hit
@@ -292,8 +276,8 @@ func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):
 	is_dead = true
-	headHurtBox.disabled = true
-	bodyHurtBox.disabled = true
+	_disable_hurtbox(headHurtBox)
+	_disable_hurtbox(bodyHurtBox)
 	player_input.set_process(false)
 	set_process(false)
 	set_physics_process(false)
@@ -316,3 +300,9 @@ func _remote_die(global_pos: Vector2):
 
 	await get_tree().create_timer(5).timeout
 	queue_free()
+
+func _disable_hurtbox(hurtbox: Area2D) -> void:
+	if not is_instance_valid(hurtbox):
+		return
+	hurtbox.monitoring = false
+	hurtbox.monitorable = false
