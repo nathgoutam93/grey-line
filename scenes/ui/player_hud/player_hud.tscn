@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://dt13r06u87fib" path="res://addons/virtual_joystick/textures/joystick_tip_arrows.png" id="10_x4jlu"]
 [ext_resource type="Texture2D" uid="uid://bv3tmnyrolkun" path="res://assets/sprites/icons/swap_btn.png" id="11_x4jlu"]
 [ext_resource type="Texture2D" uid="uid://d2bm1lo2pb2s4" path="res://assets/sprites/icons/reload.png" id="12_5si8t"]
+[ext_resource type="PackedScene" uid="uid://hl11c6gdnfgv" path="res://components/touch_aim_zone/touch_aim_zone.tscn" id="13_bq2wh"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_5si8t"]
 font_size = 48
@@ -286,6 +287,11 @@ position = Vector2(238, 172)
 scale = Vector2(0.7, 0.7)
 texture_normal = ExtResource("12_5si8t")
 shape = SubResource("CircleShape2D_limek")
+
+[node name="TouchAimZone" parent="Controls" unique_id=1766150833 instance=ExtResource("13_bq2wh")]
+layout_mode = 1
+anchor_top = 0.5
+offset_top = -354.0
 
 [node name="FpsCounter" parent="." unique_id=738888706 instance=ExtResource("3_2a5y5")]
 offset_left = 7.0

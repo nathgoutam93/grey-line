@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @onready var _player: PlayerController = get_parent()
 @onready var controls_root: Control = get_node_or_null("Controls")
+@onready var touch_aim_zone: TouchAimZone = get_node_or_null("Controls/TouchAimZone")
 @onready var kill_feedback_container: VBoxContainer = get_node("KillFeedbackLayer/KillFeedbackContainer")
 @onready var kill_feed_container: VBoxContainer = get_node("KillFeedLayer/KillFeedContainer")
 
@@ -206,3 +207,6 @@ func _spawn_kill_feed_item() -> Control:
 			oldest.queue_free()
 
 	return item
+
+func get_touch_aim_zone() -> TouchAimZone:
+	return touch_aim_zone

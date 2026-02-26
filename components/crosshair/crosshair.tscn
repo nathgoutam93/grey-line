@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://d0hdc3dpek7h3" path="res://components/crosshair/crosshair.gd" id="2_yrhja"]
 
-[node name="crosshair" type="Node2D" unique_id=1943534926]
+[node name="Crosshair" type="Node2D" unique_id=1943534926]
 script = ExtResource("2_yrhja")
