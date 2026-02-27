@@ -105,6 +105,8 @@ func _process(delta: float) -> void:
 
 func _on_connected():
 	print("Connected to server.")
+	request_players_resync.rpc_id(1)
+	call_deferred("_request_players_resync_delayed")
 
 func _on_disconnected():
 	print("Disconnected from server.")
@@ -113,6 +115,14 @@ func _on_disconnected():
 
 func _on_connection_failed():
 	print("Failed to connect to server.")
+
+func _request_players_resync_delayed() -> void:
+	await get_tree().create_timer(0.75).timeout
+	if not _has_active_multiplayer_peer():
+		return
+	if multiplayer.is_server():
+		return
+	request_players_resync.rpc_id(1)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("stats"):
@@ -141,6 +151,7 @@ func _on_peer_connected(id: int):
 	_sync_match_state_to_peer(id)
 	if not match_ended:
 		spawn_player(id)
+		call_deferred("_sync_existing_players_to_peer", id)
 
 func _on_peer_disconnected(id: int):
 	print("Peer disconnected: %d" % id)
@@ -226,8 +237,14 @@ func get_stats(peer_id: int) -> Dictionary:
 
 
 @rpc("call_local", "reliable")
-func _setup_player(peer_id, player_path: NodePath):
-	await get_tree().process_frame
+func _setup_player(peer_id, player_path: NodePath, spawn_position: Vector2, server_tick: int):
+	for _i in range(30):
+		if not is_inside_tree():
+			return
+		var maybe_player := get_node_or_null(player_path) as PlayerController
+		if maybe_player != null:
+			break
+		await get_tree().process_frame
 	if match_ended:
 		return
 	if not is_instance_valid(map):
@@ -235,8 +252,24 @@ func _setup_player(peer_id, player_path: NodePath):
 
 	var player := get_node_or_null(player_path) as PlayerController
 	if player == null:
-		# Player can despawn before setup RPC executes (e.g. match end or disconnect).
-		return
+		# Fallback for late join: if spawner has not materialized this player yet, create it locally on the client.
+		if not multiplayer.is_server() and is_instance_valid(map) and player_scene != null:
+			var existing := map.get_node_or_null(str(peer_id)) as PlayerController
+			if existing == null:
+				var spawned := player_scene.instantiate() as PlayerController
+				spawned.name = str(peer_id)
+				spawned.set_multiplayer_authority(1)
+				map.add_child(spawned, true)
+				await get_tree().process_frame
+		player = map.get_node_or_null(str(peer_id)) as PlayerController
+		if player == null:
+			# Player can despawn before setup RPC executes (e.g. match end or disconnect).
+			return
+
+	player.global_position = spawn_position
+	player.set_multiplayer_authority(1)
+	if player.has_method("sync_server_tick"):
+		player.sync_server_tick(server_tick)
 
 	if player:
 		player.owner_peer_id = peer_id
@@ -272,11 +305,33 @@ func spawn_player(peer_id: int):
 	var player_instance = player_scene.instantiate()
 	player_instance.name = str(peer_id)
 	player_instance.position = spawn_point.global_position
+	player_instance.owner_peer_id = peer_id
+	player_instance.set_multiplayer_authority(1)
 
-	map.add_child.call_deferred(player_instance, true)
+	player_instance.ready.connect(func(): rpc("_setup_player", peer_id, player_instance.get_path(), spawn_point.global_position, NetworkTick.tick))
+	map.add_child(player_instance, true)
 	
 	print("Spawned player for peer %d at %s" % [peer_id, spawn_point.global_position])
-	player_instance.ready.connect(func(): rpc("_setup_player", peer_id, player_instance.get_path()))
+
+func _sync_existing_players_to_peer(peer_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if not is_instance_valid(map):
+		return
+	for child in map.get_children():
+		var player := child as PlayerController
+		if player == null:
+			continue
+		rpc_id(peer_id, "_setup_player", player.owner_peer_id, player.get_path(), player.global_position, NetworkTick.tick)
+
+@rpc("any_peer", "reliable")
+func request_players_resync() -> void:
+	if not multiplayer.is_server():
+		return
+	var peer_id := multiplayer.get_remote_sender_id()
+	if peer_id <= 0:
+		return
+	_sync_existing_players_to_peer(peer_id)
 
 func _cache_spawn_points() -> void:
 	spawn_points.clear()
@@ -458,7 +513,7 @@ func _is_local_touch_input_mode() -> bool:
 	var local_player := map.get_node_or_null(str(multiplayer.get_unique_id())) as PlayerController
 	if local_player == null or local_player.player_input == null:
 		return false
-	return local_player.player_input.input_mode == PlayerInput.InputMode.TOUCH
+	return local_player.player_input.input_mode == PlayerInputCollector.InputMode.TOUCH
 
 @rpc("call_local", "reliable")
 func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:

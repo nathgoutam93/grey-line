@@ -30,25 +30,6 @@ radius = 8.0
 radius = 16.0
 height = 50.0
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fm80t"]
-properties/0/path = NodePath(".:input_vector")
-properties/0/spawn = true
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:mouse_pos")
-properties/1/spawn = true
-properties/1/replication_mode = 1
-
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ugbui"]
-properties/0/path = NodePath(".:position")
-properties/0/spawn = true
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:rotation")
-properties/1/spawn = true
-properties/1/replication_mode = 1
-properties/2/path = NodePath(".:is_slow_walking")
-properties/2/spawn = true
-properties/2/replication_mode = 2
-
 [node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("crosshair", "headHurtBox", "bodyHurtBox", "skeletal_character", "player_input", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
@@ -134,13 +115,6 @@ pool_size = 3
 
 [node name="HUD" parent="." unique_id=1187812725 instance=ExtResource("13_ugbui")]
 
-[node name="PlayerInput" type="MultiplayerSynchronizer" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
-root_path = NodePath(".")
-replication_config = SubResource("SceneReplicationConfig_fm80t")
+[node name="PlayerInput" type="Node" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
 script = ExtResource("13_gx1jg")
-input_mode = 1
 player = NodePath("..")
-
-[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=213592159]
-replication_config = SubResource("SceneReplicationConfig_ugbui")
-visibility_update_mode = 1

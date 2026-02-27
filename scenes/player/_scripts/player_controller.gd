@@ -18,7 +18,7 @@ enum ShotIntent {
 @export var headHurtBox: Area2D
 @export var bodyHurtBox: Area2D
 @export var skeletal_character: PlayerMesh
-@export var player_input: PlayerInput
+@export var player_input: PlayerInputCollector
 @export var movement_component: MovementCompoent
 @export var health_component: HealthComponent
 @export var weapon_manager: WeaponManager
@@ -38,6 +38,26 @@ var current_shot_intent: int = ShotIntent.BODY
 var interactables: Array[Interactable]
 var is_dead := false
 var is_local_player := false
+
+const HISTORY_SECONDS := 1.0
+const INTERP_DELAY_TICKS := 2
+const TICK_OFFSET_SMOOTHING := 0.1
+
+var _input_buffer: Dictionary = {}
+var _input_queue: Dictionary = {}
+var _last_input: PlayerInputFrame
+var _last_processed_tick := 0
+var _state_history := StateHistoryBuffer.new()
+var _reconciler := ClientReconciler.new()
+var _interpolator := RemoteInterpolator.new()
+var _is_firing_net := false
+var _tick_offset := 0.0
+
+func _is_server_role() -> bool:
+	return multiplayer.is_server()
+
+func _is_owner_role() -> bool:
+	return owner_peer_id == multiplayer.get_unique_id()
 
 func has_authority(id):
 	return id == get_multiplayer_authority() or id == owner_peer_id
@@ -59,6 +79,10 @@ func _ready():
 		camera.offset = Vector2.ZERO
 		camera.position = Vector2(camera_boom_distance, 0.0)
 
+	_state_history.configure(int(NetworkTick.get("tick_rate") * HISTORY_SECONDS))
+	if not NetworkTick.tick_started.is_connected(_on_network_tick):
+		NetworkTick.tick_started.connect(_on_network_tick)
+
 func setup_locals():
 	is_local_player = true
 	Input.emulate_mouse_from_touch = false
@@ -67,6 +91,8 @@ func setup_locals():
 	audio_listner.make_current()
 	hud.visible = true
 	skeletal_character.material = null
+	if player_input:
+		player_input.on_local_player_spawned()
 	if weapon_manager:
 		weapon_manager.apply_local_view()
 
@@ -101,6 +127,152 @@ func _process(_delta: float) -> void:
 
 func _physics_process(_delta: float) -> void:
 	pass
+
+func _on_network_tick(tick: int) -> void:
+	if is_dead:
+		return
+	if _is_server_role():
+		_server_tick(tick)
+	elif _is_owner_role():
+		_owner_tick(tick)
+	else:
+		_proxy_tick(_estimated_server_tick(tick))
+
+func _owner_tick(server_tick: int) -> void:
+	if not is_instance_valid(player_input) or not is_instance_valid(movement_component):
+		return
+	var frame := player_input.build_input_frame(server_tick)
+	_input_buffer[server_tick] = frame
+	_apply_input_actions(frame)
+	PlayerSimulation.simulate(self, movement_component, frame)
+	rpc_id(1, "server_receive_input", frame.to_dict())
+
+func _server_tick(tick: int) -> void:
+	if not is_instance_valid(movement_component):
+		return
+	var frame: PlayerInputFrame = _input_queue.get(tick, null)
+	if frame == null:
+		var candidate_ticks := _input_queue.keys()
+		candidate_ticks.sort()
+		for key in candidate_ticks:
+			var queued_tick := int(key)
+			if queued_tick <= tick:
+				frame = _input_queue[queued_tick] as PlayerInputFrame
+				_input_queue.erase(queued_tick)
+			else:
+				break
+	if frame == null and _is_owner_role() and is_instance_valid(player_input):
+		frame = player_input.build_input_frame(tick)
+	if frame == null:
+		frame = _last_input
+	if frame == null:
+		return
+	_last_input = frame
+	_input_queue.erase(tick)
+	_apply_input_actions(frame)
+	PlayerSimulation.simulate(self, movement_component, frame)
+	_last_processed_tick = tick
+	_state_history.store(tick, global_transform)
+	_send_snapshot(tick)
+
+func _proxy_tick(server_tick: int) -> void:
+	var render_tick := server_tick - INTERP_DELAY_TICKS
+	if _interpolator.snapshot_buffer.size() < 2:
+		_interpolator.apply_latest(self)
+		return
+	_interpolator.interpolate(self, render_tick)
+
+func _apply_input_actions(frame: PlayerInputFrame) -> void:
+	is_slow_walking = frame.slow_walk_held
+	current_shot_intent = frame.shot_intent
+
+	# Only the authoritative server executes combat/inventory actions.
+	# It then broadcasts results through existing _remote_* RPCs.
+	if not _is_server_role():
+		return
+
+	if frame.reload_pressed:
+		_remote_reload.rpc()
+	if frame.switch_prev_pressed:
+		_remote_switch_weapon_previous.rpc()
+	if frame.switch_next_pressed:
+		_remote_switch_weapon.rpc()
+	if frame.slot_select >= 0:
+		_remote_switch_weapon_slot.rpc(frame.slot_select)
+	if frame.drop_pressed:
+		_remote_drop_weapon.rpc()
+	if frame.interact_pressed:
+		var target_path: NodePath = NodePath("")
+		if interactables.size() > 0 and interactables[0]:
+			target_path = interactables[0].get_path()
+		_remote_interact.rpc(target_path)
+
+	if frame.fire_held and not _is_firing_net:
+		_is_firing_net = true
+		_remote_start_fire.rpc(frame.shot_intent)
+	elif not frame.fire_held and _is_firing_net:
+		_is_firing_net = false
+		_remote_stop_fire.rpc()
+
+func _server_or_local_interact() -> void:
+	var target_path: NodePath = NodePath("")
+	if interactables.size() > 0 and interactables[0]:
+		target_path = interactables[0].get_path()
+	if target_path == NodePath(""):
+		return
+	var interactable := get_node_or_null(target_path)
+	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
+		interactable.owner_ref.on_interact(self)
+
+func _send_snapshot(tick: int) -> void:
+	var snapshot := {
+		"tick": tick,
+		"position": global_position,
+		"velocity": velocity,
+		"rotation": rotation,
+		"ack_tick": _last_processed_tick
+	}
+	rpc("client_receive_snapshot", snapshot)
+
+@rpc("any_peer", "reliable")
+func server_receive_input(frame_data: Dictionary) -> void:
+	if not _is_server_role():
+		return
+	var sender_id := multiplayer.get_remote_sender_id()
+	if sender_id != owner_peer_id:
+		return
+	var frame := PlayerInputFrame.from_dict(frame_data)
+	if frame.tick <= _last_processed_tick:
+		# Late packet: apply as latest known intent for subsequent ticks.
+		_last_input = frame
+		return
+	_input_queue[frame.tick] = frame
+
+@rpc("any_peer", "unreliable")
+func client_receive_snapshot(snapshot: Dictionary) -> void:
+	var server_tick := int(snapshot.get("tick", 0))
+	if server_tick > 0:
+		_update_tick_offset(server_tick)
+	if _is_owner_role():
+		_reconciler.reconcile(self, snapshot.get("position", global_position), int(snapshot.get("ack_tick", 0)), _input_buffer, movement_component)
+		velocity = snapshot.get("velocity", velocity)
+		return
+	_interpolator.push_snapshot(snapshot)
+
+func get_history_transform(tick: int) -> Variant:
+	return _state_history.get_transform_for_tick(tick)
+
+func sync_server_tick(server_tick: int) -> void:
+	if server_tick <= 0:
+		return
+	_tick_offset = float(server_tick - NetworkTick.tick)
+
+func _estimated_server_tick(local_tick: int) -> int:
+	return int(round(float(local_tick) + _tick_offset))
+
+func _update_tick_offset(authoritative_server_tick: int) -> void:
+	var target_offset := float(authoritative_server_tick - NetworkTick.tick)
+	_tick_offset = lerpf(_tick_offset, target_offset, TICK_OFFSET_SMOOTHING)
 
 
 func add_interactable(item: Interactable):

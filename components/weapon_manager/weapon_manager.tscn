@@ -1,9 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://4isysde6lgiy"]
+[gd_scene load_steps=2 format=3 uid="uid://4isysde6lgiy"]
 
 [ext_resource type="Script" uid="uid://bjl41fim14ruu" path="res://components/weapon_manager/weapon_manager.gd" id="1_gtmjk"]
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_gtmjk"]
-
-[node name="WeaponManager" type="MultiplayerSynchronizer"]
-replication_config = SubResource("SceneReplicationConfig_gtmjk")
+[node name="WeaponManager" type="Node"]
 script = ExtResource("1_gtmjk")

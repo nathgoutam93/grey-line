@@ -33,7 +33,7 @@ func _process(_delta: float) -> void:
 		los.offset = Vector2(-los_offset, 0)
 
 		if is_instance_valid(player) and is_instance_valid(player.player_input):
-			if player.player_input.input_mode == PlayerInput.InputMode.MOUSE_KEYBOARD:
+			if player.player_input.input_mode == PlayerInputCollector.InputMode.MOUSE_KEYBOARD:
 				los.global_rotation = player.global_rotation
 				return
 
