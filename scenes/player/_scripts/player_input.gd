@@ -96,14 +96,18 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
 		_pending_slot_select_value = WeaponManager.WeaponSlot.MELEE
 
-	frame.reload_pressed = _pending_reload_ticks > 0
-	frame.switch_prev_pressed = _pending_switch_prev_ticks > 0
-	frame.switch_next_pressed = _pending_switch_next_ticks > 0
+	# Reload should be an edge trigger to avoid repeated reload RPCs per press.
+	frame.reload_pressed = _pending_reload_ticks == EDGE_HOLD_TICKS
+	# Weapon swap must be edge-triggered; holding it for multiple ticks can
+	# cycle through slots and land back on the original weapon.
+	frame.switch_prev_pressed = _pending_switch_prev_ticks == EDGE_HOLD_TICKS
+	frame.switch_next_pressed = _pending_switch_next_ticks == EDGE_HOLD_TICKS
 	# Drop should be a single-shot action per press; holding this edge for
 	# multiple ticks can drop multiple weapons in sequence.
 	frame.drop_pressed = _pending_drop_ticks == EDGE_HOLD_TICKS
-	frame.interact_pressed = _pending_interact_ticks > 0
-	if _pending_slot_select_ticks > 0:
+	# Interact and slot-select are single-shot actions.
+	frame.interact_pressed = _pending_interact_ticks == EDGE_HOLD_TICKS
+	if _pending_slot_select_ticks == EDGE_HOLD_TICKS:
 		frame.slot_select = _pending_slot_select_value
 
 	_pending_reload_ticks = maxi(_pending_reload_ticks - 1, 0)
