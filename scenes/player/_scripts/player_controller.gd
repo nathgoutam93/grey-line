@@ -259,8 +259,14 @@ func client_receive_snapshot(snapshot: Dictionary) -> void:
 	if server_tick > 0:
 		_update_tick_offset(server_tick)
 	if _is_owner_role():
-		_reconciler.reconcile(self, snapshot.get("position", global_position), int(snapshot.get("ack_tick", 0)), _input_buffer, movement_component)
-		velocity = snapshot.get("velocity", velocity)
+		_reconciler.reconcile(
+			self,
+			snapshot.get("position", global_position),
+			snapshot.get("velocity", velocity),
+			int(snapshot.get("ack_tick", 0)),
+			_input_buffer,
+			movement_component
+		)
 		return
 	_interpolator.push_snapshot(snapshot)
 

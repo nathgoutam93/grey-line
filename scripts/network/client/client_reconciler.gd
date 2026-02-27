@@ -1,15 +1,15 @@
 extends RefCounted
 class_name ClientReconciler
 
-func reconcile(player: PlayerController, authoritative_position: Vector2, ack_tick: int, input_buffer: Dictionary, movement_component: MovementCompoent) -> void:
-	var error := authoritative_position - player.global_position
-	if error.length() > 24.0:
-		player.global_position = authoritative_position
-	else:
-		player.global_position += error * 0.25
+const POSITION_DEADZONE := 6.0
+
+func reconcile(player: PlayerController, authoritative_position: Vector2, authoritative_velocity: Vector2, ack_tick: int, input_buffer: Dictionary, movement_component: MovementCompoent) -> void:
+	if player == null or movement_component == null:
+		return
 
 	var replay_ticks := input_buffer.keys()
 	replay_ticks.sort()
+	var pending_frames: Array[PlayerInputFrame] = []
 	for t in replay_ticks:
 		var tick := int(t)
 		if tick <= ack_tick:
@@ -17,4 +17,13 @@ func reconcile(player: PlayerController, authoritative_position: Vector2, ack_ti
 			continue
 		var frame := input_buffer[tick] as PlayerInputFrame
 		if frame != null:
-			movement_component.simulate(frame)
+			pending_frames.append(frame)
+
+	var error := authoritative_position - player.global_position
+	if error.length() <= POSITION_DEADZONE:
+		return
+
+	player.global_position = authoritative_position
+	player.velocity = authoritative_velocity
+	for frame in pending_frames:
+		movement_component.simulate(frame)
