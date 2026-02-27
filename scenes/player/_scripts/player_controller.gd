@@ -52,6 +52,7 @@ var _reconciler := ClientReconciler.new()
 var _interpolator := RemoteInterpolator.new()
 var _is_firing_net := false
 var _tick_offset := 0.0
+var _last_authoritative_input_tick := 0
 
 func _is_server_role() -> bool:
 	return multiplayer.is_server()
@@ -170,6 +171,7 @@ func _server_tick(tick: int) -> void:
 		return
 	_last_input = frame
 	_input_queue.erase(tick)
+	_last_authoritative_input_tick = frame.tick
 	_apply_input_actions(frame)
 	PlayerSimulation.simulate(self, movement_component, frame)
 	_last_processed_tick = tick
@@ -262,6 +264,11 @@ func client_receive_snapshot(snapshot: Dictionary) -> void:
 
 func get_history_transform(tick: int) -> Variant:
 	return _state_history.get_transform_for_tick(tick)
+
+func get_lag_compensation_tick() -> int:
+	if _last_authoritative_input_tick > 0:
+		return _last_authoritative_input_tick
+	return _last_processed_tick
 
 func sync_server_tick(server_tick: int) -> void:
 	if server_tick <= 0:
@@ -479,3 +486,18 @@ func _disable_hurtbox(hurtbox: Area2D) -> void:
 		return
 	hurtbox.monitoring = false
 	hurtbox.monitorable = false
+
+func reset_for_respawn() -> void:
+	is_dead = false
+	is_slow_walking = false
+	_is_firing_net = false
+	velocity = Vector2.ZERO
+	set_process(true)
+	set_physics_process(true)
+	if movement_component:
+		movement_component.set_process(true)
+		movement_component.set_physics_process(true)
+		movement_component.is_moving = false
+	if player_input:
+		player_input.set_process(false)
+		player_input.set_process_input(false)

@@ -266,6 +266,7 @@ func _setup_player(peer_id, player_path: NodePath, spawn_position: Vector2, serv
 			# Player can despawn before setup RPC executes (e.g. match end or disconnect).
 			return
 
+	player.reset_for_respawn()
 	player.global_position = spawn_position
 	player.set_multiplayer_authority(1)
 	if player.has_method("sync_server_tick"):
@@ -303,6 +304,9 @@ func spawn_player(peer_id: int):
 	var spawn_point = spawn_points.pick_random()
 
 	var player_instance = player_scene.instantiate()
+	var existing_named_player := map.get_node_or_null(str(peer_id)) as PlayerController
+	if existing_named_player != null:
+		existing_named_player.queue_free()
 	player_instance.name = str(peer_id)
 	player_instance.position = spawn_point.global_position
 	player_instance.owner_peer_id = peer_id

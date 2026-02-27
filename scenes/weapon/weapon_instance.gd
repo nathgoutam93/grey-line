@@ -49,6 +49,13 @@ func set_weapon_data(w: Weapon):
 		ammo_reserve = 0
 
 func _shoot_raycast() -> void:
+	var saved_transforms := {}
+	if multiplayer.is_server():
+		var shot_tick := NetworkTick.tick
+		if player != null and player.has_method("get_lag_compensation_tick"):
+			shot_tick = int(player.get_lag_compensation_tick())
+		saved_transforms = LagCompensationService.rewind_players_to_tick(get_tree(), shot_tick)
+
 	var origin = global_position
 	var direction = player.global_transform.x.normalized()
 	var end_point = origin + direction * data.d_range
@@ -91,10 +98,13 @@ func _shoot_raycast() -> void:
 	# Damage must come from the mode-filtered hurtbox ray only.
 	if has_unoccluded_hurtbox_hit:
 		var hit_player := _resolve_hit_player(hurtbox_result.get("collider"))
-		if hit_player != null:
+		if hit_player != null and not hit_player.is_dead:
 			var is_head_hit := shot_intent == PlayerController.ShotIntent.HEAD
 			if player.can_register_hit(is_head_hit):
 				hit_player.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
+
+	if multiplayer.is_server():
+		LagCompensationService.restore_players(saved_transforms)
 
 func _resolve_hit_player(collider: Variant) -> PlayerController:
 	if collider is PlayerController:
