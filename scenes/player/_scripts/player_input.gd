@@ -99,7 +99,9 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	frame.reload_pressed = _pending_reload_ticks > 0
 	frame.switch_prev_pressed = _pending_switch_prev_ticks > 0
 	frame.switch_next_pressed = _pending_switch_next_ticks > 0
-	frame.drop_pressed = _pending_drop_ticks > 0
+	# Drop should be a single-shot action per press; holding this edge for
+	# multiple ticks can drop multiple weapons in sequence.
+	frame.drop_pressed = _pending_drop_ticks == EDGE_HOLD_TICKS
 	frame.interact_pressed = _pending_interact_ticks > 0
 	if _pending_slot_select_ticks > 0:
 		frame.slot_select = _pending_slot_select_value
