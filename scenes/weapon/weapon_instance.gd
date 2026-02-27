@@ -62,6 +62,7 @@ func _shoot_raycast() -> void:
 	
 	var space_state = get_world_2d().direct_space_state
 	var shot_intent := player.current_shot_intent
+	var query_exclude := _build_self_exclude_list()
 
 	# World occlusion ray only.
 	# Intentional: in HEAD mode, player body colliders do not block the shot because
@@ -70,6 +71,7 @@ func _shoot_raycast() -> void:
 	occlusion_query.collide_with_bodies = true
 	occlusion_query.collide_with_areas = false
 	occlusion_query.collision_mask = ENVIRONMENT_MASK
+	occlusion_query.exclude = query_exclude
 	var occlusion_result := space_state.intersect_ray(occlusion_query)
 
 	var impact_result := occlusion_result
@@ -82,6 +84,7 @@ func _shoot_raycast() -> void:
 	hurtbox_query.collide_with_bodies = false
 	hurtbox_query.collide_with_areas = true
 	hurtbox_query.collision_mask = HEAD_HURTBOX_MASK if shot_intent == PlayerController.ShotIntent.HEAD else BODY_HURTBOX_MASK
+	hurtbox_query.exclude = query_exclude
 	var hurtbox_result := space_state.intersect_ray(hurtbox_query)
 	var has_unoccluded_hurtbox_hit := false
 	if not hurtbox_result.is_empty():
@@ -98,13 +101,24 @@ func _shoot_raycast() -> void:
 	# Damage must come from the mode-filtered hurtbox ray only.
 	if has_unoccluded_hurtbox_hit:
 		var hit_player := _resolve_hit_player(hurtbox_result.get("collider"))
-		if hit_player != null and not hit_player.is_dead:
+		if hit_player != null and hit_player != player and not hit_player.is_dead:
 			var is_head_hit := shot_intent == PlayerController.ShotIntent.HEAD
 			if player.can_register_hit(is_head_hit):
 				hit_player.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
 
 	if multiplayer.is_server():
 		LagCompensationService.restore_players(saved_transforms)
+
+func _build_self_exclude_list() -> Array:
+	var exclude: Array = []
+	if player == null:
+		return exclude
+	exclude.append(player.get_rid())
+	if is_instance_valid(player.headHurtBox):
+		exclude.append(player.headHurtBox.get_rid())
+	if is_instance_valid(player.bodyHurtBox):
+		exclude.append(player.bodyHurtBox.get_rid())
+	return exclude
 
 func _resolve_hit_player(collider: Variant) -> PlayerController:
 	if collider is PlayerController:
