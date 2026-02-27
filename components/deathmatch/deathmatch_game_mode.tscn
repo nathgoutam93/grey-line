@@ -72,9 +72,9 @@ grow_vertical = 2
 
 [node name="Leaderboard" parent="MatchResultLayer/Control" unique_id=1482750033 instance=ExtResource("2_0ul0j")]
 layout_mode = 1
-offset_left = -160.0
+offset_left = -220.0
 offset_top = -137.0
-offset_right = 160.0
+offset_right = 220.0
 offset_bottom = 163.0
 
 [node name="LeaveGameButton" type="Button" parent="MatchResultLayer/Control" unique_id=676020495]

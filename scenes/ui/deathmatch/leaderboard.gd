@@ -25,6 +25,7 @@ func populate_leaderboard(stats_payload: Dictionary) -> void:
 		var name_label: Label = row.get_node("Panel/name")
 		var kda_label: Label = row.get_node("Panel3/kda")
 		var loadout_label: Label = row.get_node("Panel2/loadout")
+		var ping_label: Label = row.get_node("Panel4/ping")
 
 		var player_identifier := String(player_stat.get("player_identifier", str(peer_id)))
 		if player_identifier.strip_edges() == "":
@@ -32,6 +33,7 @@ func populate_leaderboard(stats_payload: Dictionary) -> void:
 		name_label.text = player_identifier
 		kda_label.text = "%d / %d" % [kills, deaths]
 		loadout_label.text = "%s" % [current_weapon_name]
+		ping_label.text = "%d ms" % int(player_stat.get("ping_ms", 0))
 
 func _weapon_name(weapon_payload: Variant) -> String:
 	if weapon_payload is Dictionary:

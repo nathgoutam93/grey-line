@@ -19,6 +19,7 @@ var spawn_points: Array[Node2D] = []
 var player_stats := {} # Format: { peer_id: { "kills": 0, "deaths": 0 } }
 var stats_refresh_elapsed := 0.0
 var timer_refresh_elapsed := 0.0
+var ping_probe_elapsed := 0.0
 var match_time_remaining := 0.0
 var match_ended := false
 var winning_peer_id := -1
@@ -28,6 +29,7 @@ var post_match_transition_deadline_msec := -1
 var post_match_scene_change_requested := false
 const STATS_REFRESH_INTERVAL := 0.35
 const TIMER_REFRESH_INTERVAL := 1.0
+const PING_PROBE_INTERVAL := 1.0
 
 func _ready():
 	_cache_spawn_points()
@@ -78,6 +80,10 @@ func _process(delta: float) -> void:
 		leave_game_button.visible = touch_leaderboard_visible and not OS.has_feature("dedicated_server")
 
 	if not multiplayer.is_server():
+		ping_probe_elapsed += delta
+		if ping_probe_elapsed >= PING_PROBE_INTERVAL:
+			ping_probe_elapsed = 0.0
+			_request_ping_echo.rpc_id(1, Time.get_ticks_msec())
 		return
 
 	if not match_ended:
@@ -389,9 +395,45 @@ func _new_player_stats(peer_id: int) -> Dictionary:
 		"player_identifier": _player_identifier(peer_id),
 		"kills": 0,
 		"deaths": 0,
+		"ping_ms": 0,
 		"loadout": {},
 		"current_weapon": {}
 	}
+
+@rpc("any_peer", "unreliable")
+func _request_ping_echo(client_send_msec: int) -> void:
+	if not multiplayer.is_server():
+		return
+	var peer_id := multiplayer.get_remote_sender_id()
+	if peer_id <= 0:
+		return
+	_receive_ping_echo.rpc_id(peer_id, client_send_msec)
+
+@rpc("authority", "call_local", "unreliable")
+func _receive_ping_echo(client_send_msec: int) -> void:
+	if multiplayer.is_server():
+		return
+	if client_send_msec <= 0:
+		return
+	var rtt_ms := maxi(0, int(Time.get_ticks_msec() - client_send_msec))
+	_report_client_ping.rpc_id(1, rtt_ms)
+
+@rpc("any_peer", "unreliable")
+func _report_client_ping(rtt_ms: int) -> void:
+	if not multiplayer.is_server():
+		return
+	var peer_id := multiplayer.get_remote_sender_id()
+	if peer_id <= 0:
+		return
+	if not player_stats.has(peer_id):
+		player_stats[peer_id] = _new_player_stats(peer_id)
+	var stats: Dictionary = player_stats[peer_id]
+	var sanitized_rtt := maxi(0, mini(rtt_ms, 9999))
+	if int(stats.get("ping_ms", -1)) == sanitized_rtt:
+		return
+	stats["ping_ms"] = sanitized_rtt
+	player_stats[peer_id] = stats
+	_update_stats.rpc(player_stats)
 
 func _slot_name(slot: int) -> String:
 	match slot:

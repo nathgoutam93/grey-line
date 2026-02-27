@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://kod8vstgicqx"]
 
 [node name="HBoxContainer" type="HBoxContainer" unique_id=1469261586]
-custom_minimum_size = Vector2(300, 30)
+custom_minimum_size = Vector2(420, 30)
 
 [node name="Panel" type="Panel" parent="." unique_id=331255514]
 layout_mode = 2
@@ -35,3 +35,14 @@ offset_left = 10.0
 offset_right = 74.0
 offset_bottom = 23.0
 text = "Loadout"
+
+[node name="Panel4" type="Panel" parent="." unique_id=1470011001]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ping" type="Label" parent="Panel4" unique_id=1739940012]
+layout_mode = 0
+offset_left = 10.0
+offset_right = 60.0
+offset_bottom = 23.0
+text = "Ping"
