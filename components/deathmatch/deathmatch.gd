@@ -54,15 +54,14 @@ func _ready():
 		multiplayer.connected_to_server.connect(_on_connected)
 		multiplayer.server_disconnected.connect(_on_disconnected)
 		multiplayer.connection_failed.connect(_on_connection_failed)
-		
+		call_deferred("_request_players_resync_delayed")
 		return
 
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	_update_match_timer_ui.rpc(_format_match_time(match_time_remaining))
 
-	if not OS.has_feature("dedicated_server"):
-		spawn_player(1)
+	call_deferred("_spawn_initial_connected_players")
 
 
 func _process(delta: float) -> void:
@@ -152,6 +151,19 @@ func _on_peer_connected(id: int):
 	if not match_ended:
 		spawn_player(id)
 		call_deferred("_sync_existing_players_to_peer", id)
+
+func _spawn_initial_connected_players() -> void:
+	if not is_inside_tree():
+		return
+	if not _has_active_multiplayer_peer() or not multiplayer.is_server():
+		return
+	if match_ended:
+		return
+
+	if not OS.has_feature("dedicated_server"):
+		spawn_player(1)
+	for peer_id in multiplayer.get_peers():
+		spawn_player(peer_id)
 
 func _on_peer_disconnected(id: int):
 	print("Peer disconnected: %d" % id)

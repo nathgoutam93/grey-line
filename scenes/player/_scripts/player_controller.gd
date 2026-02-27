@@ -53,6 +53,8 @@ var _interpolator := RemoteInterpolator.new()
 var _is_firing_net := false
 var _tick_offset := 0.0
 var _last_authoritative_input_tick := 0
+var _death_sequence_id := 0
+const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 
 func _is_server_role() -> bool:
 	return multiplayer.is_server()
@@ -455,10 +457,14 @@ func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
 
 @rpc("authority", "call_local", "reliable")
 func _remote_die(global_pos: Vector2):
+	_death_sequence_id += 1
+	var death_sequence := _death_sequence_id
 	is_dead = true
 	_disable_hurtbox(headHurtBox)
 	_disable_hurtbox(bodyHurtBox)
-	player_input.set_process(false)
+	if player_input:
+		player_input.set_process(false)
+		player_input.set_process_input(false)
 	set_process(false)
 	set_physics_process(false)
 	if movement_component:
@@ -478,7 +484,15 @@ func _remote_die(global_pos: Vector2):
 	dead_scene.global_position = global_pos
 	get_tree().current_scene.add_child(dead_scene)
 
-	await get_tree().create_timer(5).timeout
+	var tick_rate := int(NetworkTick.get("tick_rate"))
+	if tick_rate <= 0:
+		tick_rate = 60
+	var despawn_ticks := maxi(1, int(round(DEATH_DESPAWN_DELAY_SECONDS * float(tick_rate))))
+	await _wait_network_ticks(despawn_ticks)
+	if death_sequence != _death_sequence_id:
+		return
+	if not is_dead:
+		return
 	queue_free()
 
 func _disable_hurtbox(hurtbox: Area2D) -> void:
@@ -488,16 +502,37 @@ func _disable_hurtbox(hurtbox: Area2D) -> void:
 	hurtbox.monitorable = false
 
 func reset_for_respawn() -> void:
+	_death_sequence_id += 1
 	is_dead = false
 	is_slow_walking = false
 	_is_firing_net = false
 	velocity = Vector2.ZERO
+	show()
+	_enable_hurtbox(headHurtBox)
+	_enable_hurtbox(bodyHurtBox)
+	_input_buffer.clear()
+	_input_queue.clear()
+	_last_input = null
+	_last_processed_tick = 0
+	_interpolator.snapshot_buffer.clear()
 	set_process(true)
 	set_physics_process(true)
 	if movement_component:
 		movement_component.set_process(true)
 		movement_component.set_physics_process(true)
 		movement_component.is_moving = false
+	if health_component:
+		health_component.is_dead = false
+		health_component.current_health = health_component.max_health
 	if player_input:
-		player_input.set_process(false)
-		player_input.set_process_input(false)
+		player_input.set_authority(owner_peer_id)
+
+func _enable_hurtbox(hurtbox: Area2D) -> void:
+	if not is_instance_valid(hurtbox):
+		return
+	hurtbox.monitoring = true
+	hurtbox.monitorable = true
+
+func _wait_network_ticks(tick_count: int) -> void:
+	for _i in range(maxi(0, tick_count)):
+		await NetworkTick.tick_started
