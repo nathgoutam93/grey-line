@@ -72,27 +72,31 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	var aim_dir := mouse_pos - player.global_position
 	if aim_dir.length_squared() > 0.0001:
 		frame.aim_dir = aim_dir.normalized()
-	frame.fire_pressed = Input.is_action_just_pressed("shoot") or (_is_touch_mode() and _is_touch_button_pressed("Shoot"))
-	frame.fire_held = Input.is_action_pressed("shoot") or (_is_touch_mode() and _is_touch_button_pressed("Shoot")) or (_is_touch_mode() and _is_touch_button_pressed("Headshot"))
-	frame.shot_intent = PlayerController.ShotIntent.HEAD if (Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or (_is_touch_mode() and _is_touch_button_pressed("Headshot"))) else PlayerController.ShotIntent.BODY
-	if Input.is_action_just_pressed("reload") or _just_pressed_touch("Reload"):
+	var touch_mode := _is_touch_mode()
+	var shoot_pressed := _is_touch_button_pressed("Shoot") if touch_mode else Input.is_action_just_pressed("shoot")
+	var shoot_held := (_is_touch_button_pressed("Shoot") or _is_touch_button_pressed("Headshot")) if touch_mode else Input.is_action_pressed("shoot")
+	var headshot_requested := _is_touch_button_pressed("Headshot") if touch_mode else Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+	frame.fire_pressed = shoot_pressed
+	frame.fire_held = shoot_held
+	frame.shot_intent = PlayerController.ShotIntent.HEAD if headshot_requested else PlayerController.ShotIntent.BODY
+	if (touch_mode and _just_pressed_touch("Reload")) or (not touch_mode and Input.is_action_just_pressed("reload")):
 		_pending_reload_ticks = EDGE_HOLD_TICKS
-	if Input.is_action_just_pressed("scroll_up") or _just_pressed_touch("Swap"):
+	if (touch_mode and _just_pressed_touch("Swap")) or (not touch_mode and Input.is_action_just_pressed("scroll_up")):
 		_pending_switch_prev_ticks = EDGE_HOLD_TICKS
-	if Input.is_action_just_pressed("scroll_down"):
+	if not touch_mode and Input.is_action_just_pressed("scroll_down"):
 		_pending_switch_next_ticks = EDGE_HOLD_TICKS
-	if Input.is_action_just_pressed("drop_weapon"):
+	if not touch_mode and Input.is_action_just_pressed("drop_weapon"):
 		_pending_drop_ticks = EDGE_HOLD_TICKS
-	if Input.is_action_just_pressed("pickup"):
+	if not touch_mode and Input.is_action_just_pressed("pickup"):
 		_pending_interact_ticks = EDGE_HOLD_TICKS
 
-	if Input.is_action_just_pressed("primary"):
+	if not touch_mode and Input.is_action_just_pressed("primary"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
 		_pending_slot_select_value = WeaponManager.WeaponSlot.PRIMARY
-	elif Input.is_action_just_pressed("secondary"):
+	elif not touch_mode and Input.is_action_just_pressed("secondary"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
 		_pending_slot_select_value = WeaponManager.WeaponSlot.SECONDARY
-	elif Input.is_action_just_pressed("malee"):
+	elif not touch_mode and Input.is_action_just_pressed("malee"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
 		_pending_slot_select_value = WeaponManager.WeaponSlot.MELEE
 
@@ -119,7 +123,7 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	if _pending_slot_select_ticks == 0:
 		_pending_slot_select_value = -1
 
-	frame.slow_walk_held = Input.is_action_pressed("slow_walk")
+	frame.slow_walk_held = false if touch_mode else Input.is_action_pressed("slow_walk")
 	return frame
 
 func _resolve_touch_aim_zone() -> TouchAimZone:
