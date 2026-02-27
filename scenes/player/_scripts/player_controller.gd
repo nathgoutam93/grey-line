@@ -122,8 +122,9 @@ func _process(_delta: float) -> void:
 	if footstep_player and footstep_player.playing:
 		footstep_player.stop()
 
-	if weapon_manager and weapon_manager.current_weapon and not weapon_manager.current_weapon.is_locked:
-		skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("idle", ""))
+	if weapon_manager and weapon_manager.current_weapon:
+		if weapon_manager.current_weapon.can_play_idle_animation():
+			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("idle", ""))
 
 func _physics_process(_delta: float) -> void:
 	pass

@@ -1,3 +1,12 @@
+>> TODO
+- Full lag-compensated rewind hitscan service (world rewind/restore by input tick).
+- Tick-based weapon cooldown/reload internals (weapon still uses timer-driven internals).
+- Removal of all legacy request RPC surface (some compatibility paths remain).
+
+
+
+
+
 • Proposed Plan
 
 

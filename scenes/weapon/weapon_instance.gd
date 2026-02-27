@@ -9,6 +9,10 @@ var ammo_reserve := 0
 var is_auto_reload := false
 var is_reloading := false
 var is_firing := false
+var _cooldown_ticks_remaining := 0
+var _reload_ticks_remaining := 0
+var _equip_ticks_remaining := 0
+var _burst_shots_remaining := 0
 
 @export var is_locked := true
 
@@ -25,6 +29,13 @@ var player: PlayerController
 const ENVIRONMENT_MASK := 1 << 0 # Physics layer 0
 const BODY_HURTBOX_MASK := 1 << 4 # Physics layer 5
 const HEAD_HURTBOX_MASK := 1 << 3 # Physics layer 4
+
+func _ready() -> void:
+	if not NetworkTick.tick_started.is_connected(_on_network_tick):
+		NetworkTick.tick_started.connect(_on_network_tick)
+
+func _on_network_tick(_tick: int) -> void:
+	_tick_update()
 
 func set_weapon_data(w: Weapon):
 	data = w
@@ -104,6 +115,7 @@ func _unlock():
 func _interrupt_reload():
 	if is_reloading and not is_auto_reload:
 		is_reloading = false
+		_reload_ticks_remaining = 0
 		if reload_sfx_player.playing:
 			reload_sfx_player.stop()
 		_unlock()
@@ -111,10 +123,14 @@ func _interrupt_reload():
 func force_interrupt():
 	if is_reloading:
 		is_reloading = false
+		_reload_ticks_remaining = 0
 		if reload_sfx_player.playing:
 			reload_sfx_player.stop()
 
 	is_firing = false
+	_cooldown_ticks_remaining = 0
+	_equip_ticks_remaining = 0
+	_burst_shots_remaining = 0
 	_unlock()
 
 
@@ -153,6 +169,7 @@ func unequip():
 
 func equip():
 	_lock()
+	_equip_ticks_remaining = _seconds_to_ticks(data.equip_duration)
 
 	unequip()
 
@@ -166,11 +183,10 @@ func equip():
 	
 	_play_equip_sound()
 
-	await get_tree().create_timer(data.equip_duration).timeout
-	_unlock()
-
-	if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
-		await reload()
+	if _equip_ticks_remaining <= 0:
+		_unlock()
+		if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
+			reload()
 
 
 func reload(auto: bool = false) -> void:
@@ -185,6 +201,7 @@ func reload(auto: bool = false) -> void:
 	_lock()
 	is_auto_reload = auto
 	is_reloading = true
+	_reload_ticks_remaining = _seconds_to_ticks(data.reload_duration)
 	
 	emit_signal("reload_action", data.animations.get("reload", ""), data.sounds.reload_sound)
 
@@ -193,59 +210,30 @@ func reload(auto: bool = false) -> void:
 	if has_node("AnimationPlayer"):
 		get_node("AnimationPlayer").play("reload")
 
-	await get_tree().create_timer(data.reload_duration).timeout
-
-	if is_reloading:
-		if data.uses_ammo:
-			var ammo_needed : int = max(data.mag_size - ammo_in_mag, 0)
-			var ammo_loaded : int = min(ammo_needed, ammo_reserve)
-			ammo_in_mag += ammo_loaded
-			ammo_reserve -= ammo_loaded
-		else:
-			ammo_in_mag = data.mag_size
-		is_reloading = false
-		_unlock()
+	if _reload_ticks_remaining <= 0:
+		_complete_reload()
 
 func start_fire():
-	if is_firing or is_locked:
+	if is_locked:
 		return
 
 	is_firing = true
-	if mode.is_auto:
-		auto_shoot_loop()
-	elif mode.burst_count > 0:
-		burst_shoot_loop(mode.burst_count)
-	else:
-		_lock()
-		await single_shoot()
-		_unlock()
+	if not mode.is_auto and mode.burst_count > 0 and _burst_shots_remaining <= 0:
+		_burst_shots_remaining = mode.burst_count
 
 func stop_fire():
 	is_firing = false
+	_burst_shots_remaining = 0
 
-
-func auto_shoot_loop():
-	_lock()
-	while is_firing:
-		if (not await single_shoot()):
-			break
-	_unlock()
-
-func burst_shoot_loop(burst_count: int):
-	_lock()
-	for i in range(burst_count):
-		if (not await single_shoot()):
-			break
-	_unlock()
-
-func single_shoot() -> bool:
+func _single_shot() -> bool:
+	if is_locked:
+		return false
 	if data.uses_ammo:
 		if is_reloading:
 			return false
 		if ammo_in_mag <= 0:
 			if ammo_reserve > 0:
-				_unlock()
-				await reload(true) # Auto reload when empty
+				reload(true)
 			return false
 
 		ammo_in_mag -= 1
@@ -260,23 +248,83 @@ func single_shoot() -> bool:
 		var flash = get_node("MuzzleFlash")
 		flash.show()
 		flash.modulate = Color(1, 1, 1, 1)
-
-		await get_tree().create_timer(0.05).timeout
-		if flash:
-			flash.hide()
+		flash.hide()
 
 	if has_node("AnimationPlayer"):
 		get_node("AnimationPlayer").play("shoot")
-
-
-	await get_tree().create_timer(data.mode.cooldown).timeout
+	_cooldown_ticks_remaining = max(_seconds_to_ticks(data.mode.cooldown), 1)
 
 	if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
-		_unlock()
-		await reload(true) # Auto reload when empty
+		reload(true)
 		return false
 
 	return true
+
+func _tick_update() -> void:
+	if _equip_ticks_remaining > 0:
+		_equip_ticks_remaining -= 1
+		if _equip_ticks_remaining == 0:
+			_unlock()
+			if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
+				reload()
+
+	if _reload_ticks_remaining > 0:
+		_reload_ticks_remaining -= 1
+		if _reload_ticks_remaining == 0:
+			_complete_reload()
+
+	if _cooldown_ticks_remaining > 0:
+		_cooldown_ticks_remaining -= 1
+
+	if not is_firing:
+		return
+	if is_locked or is_reloading:
+		return
+	if _cooldown_ticks_remaining > 0:
+		return
+
+	if mode.is_auto:
+		if not _single_shot():
+			is_firing = false
+		return
+
+	if mode.burst_count > 0:
+		if _burst_shots_remaining <= 0:
+			_burst_shots_remaining = mode.burst_count
+		if _single_shot():
+			_burst_shots_remaining -= 1
+		if _burst_shots_remaining <= 0:
+			is_firing = false
+		return
+
+	is_firing = false
+	_single_shot()
+
+func _complete_reload() -> void:
+	if not is_reloading:
+		return
+	if data.uses_ammo:
+		var ammo_needed : int = max(data.mag_size - ammo_in_mag, 0)
+		var ammo_loaded : int = min(ammo_needed, ammo_reserve)
+		ammo_in_mag += ammo_loaded
+		ammo_reserve -= ammo_loaded
+	else:
+		ammo_in_mag = data.mag_size
+	is_reloading = false
+	_reload_ticks_remaining = 0
+	_unlock()
+
+func _seconds_to_ticks(seconds: float) -> int:
+	return int(ceil(max(seconds, 0.0) * float(NetworkTick.tick_rate)))
+
+func can_play_idle_animation() -> bool:
+	if is_locked:
+		return false
+	if is_reloading:
+		return false
+	if is_firing:
+		return false
+	return _cooldown_ticks_remaining <= 0
 
 func _play_shoot_sound():
 	if sound_pool:
