@@ -43,14 +43,8 @@ func setup_default_weapons():
 	equip_slot(current_slot)
 
 
-func get_current_weapon_name() -> String:
-	return current_weapon.data.name if current_weapon else ""
-
 func get_ammo_in_mag() -> int:
 	return current_weapon.ammo_in_mag if current_weapon else 0
-
-func get_mag_size() -> int:
-	return current_weapon.data.mag_size if current_weapon else 0
 
 func get_ammo_reserve() -> int:
 	return current_weapon.ammo_reserve if current_weapon else 0

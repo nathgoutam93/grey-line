@@ -65,14 +65,6 @@ func _is_owner_role() -> bool:
 func has_authority(id):
 	return id == get_multiplayer_authority() or id == owner_peer_id
 
-func _is_valid_owner_request() -> bool:
-	if not multiplayer.is_server():
-		return false
-	var sender_id := multiplayer.get_remote_sender_id()
-	if sender_id == 0:
-		sender_id = multiplayer.get_unique_id()
-	return sender_id == owner_peer_id
-
 func _ready():
 	if health_component and not health_component.is_connected("die", _on_die):
 		health_component.connect("die", _on_die)
@@ -296,90 +288,6 @@ func add_interactable(item: Interactable):
 
 func remove_interactable(item: Interactable):
 	interactables.erase(item)
-
-@rpc("any_peer", "call_local")
-func pickup_weapon(pickup_path: NodePath):
-	if not _is_valid_owner_request():
-		return
-
-	_remote_pickup.rpc(pickup_path)
-
-@rpc("any_peer", "call_local")
-func request_start_slow_walk():
-	if not _is_valid_owner_request():
-		return
-
-	is_slow_walking = true
-
-@rpc("any_peer", "call_local")
-func request_stop_slow_walk():
-	if not _is_valid_owner_request():
-		return
-
-	is_slow_walking = false
-
-@rpc("any_peer", "call_local")
-func request_start_fire(shot_intent: int = ShotIntent.BODY):
-	if not _is_valid_owner_request():
-		return
-
-	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
-		shot_intent = ShotIntent.BODY
-
-	_remote_start_fire.rpc(shot_intent)
-	
-@rpc("any_peer", "call_local")
-func request_stop_fire():
-	if not _is_valid_owner_request():
-		return
-
-	_remote_stop_fire.rpc()
-
-@rpc("any_peer", "call_local")
-func request_reload():
-	if not _is_valid_owner_request():
-		return
-
-	_remote_reload.rpc()
-
-@rpc("any_peer", "call_local")
-func request_switch_weapon_next():
-	if not _is_valid_owner_request():
-		return
-
-	_remote_switch_weapon.rpc()
-
-@rpc("any_peer", "call_local")
-func request_switch_weapon_previous():
-	if not _is_valid_owner_request():
-		return
-
-	_remote_switch_weapon_previous.rpc()
-
-@rpc("any_peer", "call_local")
-func request_switch_weapon_slot(slot: int):
-	if not _is_valid_owner_request():
-		return
-
-	_remote_switch_weapon_slot.rpc(slot)
-
-@rpc("any_peer", "call_local")
-func request_drop_weapon():
-	if not _is_valid_owner_request():
-		return
-
-	_remote_drop_weapon.rpc()
-
-@rpc("any_peer", "call_local")
-func request_interact():
-	if not _is_valid_owner_request():
-		return
-
-	var target_path: NodePath = NodePath("")
-	if interactables.size() > 0 and interactables[0]:
-		target_path = interactables[0].get_path()
-	_remote_interact.rpc(target_path)
-
 
 @rpc("authority", "call_local")
 func _remote_interact(target_path: NodePath):

@@ -16,12 +16,12 @@
 
   - Difficulty: High (architecture migration, not a small refactor).
   - Why high: your current codebase is split between MultiplayerSynchronizer replication and many combat RPCs; moving to authoritative tick simulation
-    affects input, movement, snapshots, combat timing, reconciliation, and spawn/death flow.
+	affects input, movement, snapshots, combat timing, reconciliation, and spawn/death flow.
   - Effort estimate (1 engineer, part-time gameplay iteration included):
-      1. Phase 1 (movement tick netcode): 3-5 days
-      2. Phase 2 (tick-queued combat + lag compensation): 4-7 days
-      3. Hardening/tuning/tests: 2-4 days
-      4. Total: ~2-3 weeks
+	  1. Phase 1 (movement tick netcode): 3-5 days
+	  2. Phase 2 (tick-queued combat + lag compensation): 4-7 days
+	  3. Hardening/tuning/tests: 2-4 days
+	  4. Total: ~2-3 weeks
 
   ## Scope Locked (per your choices)
 
@@ -50,18 +50,18 @@
   2. PlayerInputFrame (Resource)
 
   - Fields:
-      - tick:int
-      - move:Vector2
-      - aim_dir:Vector2
-      - fire_pressed:bool
-      - fire_held:bool
-      - reload_pressed:bool
-      - switch_next_pressed:bool
-      - switch_prev_pressed:bool
-      - slot_select:int (-1 when none)
-      - drop_pressed:bool
-      - interact_pressed:bool
-      - slow_walk_held:bool
+	  - tick:int
+	  - move:Vector2
+	  - aim_dir:Vector2
+	  - fire_pressed:bool
+	  - fire_held:bool
+	  - reload_pressed:bool
+	  - switch_next_pressed:bool
+	  - switch_prev_pressed:bool
+	  - slot_select:int (-1 when none)
+	  - drop_pressed:bool
+	  - interact_pressed:bool
+	  - slow_walk_held:bool
   - This is the only client->server gameplay intent payload.
 
   3. LocalInputCollector (node under player)
@@ -86,17 +86,17 @@
   - Responsibility: deterministic movement + facing + gameplay command application for one tick.
   - Replaces MovementCompoent._physics_process.
   - Pure-ish API:
-      - simulate_tick(player_state, input_frame, delta_tick) -> player_state
+	  - simulate_tick(player_state, input_frame, delta_tick) -> player_state
   - No RPC calls inside.
 
   7. ServerPlayerDriver
 
   - Responsibility: authoritative per-tick execution order:
-      1. dequeue input for tick
-      2. run PlayerSimulation
-      3. queue/resolve weapon commands for this tick
-      4. store history snapshot
-      5. publish snapshot packet
+	  1. dequeue input for tick
+	  2. run PlayerSimulation
+	  3. queue/resolve weapon commands for this tick
+	  4. store history snapshot
+	  5. publish snapshot packet
 
   8. StateHistoryBuffer
 
@@ -133,12 +133,12 @@
   2. RPC changes (replace action RPC explosion)
 
   - Remove/retire:
-      - request_start_fire, request_stop_fire, request_reload, weapon switch/drop/interact request RPCs from player control path.
+	  - request_start_fire, request_stop_fire, request_reload, weapon switch/drop/interact request RPCs from player control path.
   - Add:
-      - @rpc("any_peer","reliable") server_receive_input(frame:PlayerInputFrame)
-      - @rpc("authority","unreliable") client_receive_snapshot(snapshot:Dictionary)
+	  - @rpc("any_peer","reliable") server_receive_input(frame:PlayerInputFrame)
+	  - @rpc("authority","unreliable") client_receive_snapshot(snapshot:Dictionary)
   - Optional ack:
-      - snapshot includes last_processed_tick for replay boundary.
+	  - snapshot includes last_processed_tick for replay boundary.
 
   3. Snapshot schema (authoritative server->clients)
 
@@ -153,8 +153,8 @@
   4. Player scene wiring
 
   - scenes/player/player.tscn:
-      - Remove PlayerInput synchronizer node and ServerSynchronizer.
-      - Replace with modular nodes above (collector, driver, reconciler, interpolator).
+	  - Remove PlayerInput synchronizer node and ServerSynchronizer.
+	  - Replace with modular nodes above (collector, driver, reconciler, interpolator).
 
   ## Implementation Plan (decision-complete)
 
@@ -173,8 +173,8 @@
   - Move fire/reload/switch/drop/interact intents into PlayerInputFrame.
   - Server consumes these intents on authoritative tick in ServerPlayerDriver.
   - Convert weapon firing cadence from timer-driven request RPC dependence to tick-based scheduling:
-      - weapon cooldown tracked in ticks
-      - burst/auto states advanced per tick.
+	  - weapon cooldown tracked in ticks
+	  - burst/auto states advanced per tick.
   - Add StateHistoryBuffer and LagCompensationService.
   - On fire tick: rewind to shooter’s input tick, raycast, apply damage, restore world.
   - Retire old request RPC endpoints from player_controller.gd.
@@ -184,9 +184,9 @@
 
   - Add packet-loss handling (reuse last input for gaps; clamp stale inputs).
   - Add anti-cheat sanity checks:
-      - input tick monotonicity window
-      - max aim delta/tick
-      - movement magnitude clamp.
+	  - input tick monotonicity window
+	  - max aim delta/tick
+	  - movement magnitude clamp.
   - Remove dead synchronizer configs from .tscn files.
   - Add debug overlay (tick, RTT estimate, prediction error, replay count).
   - Acceptance gate: stable gameplay at 100-150 ms simulated RTT and 1-3% packet loss.
@@ -194,24 +194,24 @@
   ## File-Level Change Map
 
   - Modify:
-      - scenes/player/player.tscn
-      - scenes/player/_scripts/player_controller.gd
-      - scenes/player/_scripts/player_input.gd (or replace with collector)
-      - components/movement/movement.gd
-      - scenes/weapon/weapon_instance.gd (tick-cooldown integration)
-      - components/deathmatch/deathmatch.gd (spawn hooks to net modules)
+	  - scenes/player/player.tscn
+	  - scenes/player/_scripts/player_controller.gd
+	  - scenes/player/_scripts/player_input.gd (or replace with collector)
+	  - components/movement/movement.gd
+	  - scenes/weapon/weapon_instance.gd (tick-cooldown integration)
+	  - components/deathmatch/deathmatch.gd (spawn hooks to net modules)
   - Add (suggested paths):
-      - scripts/network/network_tick_clock.gd
-      - scripts/network/data/player_input_frame.gd
-      - scripts/network/client/input_transport_client.gd
-      - scripts/network/server/input_transport_server.gd
-      - scripts/network/sim/player_simulation.gd
-      - scripts/network/server/server_player_driver.gd
-      - scripts/network/server/state_history_buffer.gd
-      - scripts/network/server/lag_compensation_service.gd
-      - scripts/network/client/client_reconciler.gd
-      - scripts/network/client/remote_interpolator.gd
-      - scripts/network/shared/snapshot_replicator.gd
+	  - scripts/network/network_tick_clock.gd
+	  - scripts/network/data/player_input_frame.gd
+	  - scripts/network/client/input_transport_client.gd
+	  - scripts/network/server/input_transport_server.gd
+	  - scripts/network/sim/player_simulation.gd
+	  - scripts/network/server/server_player_driver.gd
+	  - scripts/network/server/state_history_buffer.gd
+	  - scripts/network/server/lag_compensation_service.gd
+	  - scripts/network/client/client_reconciler.gd
+	  - scripts/network/client/remote_interpolator.gd
+	  - scripts/network/shared/snapshot_replicator.gd
 
   ## Test Cases and Scenarios
 

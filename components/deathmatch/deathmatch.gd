@@ -246,14 +246,6 @@ func _update_stats(stats: Dictionary):
 	leaderboard.populate_leaderboard(stats)
 
 
-@rpc("reliable")
-func get_stats(peer_id: int) -> Dictionary:
-	if multiplayer.is_server() and player_stats.has(peer_id):
-		_refresh_player_combat_data(peer_id)
-		return player_stats[peer_id]
-	return {}
-
-
 @rpc("call_local", "reliable")
 func _setup_player(peer_id, player_path: NodePath, spawn_position: Vector2, server_tick: int):
 	for _i in range(30):
@@ -563,16 +555,6 @@ func _has_active_multiplayer_peer() -> bool:
 		return peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
 	return true
 
-func _is_local_touch_input_mode() -> bool:
-	if not _has_active_multiplayer_peer():
-		return false
-	if not is_instance_valid(map):
-		return false
-	var local_player := map.get_node_or_null(str(multiplayer.get_unique_id())) as PlayerController
-	if local_player == null or local_player.player_input == null:
-		return false
-	return local_player.player_input.input_mode == PlayerInputCollector.InputMode.TOUCH
-
 @rpc("call_local", "reliable")
 func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:
 	if post_match_transition_started:
@@ -637,9 +619,6 @@ func _format_match_time(total_seconds: float) -> String:
 	var minutes := clamped_seconds / 60
 	var seconds := clamped_seconds % 60
 	return "%02d:%02d" % [minutes, seconds]
-
-func _winner_text(winner_id: int) -> String:
-	return "Winner: %s" % _winner_name(winner_id)
 
 func _winner_name(winner_id: int) -> String:
 	if winner_id <= 0:

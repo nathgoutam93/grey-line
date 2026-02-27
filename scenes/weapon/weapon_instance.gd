@@ -136,14 +136,6 @@ func _lock():
 func _unlock():
 	is_locked = false
 
-func _interrupt_reload():
-	if is_reloading and not is_auto_reload:
-		is_reloading = false
-		_reload_ticks_remaining = 0
-		if reload_sfx_player.playing:
-			reload_sfx_player.stop()
-		_unlock()
-
 func force_interrupt():
 	if is_reloading:
 		is_reloading = false
@@ -402,19 +394,3 @@ func _create_bullet_trail(start: Vector2, end: Vector2, normal, surface_type: St
 	trail.normal = normal
 	trail.surface_type = surface_type
 	get_tree().current_scene.add_child(trail)
-
-		
-func draw_debug_line(origin: Vector2, end_point: Vector2, color := Color.RED, duration := 0.2):
-	var debug_line = Line2D.new()
-	debug_line.position = Vector2.ZERO # Important: don't inherit position
-	debug_line.points = PackedVector2Array([origin, end_point]) # world-space points
-	debug_line.default_color = color
-	debug_line.width = 2.0
-	get_tree().current_scene.add_child(debug_line) # Add to scene root
-
-	var timer = Timer.new()
-	timer.wait_time = duration
-	timer.one_shot = true
-	debug_line.add_child(timer)
-	timer.start()
-	timer.timeout.connect(func(): debug_line.queue_free())

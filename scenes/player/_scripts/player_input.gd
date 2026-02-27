@@ -12,7 +12,6 @@ enum InputMode {
 		_apply_input_mode()
 
 @export var touch_aim_distance := 1200.0
-@export_range(0.0, 1.0) var touch_aim_deadzone := 0.2
 @export var touch_crosshair_radius := 180.0
 @export var player: PlayerController
 
@@ -24,7 +23,6 @@ var _aim_initialized := false
 var _touch_aim_dir := Vector2.RIGHT
 var _look_angle := 0.0
 var _was_local_player := false
-var _mouse_look_delta_x := 0.0
 var _touch_look_start_angle := 0.0
 var _pending_reload_ticks := 0
 var _pending_switch_prev_ticks := 0
@@ -202,14 +200,8 @@ func _input(event: InputEvent) -> void:
 			return
 	if event is InputEventMouseMotion:
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-			_mouse_look_delta_x += event.relative.x
 			if is_instance_valid(player):
 				_look_angle += event.relative.x * player.mouse_turn_sensitivity
-
-func consume_mouse_look_delta_x() -> float:
-	var look_delta := _mouse_look_delta_x
-	_mouse_look_delta_x = 0.0
-	return look_delta
 
 func on_local_player_spawned() -> void:
 	_was_local_player = true

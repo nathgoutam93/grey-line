@@ -158,14 +158,6 @@ func _connect_to_server(target_address: String, target_port: int) -> void:
 	print("Connecting to server at %s:%d..." % [target_address, target_port])
 	_set_discovery_status("Connecting to %s:%d..." % [target_address, target_port])
 
-func _get_target_address() -> String:
-	if hostname_input:
-		var input_address := hostname_input.text.strip_edges()
-		if input_address != "":
-			return input_address
-
-	return address
-
 func _on_connected_to_server() -> void:
 	rpc_id(1, "_register_player_name", local_player_name)
 	_open_lobby_scene()
@@ -229,9 +221,6 @@ func is_peer_connected(peer_id: int) -> bool:
 	if peer_id == multiplayer.get_unique_id():
 		return true
 	return multiplayer.get_peers().has(peer_id)
-
-func has_match_started() -> bool:
-	return match_started
 
 func _set_player_name_for_peer(peer_id: int, raw_name: String) -> void:
 	player_names[peer_id] = _sanitize_player_name(raw_name, peer_id)
@@ -446,9 +435,6 @@ func _set_discovery_status(text: String) -> void:
 
 func _release_mouse_capture() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-
-func _is_android_platform() -> bool:
-	return OS.get_name() == "Android"
 
 func _is_loopback_address(value: String) -> bool:
 	var trimmed := value.strip_edges()
