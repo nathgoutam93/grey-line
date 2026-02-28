@@ -8,7 +8,7 @@ extends Node
 @export var timer_touch_toggle_button: TouchScreenButton
 @export var match_result_overlay: Control
 @export var match_result_label: Label
-@export var leave_game_button: Button
+@export var leave_game_button: TouchScreenButton
 @export_range(30, 3600, 1, "or_greater") var match_duration_seconds := 600
 @export_range(1, 200, 1, "or_greater") var score_limit := 25
 @export_range(0.5, 10.0, 0.1, "or_greater") var post_match_result_duration_seconds := 2.0

@@ -4,20 +4,23 @@
 [ext_resource type="PackedScene" uid="uid://bo0618n7gadoc" path="res://scenes/ui/deathmatch/leaderboard.tscn" id="2_0ul0j"]
 [ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="2_cvc4k"]
 [ext_resource type="Texture2D" uid="uid://dyvurudpwy4vt" path="res://assets/sprites/hud/shape_2.png" id="3_moinr"]
+[ext_resource type="Texture2D" uid="uid://lwnvlq5a0l5j" path="res://assets/sprites/icons/btn_shape.png" id="4_cvc4k"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_leave_game"]
+size = Vector2(500, 100)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_moinr"]
 size = Vector2(180, 30)
 
-[node name="DeathmatchGameMode" type="Node" unique_id=1766349449 node_paths=PackedStringArray("leaderboard", "match_timer_label", "timer_toggle_control", "timer_touch_toggle_button", "match_result_overlay", "match_result_label", "leave_game_button")]
+[node name="DeathmatchGameMode" type="Node" unique_id=1766349449 node_paths=PackedStringArray("leaderboard", "match_timer_label", "timer_touch_toggle_button", "match_result_overlay", "match_result_label", "leave_game_button")]
 script = ExtResource("1_5osu2")
 player_scene = ExtResource("2_cvc4k")
 leaderboard = NodePath("MatchResultLayer/Control/Leaderboard")
 match_timer_label = NodePath("MatchResultLayer/Control/Timer/MatchTimerLabel")
-timer_toggle_control = NodePath("MatchResultLayer/Control/Timer")
 timer_touch_toggle_button = NodePath("MatchResultLayer/Control/Timer/TouchScreenButton")
 match_result_overlay = NodePath("MatchResultLayer/MatchResultOverlay")
 match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
-leave_game_button = NodePath("MatchResultLayer/Control/LeaveGameButton")
+leave_game_button = NodePath("MatchResultLayer/Control/LeaveGameButtonAnchor/LeaveGameButton")
 match_duration_seconds = 300
 score_limit = 10
 post_match_result_duration_seconds = 5.0
@@ -77,20 +80,34 @@ offset_top = -137.0
 offset_right = 220.0
 offset_bottom = 163.0
 
-[node name="LeaveGameButton" type="Button" parent="MatchResultLayer/Control" unique_id=676020495]
+[node name="LeaveGameButtonAnchor" type="Control" parent="MatchResultLayer/Control" unique_id=676020495]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -68.0
-offset_top = -122.0
-offset_right = 68.0
-offset_bottom = -84.0
+offset_top = -103.0
+offset_bottom = -103.0
 grow_horizontal = 2
 grow_vertical = 0
+
+[node name="LeaveGameButton" type="TouchScreenButton" parent="MatchResultLayer/Control/LeaveGameButtonAnchor" unique_id=1501672104]
+position = Vector2(-134, 0)
+scale = Vector2(0.5, 0.5)
+texture_normal = ExtResource("4_cvc4k")
+shape = SubResource("RectangleShape2D_leave_game")
+visibility_mode = 1
+
+[node name="Label" type="Label" parent="MatchResultLayer/Control/LeaveGameButtonAnchor/LeaveGameButton" unique_id=1095827264]
+offset_left = 2.0
+offset_right = 508.0
+offset_bottom = 102.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
 text = "Leave Game"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Timer" type="TextureRect" parent="MatchResultLayer/Control" unique_id=744819879]
 layout_mode = 1

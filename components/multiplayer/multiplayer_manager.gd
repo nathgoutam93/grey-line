@@ -17,7 +17,7 @@ extends Node
 @onready var discovery_status_label: Label = get_node_or_null("../UI/Control/discovery_status")
 @onready var lobby_status_label: Label = get_node_or_null("../UI/Control/lobby_status")
 @onready var lobby_players_label: Label = get_node_or_null("../UI/Control/lobby_players")
-@onready var start_match_button: Button = get_node_or_null("../UI/Control/start_match")
+@onready var start_match_button: TouchScreenButton = get_node_or_null("../UI/Control/start_match")
 
 var local_player_name := ""
 var player_names := {}
@@ -349,7 +349,6 @@ func _refresh_lobby_ui() -> void:
 	var is_lobby := _is_lobby_scene()
 	if start_match_button != null:
 		start_match_button.visible = is_lobby and multiplayer.multiplayer_peer != null and multiplayer.is_server() and not match_started
-		start_match_button.disabled = not start_match_button.visible
 
 	if lobby_status_label != null:
 		if not is_lobby:

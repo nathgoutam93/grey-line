@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dusrn6n2aocxf"]
 
 [ext_resource type="PackedScene" uid="uid://dnijy4kf8kg8f" path="res://components/multiplayer/multiplayer_manager.tscn" id="1_ytcab"]
+[ext_resource type="Texture2D" uid="uid://lwnvlq5a0l5j" path="res://assets/sprites/icons/btn_shape.png" id="2_jg1x8"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_w6xj4"]
 font_size = 28
@@ -8,20 +9,23 @@ font_size = 28
 [sub_resource type="LabelSettings" id="LabelSettings_4ys48"]
 font_size = 22
 
-[node name="Lobby" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_start_match"]
+size = Vector2(500, 100)
 
-[node name="Level" type="Node2D" parent="."]
+[node name="Lobby" type="Node2D" unique_id=785555685]
 
-[node name="LevelSpawner" type="MultiplayerSpawner" parent="."]
+[node name="Level" type="Node2D" parent="." unique_id=318857380]
+
+[node name="LevelSpawner" type="MultiplayerSpawner" parent="." unique_id=2053733731]
 _spawnable_scenes = PackedStringArray("uid://dyyv6g2s66fwh")
 spawn_path = NodePath("../Level")
 spawn_limit = 1
 
-[node name="MultiplayerManager" parent="." instance=ExtResource("1_ytcab")]
+[node name="MultiplayerManager" parent="." unique_id=1887861196 instance=ExtResource("1_ytcab")]
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1281686523]
 
-[node name="Control" type="Control" parent="UI"]
+[node name="Control" type="Control" parent="UI" unique_id=1013635241]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,7 +33,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="title" type="Label" parent="UI/Control"]
+[node name="title" type="Label" parent="UI/Control" unique_id=913663059]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -46,7 +50,7 @@ text = "LOBBY"
 label_settings = SubResource("LabelSettings_w6xj4")
 horizontal_alignment = 1
 
-[node name="lobby_status" type="Label" parent="UI/Control"]
+[node name="lobby_status" type="Label" parent="UI/Control" unique_id=509964045]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -63,7 +67,7 @@ text = "Waiting..."
 label_settings = SubResource("LabelSettings_4ys48")
 horizontal_alignment = 1
 
-[node name="lobby_players" type="Label" parent="UI/Control"]
+[node name="lobby_players" type="Label" parent="UI/Control" unique_id=1439604238]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -76,22 +80,21 @@ offset_right = 311.0
 offset_bottom = 109.0
 grow_horizontal = 2
 grow_vertical = 2
-text = ""
 label_settings = SubResource("LabelSettings_4ys48")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="start_match" type="Button" parent="UI/Control"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -120.0
-offset_top = 192.0
-offset_right = 120.0
-offset_bottom = 250.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="start_match" type="TouchScreenButton" parent="UI/Control" unique_id=1033616912]
+position = Vector2(500, 550)
+scale = Vector2(0.48, 0.58)
+texture_normal = ExtResource("2_jg1x8")
+shape = SubResource("RectangleShape2D_start_match")
+
+[node name="Label" type="Label" parent="UI/Control/start_match" unique_id=884793373]
+offset_right = 500.0
+offset_bottom = 100.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
 text = "Start Match"
+horizontal_alignment = 1
+vertical_alignment = 1
