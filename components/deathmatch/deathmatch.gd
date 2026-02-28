@@ -115,8 +115,7 @@ func _on_connected():
 
 func _on_disconnected():
 	print("Disconnected from server.")
-	if match_ended or post_match_transition_started:
-		call_deferred("_change_to_post_match_scene")
+	call_deferred("_change_to_post_match_scene")
 
 func _on_connection_failed():
 	print("Failed to connect to server.")
