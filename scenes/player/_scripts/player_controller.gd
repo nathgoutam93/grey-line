@@ -130,7 +130,7 @@ func _on_network_tick(tick: int) -> void:
 	if _is_server_role():
 		_server_tick(tick)
 	elif _is_owner_role():
-		_owner_tick(tick)
+		_owner_tick(_estimated_server_tick(tick))
 	else:
 		_proxy_tick(_estimated_server_tick(tick))
 
@@ -231,7 +231,7 @@ func _send_snapshot(tick: int) -> void:
 	}
 	rpc("client_receive_snapshot", snapshot)
 
-@rpc("any_peer", "reliable")
+@rpc("any_peer", "unreliable")
 func server_receive_input(frame_data: Dictionary) -> void:
 	if not _is_server_role():
 		return
