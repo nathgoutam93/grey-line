@@ -21,7 +21,6 @@ config/icon="uid://b656ppaqmcoi2"
 
 [autoload]
 
-FowOccluderSync="*res://scripts/FowOccluderSync.gd"
 MaskViewProvider="*res://scripts/MaskViewProvider.gd"
 NetworkTick="*res://scripts/network/network_tick_clock.gd"
 

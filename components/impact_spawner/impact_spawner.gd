@@ -11,11 +11,11 @@ class_name ImpactSpawner2D
 
 func spawn_impact_effect(_position: Vector2, normal: Vector2 = Vector2.UP, surface_type: String = "default") -> void:
 	var effect_scene: PackedScene = impact_scene_map.get(surface_type, default_effect_scene)
-	print(
-		"[ImpactSpawner] surface_type=", surface_type,
-		" mapped=", impact_scene_map.has(surface_type),
-		" scene=", effect_scene
-	)
+	#print(
+		#"[ImpactSpawner] surface_type=", surface_type,
+		#" mapped=", impact_scene_map.has(surface_type),
+		#" scene=", effect_scene
+	#)
 	if not effect_scene:
 		return
 
