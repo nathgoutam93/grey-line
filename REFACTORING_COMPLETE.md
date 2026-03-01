@@ -1,182 +1,26 @@
-# Equipment System Refactoring - Phase 0-7 Complete
+The refactor introduces gameplay-breaking regressions in core inventory flow: pickups can become no-ops with the new manager,
+dropping does not execute proper drop lifecycle, and backward compatibility in WeaponManager pickup is broken by uninitialized
+weapon instances. There is also a behavior regression in post-equip auto-reload.
 
-## Summary
+Full review comments:
 
-Successfully refactored the weapon-only architecture into a generic equipment system while maintaining 100% backward compatibility with existing gameplay.
-
-## Architecture Changes
-
-### Phase 1: Base Data Layer
-
-**Created:** `EquipmentData` (new base class)
-
-- Generic equipment properties
-- `equip_time`, `unequip_time`, `cooldown`
-- `animations`, `sounds`, `icon`
-- `slot` field (EquipmentSlot enum)
-- `instance_scene` for factory spawning
-
-**Updated:** `Weapon` → now extends `EquipmentData`
-
-- Kept all weapon-specific properties (damage, ammo, reload_time, etc.)
-- Added `weapon_scene` property (backward compat alias for `instance_scene`)
-- Added `_sync_weapon_type_to_slot()` to map WeaponType to EquipmentSlot
-
-### Phase 2: Base Instance Layer
-
-**Created:** `EquipmentInstance` (new base class)
-
-- Lifecycle management (equip/unequip)
-- Lock/unlock mechanism for state transitions
-- Cooldown tracking
-- Tick-based updates
-- Virtual methods: `start_use()`, `stop_use()`, `_tick_update_override()`
-
-### Phase 3: Weapon Instance Refactoring
-
-**Refactored:** `WeaponInstance` → now extends `EquipmentInstance`
-
-- Removed duplicated lifecycle code (moved to parent)
-- Preserved all weapon-specific logic (ammo, reload, firing)
-- Added backward-compat methods: `start_fire()`, `stop_fire()`
-- All signals still emitted (equip_action, shoot_action, reload_action)
-- Proper override of `_tick_update_override()` for weapon-specific tick logic
-
-### Phase 4: Equipment Slots
-
-**Created:** `EquipmentSlot` enum in `EquipmentData`
-
-```
-PRIMARY = 0
-SECONDARY = 1
-MELEE = 2
-UTILITY = 3
-THROWABLE = 4
-```
-
-Weapons automatically sync their type to slot:
-
-- WeaponType.PRIMARY → EquipmentSlot.PRIMARY
-- WeaponType.SECONDARY → EquipmentSlot.SECONDARY
-- WeaponType.MELEE → EquipmentSlot.MELEE
-
-### Phase 5: Generic Equipment Manager
-
-**Created:** `EquipmentManager` (new generic manager)
-
-- Uses `EquipmentInstance` instead of `WeaponInstance`
-- Uses `EquipmentData` instead of `Weapon`
-- Manages items via `equipped_items` dictionary
-- Same slot switching logic as WeaponManager
-- Ready for future Throwable and Gadget types
-
-**Note:** `WeaponManager` remains unchanged for backward compatibility
-
-### Phase 6: Factory Spawn System
-
-All equipment now spawns from `EquipmentData.instance_scene`:
-
-```gdscript
-var item = equipment_data.instance_scene.instantiate()
-item.set_equipment_data(equipment_data)
-```
-
-No manager assumptions about which type of scene to instantiate.
-
-### Phase 7: Validation
-
-#### Backward Compatibility
-
-✅ WeaponManager continues to work without changes
-✅ All WeaponInstance methods preserved
-✅ All signals still emitted properly
-✅ PlayerController can still call `weapon_manager.current_weapon.start_fire()`
-✅ All existing weapon behaviors intact
-
-#### Architecture Benefits
-
-✅ Clear separation of concerns
-✅ Generic equipment system ready for extension
-✅ Weapon-specific logic isolated in WeaponInstance
-✅ No gameplay changes after any phase
-✅ Incremental, compile-safe progression
-
-## Files Created
-
-1. `/resources/equipment_data.gd` - Base equipment data class
-2. `/scenes/weapon/equipment_instance.gd` - Base equipment instance class
-3. `/components/equipment_manager/equipment_manager.gd` - Generic equipment manager
-
-## Files Modified
-
-1. `/resources/weapons/weapon.gd` - Now extends EquipmentData
-2. `/scenes/weapon/weapon_instance.gd` - Now extends EquipmentInstance
-
-## Future Extensions
-
-The system is now ready for:
-
-### Throwables (Phase 8+)
-
-```gdscript
-class_name ThrowableData extends EquipmentData
-@export var fuse_time: float
-@export var throw_delay: float
-@export var projectile_scene: PackedScene
-@export var charges: int
-
-class_name ThrowableInstance extends EquipmentInstance
-func start_use() -> void:
-    # Handle throw logic
-```
-
-### Gadgets (Phase 8+)
-
-```gdscript
-class_name GadgetData extends EquipmentData
-@export var deployable_scene: PackedScene
-@export var duration: float
-@export var placement_rules: Array
-
-class_name GadgetInstance extends EquipmentInstance
-func start_use() -> void:
-    # Handle gadget deployment
-```
-
-Both would work with `EquipmentManager` unchanged.
-
-## Testing Checklist
-
-When Godot parses the new files:
-
-- [ ] Weapon resources still load (equip_duration compatibility)
-- [ ] WeaponManager still instantiates weapons
-- [ ] Weapons equip/unequip properly
-- [ ] player.weapon_manager.current_weapon.start_fire() works
-- [ ] player.weapon_manager.current_weapon.reload() works
-- [ ] All animations play correctly
-- [ ] All signals connect/disconnect properly
-- [ ] Weapon pickup/drop works
-- [ ] Ammo management works
-- [ ] EquipmentManager can be added to a scene and works generically
-- [ ] New equipment types will extend cleanly
-
-## Migration Notes
-
-1. **For new equipment types (future):**
-   - Extend EquipmentData for data
-   - Extend EquipmentInstance for instance
-   - Set instance_scene in exported data
-   - Override start_use() and stop_use() as needed
-   - Add to EquipmentManager
-
-2. **Existing code:**
-   - No changes required
-   - WeaponManager continues to work
-   - All weapon mechanics preserved
-   - Future ProPlayerController updates can use EquipmentManager optionally
-
-3. **Data persistence:**
-   - Weapon.new_from_dict() handles both old (equip_duration) and new (equip_time) keys
-   - weapon_scene property maps to instance_scene
-   - No migration of existing weapon resources needed
+- [P1] Initialize picked weapon instance with weapon data — /Users/nathgoutam93/Documents/GODOT/GreyLine/components/weapon_manager/
+  weapon_manager.gd:110-114
+  The new pickup_weapon flow instantiates wi but no longer calls wi.set_weapon_data(...), so wi.equipment_data/data stays null. Any
+  later access like current_weapon.data.camera_shake_strength, animations, or reload logic can fail when a picked-up weapon is
+  equipped. This breaks the stated backward compatibility path for scenes still using WeaponManager.
+- [P1] Fall back when selected manager cannot handle pickup — /Users/nathgoutam93/Documents/GODOT/GreyLine/scenes/player/\_scripts/
+  player_controller.gd:411-416
+  When equipment_manager exists (now true in player.tscn), \_remote_pickup always selects it first, but EquipmentManager does not
+  implement pickup_weapon. Because the condition requires mgr.has_method("pickup_weapon"), the pickup request becomes a silent no-
+  op and players cannot pick up weapons in the migrated setup.
+- [P1] Drop current equipment via drop lifecycle — /Users/nathgoutam93/Documents/GODOT/GreyLine/components/equipment_manager/
+  equipment_manager.gd:146-151
+  drop_current_item only clears references and switches slots; it never unequips/frees the old node or spawns its pickup. In
+  practice, dropping with EquipmentManager can leave the old item attached and effectively delete it from inventory without
+  creating a world pickup, which is a gameplay regression from WeaponManager.drop_weapon.
+- [P2] Preserve auto-reload after equip delay — /Users/nathgoutam93/Documents/GODOT/GreyLine/scenes/weapon/weapon_instance.gd:179-
+  183
+  Auto-reload now only runs when \_equip_ticks_remaining <= 0 immediately after super.equip(). For weapons with nonzero equip_time,
+  the reload that previously triggered when equip finished no longer happens, so equipping an empty weapon leaves it idle until
+  manual reload. This changes existing weapon behavior after the refactor.

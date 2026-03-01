@@ -407,13 +407,16 @@ func _remote_pickup(pickup_path: NodePath):
 		push_warning("Pickup node not found for path: %s" % [String(pickup_path)])
 		return
 
-	var mgr: Node = null
-	if equipment_manager != null:
-		mgr = equipment_manager
-	elif weapon_manager != null:
-		mgr = weapon_manager
-	if mgr and mgr.has_method("pickup_weapon") and mgr.pickup_weapon(weapon_pickup):
-		weapon_pickup.queue_free()
+	# attempt pickup with whichever manager can handle it; fall back if the first one fails
+	if equipment_manager != null and equipment_manager.has_method("pickup_weapon"):
+		if equipment_manager.pickup_weapon(weapon_pickup):
+			weapon_pickup.queue_free()
+			return
+	if weapon_manager != null and weapon_manager.has_method("pickup_weapon"):
+		if weapon_manager.pickup_weapon(weapon_pickup):
+			weapon_pickup.queue_free()
+			return
+	# if we reach here, nothing handled it; silent fail is acceptable but log for debugging
 
 func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
 	var scene_root := get_tree().current_scene

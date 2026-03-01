@@ -143,9 +143,57 @@ func switch_to_slot(slot: int) -> void:
 		return
 	equip_slot(slot)
 
+# provide a pickup interface so the player controller can call this directly
+func pickup_weapon(pickup: WeaponPickup) -> bool:
+	if pickup == null or pickup.weapon_data == null:
+		return false
+	var wdata = pickup.weapon_data
+	wdata.ensure_slot_synced()
+	# instantiate the appropriate instance
+	var item = wdata.instance_scene.instantiate() as EquipmentInstance
+	if item is WeaponInstance:
+		# weapon-specific initialization
+		var wi = item as WeaponInstance
+		wi.set_weapon_data(wdata)
+		# retain ammo values from the pickup (bug fix)
+		wi.ammo_in_mag = pickup.ammo_in_mag
+		wi.ammo_reserve = pickup.ammo_reserve
+	else:
+		item.set_equipment_data(wdata)
+	item.player = player
+	skeletal_character.hand_socket.add_child(item)
+	item.unequip()
+
+	var slot = wdata.slot
+	# drop any existing item in that slot so the new one can occupy it
+	if equipped_items.has(slot) and equipped_items[slot] != null:
+		equipped_items[slot].drop()
+		equipped_items[slot] = null
+
+	equipped_items[slot] = item
+	if current_slot == EquipmentSlot.MELEE:
+		equip_slot(slot)
+
+	return true
+
 func drop_current_item() -> void:
 	if current_item:
+		# respect data flag
+		if current_item.equipment_data and not current_item.equipment_data.can_drop:
+			return
+		# match the lifecycle WeaponManager implements so drops behave consistently
+		# disconnect any signals just in case
+		if current_item.has_signal("equip_action"):
+			current_item.disconnect("equip_action", _on_item_equip_action)
+		if current_item.has_signal("use_action"):
+			current_item.disconnect("use_action", _on_item_use_action)
+		if current_item.has_signal("shoot_action"):
+			current_item.disconnect("shoot_action", _on_item_shoot_action)
+		if current_item.has_signal("reload_action"):
+			current_item.disconnect("reload_action", _on_item_reload_action)
 		current_item.force_interrupt()
+		# let the instance handle its own drop (spawn pickup, free, etc.)
+		current_item.drop()
 		current_item = null
 		equipped_items[current_slot] = null
 		switch_to_next_item()

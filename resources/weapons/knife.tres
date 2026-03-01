@@ -38,3 +38,4 @@ animations = {
 }
 sounds = SubResource("Resource_g2qi5")
 instance_scene = ExtResource("6_g2qi5")
+can_drop = false

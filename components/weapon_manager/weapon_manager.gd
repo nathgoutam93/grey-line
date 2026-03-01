@@ -107,9 +107,11 @@ func switch_to_slot(slot: int):
 func pickup_weapon(pickup: WeaponPickup):
 	if pickup == null or pickup.weapon_data == null:
 		return false
-	var wi = pickup.weapon_data.weapon_scene.instantiate()
 	# ensure slot synced on data before instantiating
 	pickup.weapon_data.ensure_slot_synced()
+	var wi = pickup.weapon_data.weapon_scene.instantiate()
+	# initialize the new instance with its data (regression fix)
+	wi.set_weapon_data(pickup.weapon_data)
 	wi.ammo_in_mag = pickup.ammo_in_mag
 	wi.ammo_reserve = pickup.ammo_reserve
 	wi.player = player
@@ -135,9 +137,13 @@ func drop_weapon():
 func drop_slot(slot: int):
 	if slot == WeaponSlot.MELEE:
 		return false
-		
+	
 	var weapon = weapon_slots[slot]
 	if not weapon:
+		return false
+
+	# refuse if the weapon data marks it as non-droppable
+	if weapon.data and not weapon.data.can_drop:
 		return false
 
 	weapon.disconnect("equip_action", _on_weapon_equip_action)

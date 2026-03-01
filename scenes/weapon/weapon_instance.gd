@@ -131,6 +131,9 @@ func _lock() -> void:
 
 func _unlock() -> void:
 	super._unlock()
+	# auto‑reload should run when the equip delay finishes, not only when equip_time was zero
+	if data and data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
+		reload()
 
 
 func force_interrupt() -> void:
@@ -146,6 +149,13 @@ func force_interrupt() -> void:
 
 
 func drop() -> void:
+	# do not generate a world pickup if the data forbids dropping
+	if data and not data.can_drop:
+		force_interrupt()
+		unequip()
+		queue_free()
+		return
+	
 	force_interrupt()
 	unequip()
 	drop_weapon_pickup()

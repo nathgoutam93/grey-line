@@ -18,7 +18,7 @@ enum EquipmentSlot {
 @export var equip_time: float = 0.25
 @export var unequip_time: float = 0.0
 
-@export var slot: EquipmentSlot = EquipmentSlot.MELEE  # MELEE by default
+@export var slot: EquipmentSlot = EquipmentSlot.MELEE # MELEE by default
 
 @export var animations := {
 	"equip": "",
@@ -33,3 +33,6 @@ enum EquipmentSlot {
 @export var sounds: Resource = null
 
 @export var instance_scene: PackedScene
+
+# whether the item can be dropped/picked up in the world
+@export var can_drop: bool = true
