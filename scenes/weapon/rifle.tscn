@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://r6ta42rhscx2" path="res://scenes/weapon/base_weapon.tscn" id="1_r7d84"]
 [ext_resource type="Texture2D" uid="uid://bvk3d81x52p7d" path="res://assets/sprites/pistol.png" id="2_a708l"]
 
-[node name="BaseWeapon" unique_id=1148465304 instance=ExtResource("1_r7d84")]
+[node name="Rifle" unique_id=1148465304 instance=ExtResource("1_r7d84")]
 
-[node name="Sprite2D" parent="." index="0"]
+[node name="Sprite2D" parent="." index="0" unique_id=929480544]
 texture = ExtResource("2_a708l")

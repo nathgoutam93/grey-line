@@ -49,11 +49,23 @@ func _on_player_entered(player):
 func _on_player_exited(_player):
 	pass
 
+func _get_equipment_manager(player):
+	if player.equipment_manager:
+		return player.equipment_manager
+	return player.weapon_manager
+
+
 func can_auto_pickup(player):
 	if weapon_data == null:
 		return false
-	var existing_weapon = player.weapon_manager.get_weapon_in_slot(weapon_data.weapon_type)
-	return existing_weapon == null
+	var mgr = _get_equipment_manager(player)
+	if mgr and mgr.has_method("get_item_in_slot"):
+		var existing = mgr.get_item_in_slot(weapon_data.slot)
+		return existing == null
+	if mgr and mgr.has_method("get_weapon_in_slot"):
+		var existing_weapon = mgr.get_weapon_in_slot(weapon_data.weapon_type)
+		return existing_weapon == null
+	return false
 
 func pickup_weapon(player):
 	if not multiplayer.is_server():
@@ -63,8 +75,8 @@ func pickup_weapon(player):
 	var scene_root := get_tree().current_scene
 	if scene_root:
 		var map_node := scene_root.find_child("Map", true, false)
-		if map_node and map_node.is_ancestor_of(self):
-			pickup_path = map_node.get_path_to(self)
+		if map_node and map_node.is_ancestor_of(self ):
+			pickup_path = map_node.get_path_to(self )
 
 	player._remote_pickup.rpc(pickup_path)
 

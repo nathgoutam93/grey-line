@@ -15,9 +15,9 @@ extends CanvasLayer
 @onready var melee_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot3")
 
 const HUD_WEAPON_SLOTS := [
-	WeaponManager.WeaponSlot.PRIMARY,
-	WeaponManager.WeaponSlot.SECONDARY,
-	WeaponManager.WeaponSlot.MELEE
+	EquipmentData.EquipmentSlot.PRIMARY,
+	EquipmentData.EquipmentSlot.SECONDARY,
+	EquipmentData.EquipmentSlot.MELEE
 ]
 
 @export var kill_feedback_item_scene: PackedScene
@@ -30,9 +30,9 @@ var _visibility_initialized := false
 
 func _ready() -> void:
 	_slot_nodes_by_slot = {
-		WeaponManager.WeaponSlot.PRIMARY: primary_slot_ui,
-		WeaponManager.WeaponSlot.SECONDARY: secondary_slot_ui,
-		WeaponManager.WeaponSlot.MELEE: melee_slot_ui
+		EquipmentData.EquipmentSlot.PRIMARY: primary_slot_ui,
+		EquipmentData.EquipmentSlot.SECONDARY: secondary_slot_ui,
+		EquipmentData.EquipmentSlot.MELEE: melee_slot_ui
 	}
 
 	await get_tree().process_frame
@@ -66,39 +66,54 @@ func _set_controls_input_enabled(is_enabled: bool) -> void:
 		return
 	controls_root.process_mode = Node.PROCESS_MODE_INHERIT if is_enabled else Node.PROCESS_MODE_DISABLED
 
+
+func _get_equipment_manager() -> Node:
+	if _player.equipment_manager:
+		return _player.equipment_manager
+	return _player.weapon_manager
+
+
 func _sync_weapon_slots() -> void:
-	if not _player or not _player.weapon_manager:
+	if not _player:
+		return
+	
+	var equipment_manager = _get_equipment_manager()
+	if not equipment_manager:
 		return
 
 	for slot in HUD_WEAPON_SLOTS:
-		var weapon_instance := _player.weapon_manager.get_weapon_in_slot(slot) as WeaponInstance
+		var item_instance = equipment_manager.get_item_in_slot(slot) if equipment_manager.has_method("get_item_in_slot") else equipment_manager.get_weapon_in_slot(slot)
 		var slot_ui := _slot_nodes_by_slot.get(slot) as Control
 		if not slot_ui:
 			continue
 
 		var icon := slot_ui.get_node_or_null("icon") as TextureRect
-		var weapon_name := slot_ui.get_node_or_null("name") as Label
+		var item_name := slot_ui.get_node_or_null("name") as Label
 		var key_label := slot_ui.get_node_or_null("key") as Label
 
-		var has_weapon := weapon_instance != null and weapon_instance.data != null
-		slot_ui.visible = has_weapon
-		if not has_weapon:
+		var has_item := item_instance != null and item_instance.equipment_data != null
+		slot_ui.visible = has_item
+		if not has_item:
 			continue
 
 		if icon:
-			icon.texture = weapon_instance.data.icon
-		if weapon_name:
-			weapon_name.text = weapon_instance.data.name
+			icon.texture = item_instance.equipment_data.icon
+		if item_name:
+			item_name.text = item_instance.equipment_data.name
 		if key_label:
 			key_label.text = str(slot + 1)
 
 	_update_slot_selection_visual()
 
 func _update_slot_selection_visual() -> void:
-	if not _player or not _player.weapon_manager:
+	if not _player:
+		return
+	
+	var equipment_manager = _get_equipment_manager()
+	if not equipment_manager:
 		return
 
-	var current_slot := _player.weapon_manager.current_slot
+	var current_slot = int(equipment_manager.get("current_slot"))
 	for slot in _slot_nodes_by_slot:
 		var slot_ui := _slot_nodes_by_slot[slot] as CanvasItem
 		if not slot_ui:
@@ -118,13 +133,16 @@ func _process(_delta: float) -> void:
 		return
 
 	health_label.text = str(_player.health_component.current_health)
-	var current_weapon := _player.weapon_manager.current_weapon
-	var uses_ammo := current_weapon != null and current_weapon.data != null and current_weapon.data.uses_ammo
+	
+	var equipment_manager = _get_equipment_manager()
+	var current_item = equipment_manager.get_current_item() if equipment_manager.has_method("get_current_item") else equipment_manager.current_weapon
+	var uses_ammo := current_item != null and current_item is WeaponInstance and (current_item as WeaponInstance).data != null and (current_item as WeaponInstance).data.uses_ammo
 	ammo_panel.visible = uses_ammo
 	if not uses_ammo:
 		return
-	ammo_left_label.text = str(_player.weapon_manager.get_ammo_in_mag())
-	mag_size_label.text = str(_player.weapon_manager.get_ammo_reserve())
+	var weapon_instance = current_item as WeaponInstance
+	ammo_left_label.text = str(weapon_instance.ammo_in_mag)
+	mag_size_label.text = str(weapon_instance.ammo_reserve)
 
 func show_kill_feedback(is_headshot: bool = false) -> void:
 	if not visible:

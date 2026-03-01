@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://cop5hxltvyjt7"]
+
+[ext_resource type="Texture2D" uid="uid://cryn75s375yji" path="res://assets/sprites/icons/pistol_icon.png" id="1_dajyb"]
+[ext_resource type="PackedScene" uid="uid://dsppvc6bkscd3" path="res://scenes/weapon/pistol.tscn" id="2_x5p0e"]
+[ext_resource type="Resource" uid="uid://6ecsdnb110cb" path="res://resources/weapon_modes/pistol_mode.tres" id="3_6p0c5"]
+[ext_resource type="PackedScene" uid="uid://cy2enpfy31fdt" path="res://scenes/weapon_pickup/pistol_pickup.tscn" id="4_hdpnf"]
+[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="5_ie8lm"]
+[ext_resource type="AudioStream" uid="uid://xen0a4igl1g7" path="res://assets/sounds/pistol-equip.mp3" id="6_b5oda"]
+[ext_resource type="AudioStream" uid="uid://ckjagesvyxko6" path="res://assets/sounds/pistol-reload.mp3" id="7_i65bn"]
+[ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="8_ndw0t"]
+[ext_resource type="AudioStream" uid="uid://bitxru3wkgfat" path="res://assets/sounds/pistol-shot.mp3" id="9_xaf0n"]
+
+[sub_resource type="Resource" id="Resource_58iix"]
+script = ExtResource("8_ndw0t")
+equip_sound = ExtResource("6_b5oda")
+shoot_sound = ExtResource("9_xaf0n")
+reload_sound = ExtResource("7_i65bn")
+metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
+
+[resource]
+script = ExtResource("5_ie8lm")
+damage = 50
+mag_size = 10
+reload_duration = 1.0
+speed_multiplier = 0.9
+camera_shake_strength = 5.0
+mode = ExtResource("3_6p0c5")
+pickup_scene = ExtResource("4_hdpnf")
+name = "pistol"
+icon = ExtResource("1_dajyb")
+equip_time = 0.5
+slot = 1
+animations = {
+"attack": "pistol_shoot",
+"equip": "pistol_equip",
+"idle": "pistol_idle",
+"move": "pistol_move",
+"reload": "pistol_reload"
+}
+sounds = SubResource("Resource_58iix")
+instance_scene = ExtResource("2_x5p0e")

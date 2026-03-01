@@ -1,47 +1,42 @@
-extends Node2D
+extends EquipmentInstance
 class_name WeaponInstance
-
-var data: Weapon
-var mode: WeaponAttackMode
 
 var ammo_in_mag := 0
 var ammo_reserve := 0
 var is_auto_reload := false
 var is_reloading := false
 var is_firing := false
-var _cooldown_ticks_remaining := 0
 var _reload_ticks_remaining := 0
-var _equip_ticks_remaining := 0
 var _burst_shots_remaining := 0
-
-@export var is_locked := true
+var _cooldown_ticks_remaining := 0
 
 @export var sound_pool: SoundPool = null
 @export var reload_sfx_player: AudioStreamPlayer2D = null
 
 var BulletTrailScene = preload("res://scenes/bullet_trail/bullet_trail.tscn")
 
-signal equip_action(animation_name: String, sound_stream: AudioStream)
 signal shoot_action(animation_name: String, sound_stream: AudioStream)
 signal reload_action(animation_name: String, sound_stream: AudioStream)
 
-var player: PlayerController
+## Convenience property to access equipment_data as WeaponData
+var data: Weapon:
+	get: return equipment_data as Weapon
+
+var mode: WeaponAttackMode:
+	get: return data.mode if data else null
 const ENVIRONMENT_MASK := 1 << 0 # Physics layer 0
 const BODY_HURTBOX_MASK := 1 << 4 # Physics layer 5
 const HEAD_HURTBOX_MASK := 1 << 3 # Physics layer 4
 
-func _ready() -> void:
-	if not NetworkTick.tick_started.is_connected(_on_network_tick):
-		NetworkTick.tick_started.connect(_on_network_tick)
+func set_weapon_data(w: Weapon) -> void:
+	set_equipment_data(w)
+	# make sure animations are defined; missing names lead to no playback
+	for anim_key in ["attack", "reload", "equip", "idle", "move"]:
+		if not data.animations.has(anim_key) or data.animations.get(anim_key, "") == "":
+			push_warning("Weapon '%s' has no animation defined for '%s'" % [data.name, anim_key])
 
-func _on_network_tick(_tick: int) -> void:
-	_tick_update()
-
-func set_weapon_data(w: Weapon):
-	data = w
-	mode = data.mode
 	if data.uses_ammo:
-		var total_ammo : int =  data.mag_size * max(data.mag_count, 1)
+		var total_ammo: int = data.mag_size * max(data.mag_count, 1)
 		ammo_in_mag = min(data.mag_size, total_ammo)
 		ammo_reserve = max(total_ammo - ammo_in_mag, 0)
 	else:
@@ -125,18 +120,20 @@ func _resolve_hit_player(collider: Variant) -> PlayerController:
 		return collider
 	if collider is Node:
 		var node := collider as Node
-		var owner := node.get_parent()
-		if owner is PlayerController:
-			return owner
+		var owner_node := node.get_parent()
+		if owner_node is PlayerController:
+			return owner_node
 	return null
 
-func _lock():
-	is_locked = true
+func _lock() -> void:
+	super._lock()
 
-func _unlock():
-	is_locked = false
 
-func force_interrupt():
+func _unlock() -> void:
+	super._unlock()
+
+
+func force_interrupt() -> void:
 	if is_reloading:
 		is_reloading = false
 		_reload_ticks_remaining = 0
@@ -144,19 +141,18 @@ func force_interrupt():
 			reload_sfx_player.stop()
 
 	is_firing = false
-	_cooldown_ticks_remaining = 0
-	_equip_ticks_remaining = 0
 	_burst_shots_remaining = 0
-	_unlock()
+	super.force_interrupt()
 
 
-func drop():
+func drop() -> void:
 	force_interrupt()
 	unequip()
 	drop_weapon_pickup()
 	queue_free()
 
-func drop_weapon_pickup():
+
+func drop_weapon_pickup() -> void:
 	if not multiplayer.is_server():
 		return
 
@@ -180,29 +176,25 @@ func drop_weapon_pickup():
 	# Data is already set on the server; replication will sync it to clients.
 
 
-func unequip():
-	hide()
-
-func equip():
-	_lock()
-	_equip_ticks_remaining = _seconds_to_ticks(data.equip_duration)
-
-	unequip()
-
-	show()
-	
-	emit_signal("equip_action", data.animations.get("equip", ""), data.sounds.equip_sound)
-
-	# if weapon has animations
-	if has_node("AnimationPlayer"):
-		get_node("AnimationPlayer").play("equip")
-	
-	_play_equip_sound()
-
+func equip() -> void:
+	super.equip()
 	if _equip_ticks_remaining <= 0:
-		_unlock()
 		if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
 			reload()
+
+
+func start_use() -> void:
+	if is_locked:
+		return
+
+	is_firing = true
+	if not mode.is_auto and mode.burst_count > 0 and _burst_shots_remaining <= 0:
+		_burst_shots_remaining = mode.burst_count
+
+
+func start_fire() -> void:
+	# Backward compatibility wrapper
+	start_use()
 
 
 func reload(auto: bool = false) -> void:
@@ -229,21 +221,23 @@ func reload(auto: bool = false) -> void:
 	if _reload_ticks_remaining <= 0:
 		_complete_reload()
 
-func start_fire():
-	if is_locked:
-		return
-
-	is_firing = true
-	if not mode.is_auto and mode.burst_count > 0 and _burst_shots_remaining <= 0:
-		_burst_shots_remaining = mode.burst_count
-
-func stop_fire():
+func stop_use() -> void:
 	is_firing = false
 	_burst_shots_remaining = 0
+
+
+func stop_fire() -> void:
+	# Backward compatibility wrapper
+	stop_use()
 
 func _single_shot() -> bool:
 	if is_locked:
 		return false
+
+	# compute cooldown data and log everything for diagnosis
+	var secs := data.mode.cooldown
+	var ticks := _seconds_to_ticks(secs)
+
 	if data.uses_ammo:
 		if is_reloading:
 			return false
@@ -268,7 +262,7 @@ func _single_shot() -> bool:
 
 	if has_node("AnimationPlayer"):
 		get_node("AnimationPlayer").play("shoot")
-	_cooldown_ticks_remaining = max(_seconds_to_ticks(data.mode.cooldown), 1)
+	_cooldown_ticks_remaining = max(ticks, 1)
 
 	if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
 		reload(true)
@@ -276,14 +270,7 @@ func _single_shot() -> bool:
 
 	return true
 
-func _tick_update() -> void:
-	if _equip_ticks_remaining > 0:
-		_equip_ticks_remaining -= 1
-		if _equip_ticks_remaining == 0:
-			_unlock()
-			if data.uses_ammo and ammo_in_mag <= 0 and ammo_reserve > 0:
-				reload()
-
+func _tick_update_override() -> void:
 	if _reload_ticks_remaining > 0:
 		_reload_ticks_remaining -= 1
 		if _reload_ticks_remaining == 0:
@@ -316,12 +303,15 @@ func _tick_update() -> void:
 	is_firing = false
 	_single_shot()
 
+func _seconds_to_ticks(seconds: float) -> int:
+	return int(ceil(max(seconds, 0.0) * float(NetworkTick.tick_rate)))
+
 func _complete_reload() -> void:
 	if not is_reloading:
 		return
 	if data.uses_ammo:
-		var ammo_needed : int = max(data.mag_size - ammo_in_mag, 0)
-		var ammo_loaded : int = min(ammo_needed, ammo_reserve)
+		var ammo_needed: int = max(data.mag_size - ammo_in_mag, 0)
+		var ammo_loaded: int = min(ammo_needed, ammo_reserve)
 		ammo_in_mag += ammo_loaded
 		ammo_reserve -= ammo_loaded
 	else:
@@ -329,9 +319,6 @@ func _complete_reload() -> void:
 	is_reloading = false
 	_reload_ticks_remaining = 0
 	_unlock()
-
-func _seconds_to_ticks(seconds: float) -> int:
-	return int(ceil(max(seconds, 0.0) * float(NetworkTick.tick_rate)))
 
 func can_play_idle_animation() -> bool:
 	if is_locked:

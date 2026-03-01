@@ -108,7 +108,8 @@ func pickup_weapon(pickup: WeaponPickup):
 	if pickup == null or pickup.weapon_data == null:
 		return false
 	var wi = pickup.weapon_data.weapon_scene.instantiate()
-	wi.set_weapon_data(pickup.weapon_data)
+	# ensure slot synced on data before instantiating
+	pickup.weapon_data.ensure_slot_synced()
 	wi.ammo_in_mag = pickup.ammo_in_mag
 	wi.ammo_reserve = pickup.ammo_reserve
 	wi.player = player
@@ -119,7 +120,7 @@ func pickup_weapon(pickup: WeaponPickup):
 		WeaponSlot.PRIMARY: drop_slot(WeaponSlot.PRIMARY)
 		WeaponSlot.SECONDARY: drop_slot(WeaponSlot.SECONDARY)
 		WeaponSlot.MELEE: drop_slot(WeaponSlot.MELEE)
-	
+
 	weapon_slots[pickup.weapon_data.weapon_type] = wi
 	
 	if current_slot == WeaponSlot.MELEE:
@@ -152,12 +153,22 @@ func drop_slot(slot: int):
 	return true
 
 
-func _on_weapon_shoot_action(animation_name: String, _sound_stream: AudioStream):
+func _play_skeletal_animation(animation_name: String) -> void:
+	# only attempt to play if we have a valid name and animation exists
+	if animation_name == "" or animation_name == null:
+		return
+	if not skeletal_character.anim_player.has_animation(animation_name):
+		push_warning("Weapon manager attempted to play missing animation '%s'" % animation_name)
+		return
+	# safe to play
 	skeletal_character.anim_player.play(animation_name)
+
+func _on_weapon_shoot_action(animation_name: String, _sound_stream: AudioStream):
+	_play_skeletal_animation(animation_name)
 	camera_shake.apply(current_weapon.data.camera_shake_strength)
 
 func _on_weapon_reload_action(animation_name: String, _sound_stream: AudioStream):
-	skeletal_character.anim_player.play(animation_name)
+	_play_skeletal_animation(animation_name)
 
 func _on_weapon_equip_action(animation_name: String, _sound_stream: AudioStream):
-	skeletal_character.anim_player.play(animation_name)
+	_play_skeletal_animation(animation_name)

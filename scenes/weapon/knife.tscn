@@ -2,4 +2,4 @@
 
 [ext_resource type="PackedScene" uid="uid://r6ta42rhscx2" path="res://scenes/weapon/base_weapon.tscn" id="1_cy3ne"]
 
-[node name="knife" unique_id=2091854648 instance=ExtResource("1_cy3ne")]
+[node name="Knife" unique_id=2091854648 instance=ExtResource("1_cy3ne")]

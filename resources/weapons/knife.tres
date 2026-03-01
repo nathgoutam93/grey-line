@@ -1,21 +1,13 @@
 [gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://hai2ryfmmjjp"]
 
 [ext_resource type="Texture2D" uid="uid://o3djqpfqvq8w" path="res://assets/sprites/knife.png" id="1_dcolt"]
-[ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_g2qi5"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_taet3"]
 [ext_resource type="AudioStream" uid="uid://dihdrxvq6vygt" path="res://assets/sounds/knife-attack.mp3" id="2_wupm6"]
+[ext_resource type="Resource" uid="uid://c7vfnr10qlcr" path="res://resources/weapon_modes/knife_mode.tres" id="3_5x0qm"]
 [ext_resource type="AudioStream" uid="uid://bclgvuog5xyrp" path="res://assets/sounds/knife-equip.mp3" id="4_atqjs"]
+[ext_resource type="PackedScene" uid="uid://djd5057n31hec" path="res://scenes/weapon_pickup/base_pickup.tscn" id="5_5x0qm"]
 [ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="5_dcolt"]
 [ext_resource type="PackedScene" uid="uid://cg2b7qnwpk2ow" path="res://scenes/weapon/knife.tscn" id="6_g2qi5"]
-
-[sub_resource type="Resource" id="Resource_dcolt"]
-script = ExtResource("1_g2qi5")
-name = "melee"
-cooldown = 0.5
-burst_count = 0
-is_auto = true
-sound = ExtResource("2_wupm6")
-metadata/_custom_type_script = "uid://ds6mffk8bhugv"
 
 [sub_resource type="Resource" id="Resource_g2qi5"]
 script = ExtResource("5_dcolt")
@@ -25,17 +17,18 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 
 [resource]
 script = ExtResource("1_taet3")
-name = "knife"
-icon = ExtResource("1_dcolt")
 weapon_type = 2
 damage = 100
 d_range = 30.0
 uses_ammo = false
 is_reloadable = false
 reload_duration = 0.0
-equip_duration = 0.5
 camera_shake_strength = 2.0
-mode = SubResource("Resource_dcolt")
+mode = ExtResource("3_5x0qm")
+pickup_scene = ExtResource("5_5x0qm")
+name = "knife"
+icon = ExtResource("1_dcolt")
+equip_time = 0.5
 animations = {
 "attack": "knife_attack",
 "equip": "knife_equip",
@@ -44,4 +37,4 @@ animations = {
 "reload": ""
 }
 sounds = SubResource("Resource_g2qi5")
-weapon_scene = ExtResource("6_g2qi5")
+instance_scene = ExtResource("6_g2qi5")

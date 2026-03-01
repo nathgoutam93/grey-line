@@ -1,22 +1,14 @@
 [gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://bc18r0r4gbkx3"]
 
-[ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_0lkds"]
 [ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="1_sbf7q"]
 [ext_resource type="Texture2D" uid="uid://cpt33xvq86am3" path="res://assets/sprites/icons/rifle_icon.png" id="1_wwuao"]
 [ext_resource type="AudioStream" uid="uid://cdjgbvnegkgkh" path="res://assets/sounds/rifle-shoot.mp3" id="2_p2jh4"]
+[ext_resource type="Resource" uid="uid://bonul8216okye" path="res://resources/weapon_modes/rifle_mode.tres" id="3_wwuao"]
 [ext_resource type="PackedScene" uid="uid://bt7txyxfcccff" path="res://scenes/weapon_pickup/rifle_pickup.tscn" id="3_ys2y7"]
 [ext_resource type="AudioStream" uid="uid://b101cpd0hbkcx" path="res://assets/sounds/rifle-reload.mp3" id="4_dggia"]
 [ext_resource type="AudioStream" uid="uid://dfppdypofdlfm" path="res://assets/sounds/rifle-equip.mp3" id="4_p2jh4"]
 [ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="5_ys2y7"]
 [ext_resource type="PackedScene" uid="uid://dm36jm84yb6hm" path="res://scenes/weapon/rifle.tscn" id="8_wwuao"]
-
-[sub_resource type="Resource" id="Resource_p2jh4"]
-script = ExtResource("1_0lkds")
-name = "burst"
-cooldown = 0.1
-is_auto = true
-sound = ExtResource("2_p2jh4")
-metadata/_custom_type_script = "uid://ds6mffk8bhugv"
 
 [sub_resource type="Resource" id="Resource_c4qrx"]
 script = ExtResource("5_ys2y7")
@@ -27,16 +19,18 @@ metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
 
 [resource]
 script = ExtResource("1_sbf7q")
-name = "rifle"
-icon = ExtResource("1_wwuao")
 weapon_type = 0
 damage = 20
 mag_size = 25
 reload_duration = 1.4
-equip_duration = 0.5
 speed_multiplier = 0.7
 camera_shake_strength = 5.0
-mode = SubResource("Resource_p2jh4")
+mode = ExtResource("3_wwuao")
+pickup_scene = ExtResource("3_ys2y7")
+name = "rifle"
+icon = ExtResource("1_wwuao")
+equip_time = 0.5
+slot = 0
 animations = {
 "attack": "pistol_shoot",
 "equip": "pistol_equip",
@@ -45,5 +39,4 @@ animations = {
 "reload": "pistol_reload"
 }
 sounds = SubResource("Resource_c4qrx")
-weapon_scene = ExtResource("8_wwuao")
-pickup_scene = ExtResource("3_ys2y7")
+instance_scene = ExtResource("8_wwuao")

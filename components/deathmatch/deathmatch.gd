@@ -428,25 +428,38 @@ func _report_client_ping(rtt_ms: int) -> void:
 
 func _slot_name(slot: int) -> String:
 	match slot:
-		WeaponManager.WeaponSlot.PRIMARY:
+		EquipmentData.EquipmentSlot.PRIMARY:
 			return "primary"
-		WeaponManager.WeaponSlot.SECONDARY:
+		EquipmentData.EquipmentSlot.SECONDARY:
 			return "secondary"
-		WeaponManager.WeaponSlot.MELEE:
+		EquipmentData.EquipmentSlot.MELEE:
 			return "melee"
 		_:
 			return "unknown"
 
-func _weapon_payload(weapon: WeaponInstance) -> Dictionary:
-	if weapon == null or weapon.data == null:
+
+func _get_equipment_manager(player: PlayerController) -> Node:
+	if player.equipment_manager:
+		return player.equipment_manager
+	return player.weapon_manager
+
+
+func _weapon_payload(equipment: EquipmentInstance) -> Dictionary:
+	if equipment == null or equipment.equipment_data == null:
 		return {}
+	if equipment is WeaponInstance:
+		var weapon = equipment as WeaponInstance
+		return {
+			"name": weapon.data.name,
+			"slot": _slot_name(weapon.data.slot),
+			"ammo_in_mag": weapon.ammo_in_mag,
+			"ammo_reserve": weapon.ammo_reserve,
+			"mag_size": weapon.data.mag_size,
+			"uses_ammo": weapon.data.uses_ammo
+		}
+	# Generic equipment (non-weapon)
 	return {
-		"name": weapon.data.name,
-		"slot": _slot_name(weapon.data.weapon_type),
-		"ammo_in_mag": weapon.ammo_in_mag,
-		"ammo_reserve": weapon.ammo_reserve,
-		"mag_size": weapon.data.mag_size,
-		"uses_ammo": weapon.data.uses_ammo
+		"name": equipment.equipment_data.name
 	}
 
 func _refresh_player_combat_data(peer_id: int, player: PlayerController = null) -> bool:
@@ -464,12 +477,14 @@ func _refresh_player_combat_data(peer_id: int, player: PlayerController = null) 
 	var loadout_payload := {}
 	var current_weapon_payload := {}
 
-	if player and player.weapon_manager:
-		var weapon_manager := player.weapon_manager
-		current_weapon_payload = _weapon_payload(weapon_manager.current_weapon)
-		if not current_weapon_payload.is_empty():
-			current_weapon_payload["slot"] = _slot_name(weapon_manager.current_slot)
-			loadout_payload = current_weapon_payload.duplicate(true)
+	if player:
+		var equipment_manager = _get_equipment_manager(player)
+		if equipment_manager:
+			var current_item = equipment_manager.get_current_item() if equipment_manager.has_method("get_current_item") else equipment_manager.current_weapon
+			current_weapon_payload = _weapon_payload(current_item)
+			if not current_weapon_payload.is_empty():
+				current_weapon_payload["slot"] = _slot_name(int(equipment_manager.current_slot))
+				loadout_payload = current_weapon_payload.duplicate(true)
 
 	var stats: Dictionary = player_stats[peer_id]
 	var has_changed := false

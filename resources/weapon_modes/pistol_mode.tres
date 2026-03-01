@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WeaponAttackMode" format=3 uid="uid://6ecsdnb110cb"]
+
+[ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_x6ypl"]
+[ext_resource type="AudioStream" uid="uid://bitxru3wkgfat" path="res://assets/sounds/pistol-shot.mp3" id="2_hdlgk"]
+
+[resource]
+script = ExtResource("1_x6ypl")
+name = "Single"
+cooldown = 0.1
+burst_count = 0
+sound = ExtResource("2_hdlgk")
+metadata/_custom_type_script = "uid://ds6mffk8bhugv"

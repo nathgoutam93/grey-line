@@ -1,14 +1,14 @@
 [gd_scene format=3 uid="uid://ca4sffa83rp24"]
 
 [ext_resource type="Script" uid="uid://btqbhqr7k5cc5" path="res://scenes/player/_scripts/player_controller.gd" id="1_cedje"]
-[ext_resource type="Script" uid="uid://chb4uyirj3rf3" path="res://resources/weapons/weapon.gd" id="2_ugbui"]
 [ext_resource type="Resource" uid="uid://hai2ryfmmjjp" path="res://resources/weapons/knife.tres" id="3_fcs02"]
 [ext_resource type="AudioStream" uid="uid://ugquajnor6qk" path="res://assets/sounds/concrete-footsteps.mp3" id="3_m8vw7"]
-[ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/hand_gun.tres" id="4_myrg7"]
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
-[ext_resource type="PackedScene" uid="uid://4isysde6lgiy" path="res://components/weapon_manager/weapon_manager.tscn" id="5_gx1jg"]
+[ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/pistol.tres" id="9_fcs02"]
 [ext_resource type="Resource" uid="uid://bc18r0r4gbkx3" path="res://resources/weapons/rifle.tres" id="9_myrg7"]
+[ext_resource type="Script" uid="uid://bdqygn78l1df" path="res://components/equipment_manager/equipment_manager.gd" id="11_kvlxm"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
+[ext_resource type="Script" uid="uid://cvg436qigjl2v" path="res://resources/equipment_data.gd" id="12_uf5tr"]
 [ext_resource type="Script" uid="uid://btw8i1fo6337l" path="res://scenes/player/_scripts/player_input.gd" id="13_gx1jg"]
 [ext_resource type="PackedScene" uid="uid://c6bubi5tu41qm" path="res://components/skeletal_mesh/character_skeletal.tscn" id="13_u5how"]
 [ext_resource type="PackedScene" uid="uid://c13vwx621xxak" path="res://scenes/ui/player_hud/player_hud.tscn" id="13_ugbui"]
@@ -30,7 +30,7 @@ radius = 8.0
 radius = 16.0
 height = 50.0
 
-[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("crosshair", "headHurtBox", "bodyHurtBox", "skeletal_character", "player_input", "movement_component", "health_component", "weapon_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("crosshair", "headHurtBox", "bodyHurtBox", "skeletal_character", "player_input", "movement_component", "health_component", "equipment_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
 collision_layer = 2
@@ -45,7 +45,7 @@ skeletal_character = NodePath("PlayerMesh")
 player_input = NodePath("PlayerInput")
 movement_component = NodePath("MovementComponent")
 health_component = NodePath("Health")
-weapon_manager = NodePath("WeaponManager")
+equipment_manager = NodePath("EquipmentManager")
 sound_pool = NodePath("SoundPool")
 footstep_player = NodePath("Footsteps")
 camera_shake = NodePath("Camera2D/CameraShake")
@@ -95,11 +95,13 @@ cone_segments = 12
 position = Vector2(-5, 0)
 scale = Vector2(0.32, 0.32)
 
-[node name="WeaponManager" parent="." unique_id=898153522 node_paths=PackedStringArray("player", "skeletal_character", "camera_shake") instance=ExtResource("5_gx1jg")]
-default_weapons = Array[ExtResource("2_ugbui")]([ExtResource("3_fcs02"), ExtResource("4_myrg7"), ExtResource("9_myrg7")])
+[node name="EquipmentManager" type="Node" parent="." unique_id=604136733 node_paths=PackedStringArray("player", "skeletal_character", "camera_shake")]
+script = ExtResource("11_kvlxm")
+default_equipment = Array[ExtResource("12_uf5tr")]([ExtResource("9_myrg7"), ExtResource("9_fcs02"), ExtResource("3_fcs02")])
 player = NodePath("..")
 skeletal_character = NodePath("../PlayerMesh")
 camera_shake = NodePath("../Camera2D/CameraShake")
+metadata/_custom_type_script = "uid://bdqygn78l1df"
 
 [node name="MovementComponent" parent="." unique_id=819673025 node_paths=PackedStringArray("player", "player_input") instance=ExtResource("12_hoixd")]
 player = NodePath("..")

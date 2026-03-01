@@ -14,7 +14,7 @@ enum ShotIntent {
 @export var camera_rotates_with_player: bool = true
 
 @export_group("Components")
-@export var crosshair : Crosshair
+@export var crosshair: Crosshair
 @export var headHurtBox: Area2D
 @export var bodyHurtBox: Area2D
 @export var skeletal_character: PlayerMesh
@@ -22,6 +22,7 @@ enum ShotIntent {
 @export var movement_component: MovementCompoent
 @export var health_component: HealthComponent
 @export var weapon_manager: WeaponManager
+@export var equipment_manager: EquipmentManager
 @export var sound_pool: SoundPool
 @export var footstep_player: AudioStreamPlayer2D
 @export var camera_shake: CameraShake
@@ -90,6 +91,25 @@ func setup_locals():
 		player_input.on_local_player_spawned()
 	if weapon_manager:
 		weapon_manager.apply_local_view()
+	if equipment_manager and equipment_manager.has_method("apply_local_view"):
+		equipment_manager.apply_local_view()
+
+
+func _get_current_equipment() -> EquipmentInstance:
+	# Choose available manager
+	var mgr: Node = null
+	if equipment_manager != null:
+		mgr = equipment_manager
+	elif weapon_manager != null:
+		mgr = weapon_manager
+	if mgr == null:
+		return null
+	if mgr is EquipmentManager:
+		return (mgr as EquipmentManager).get_current_item()
+	if mgr is WeaponManager:
+		return (mgr as WeaponManager).current_weapon
+	return null
+
 
 func get_speed():
 	var speed_multiplier = 1
@@ -97,8 +117,9 @@ func get_speed():
 	if is_slow_walking:
 		speed_multiplier *= slow_walk_multiplier
 	
-	if weapon_manager.current_weapon:
-		speed_multiplier *= weapon_manager.current_weapon.data.speed_multiplier
+	var current_item = _get_current_equipment()
+	if current_item is WeaponInstance:
+		speed_multiplier *= (current_item as WeaponInstance).data.speed_multiplier
 
 	return speed * speed_multiplier
 
@@ -117,9 +138,11 @@ func _process(_delta: float) -> void:
 	if footstep_player and footstep_player.playing:
 		footstep_player.stop()
 
-	if weapon_manager and weapon_manager.current_weapon:
-		if weapon_manager.current_weapon.can_play_idle_animation():
-			skeletal_character.anim_player.play(weapon_manager.current_weapon.data.animations.get("idle", ""))
+	var current_item = _get_current_equipment()
+	if current_item and current_item is WeaponInstance:
+		var weapon = current_item as WeaponInstance
+		if weapon.can_play_idle_animation():
+			skeletal_character.anim_player.play(weapon.data.animations.get("idle", ""))
 
 func _physics_process(_delta: float) -> void:
 	pass
@@ -140,7 +163,7 @@ func _owner_tick(server_tick: int) -> void:
 	var frame := player_input.build_input_frame(server_tick)
 	_input_buffer[server_tick] = frame
 	_apply_input_actions(frame)
-	PlayerSimulation.simulate(self, movement_component, frame)
+	PlayerSimulation.simulate(self , movement_component, frame)
 	rpc_id(1, "server_receive_input", frame.to_dict())
 
 func _server_tick(tick: int) -> void:
@@ -167,7 +190,7 @@ func _server_tick(tick: int) -> void:
 	_input_queue.erase(tick)
 	_last_authoritative_input_tick = frame.tick
 	_apply_input_actions(frame)
-	PlayerSimulation.simulate(self, movement_component, frame)
+	PlayerSimulation.simulate(self , movement_component, frame)
 	_last_processed_tick = tick
 	_state_history.store(tick, global_transform)
 	_send_snapshot(tick)
@@ -175,9 +198,9 @@ func _server_tick(tick: int) -> void:
 func _proxy_tick(server_tick: int) -> void:
 	var render_tick := server_tick - INTERP_DELAY_TICKS
 	if _interpolator.snapshot_buffer.size() < 2:
-		_interpolator.apply_latest(self)
+		_interpolator.apply_latest(self )
 		return
-	_interpolator.interpolate(self, render_tick)
+	_interpolator.interpolate(self , render_tick)
 
 func _apply_input_actions(frame: PlayerInputFrame) -> void:
 	is_slow_walking = frame.slow_walk_held
@@ -219,7 +242,7 @@ func _server_or_local_interact() -> void:
 		return
 	var interactable := get_node_or_null(target_path)
 	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
-		interactable.owner_ref.on_interact(self)
+		interactable.owner_ref.on_interact(self )
 
 func _send_snapshot(tick: int) -> void:
 	var snapshot := {
@@ -252,7 +275,7 @@ func client_receive_snapshot(snapshot: Dictionary) -> void:
 		_update_tick_offset(server_tick)
 	if _is_owner_role():
 		_reconciler.reconcile(
-			self,
+			self ,
 			snapshot.get("position", global_position),
 			snapshot.get("velocity", velocity),
 			int(snapshot.get("ack_tick", 0)),
@@ -295,7 +318,7 @@ func _remote_interact(target_path: NodePath):
 		return
 	var interactable = get_node_or_null(target_path)
 	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
-		interactable.owner_ref.on_interact(self)
+		interactable.owner_ref.on_interact(self )
 
 @rpc("authority", "call_local", "reliable")
 func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
@@ -303,8 +326,11 @@ func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
 		shot_intent = ShotIntent.BODY
 	current_shot_intent = shot_intent
 
-	if weapon_manager.current_weapon:
-		weapon_manager.current_weapon.start_fire()
+	var current_item = _get_current_equipment()
+	if current_item and current_item.has_method("start_fire"):
+		current_item.start_fire()
+	elif current_item and current_item.has_method("start_use"):
+		current_item.start_use()
 
 func can_register_hit(is_head_hit: bool) -> bool:
 	if current_shot_intent == ShotIntent.HEAD:
@@ -313,29 +339,66 @@ func can_register_hit(is_head_hit: bool) -> bool:
 
 @rpc("authority", "call_local", "reliable")
 func _remote_stop_fire():
-	if weapon_manager.current_weapon:
-		weapon_manager.current_weapon.stop_fire()
+	var current_item = _get_current_equipment()
+	if current_item and current_item.has_method("stop_fire"):
+		current_item.stop_fire()
+	elif current_item and current_item.has_method("stop_use"):
+		current_item.stop_use()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_reload():
-	if weapon_manager.current_weapon:
-		weapon_manager.current_weapon.reload()
+	var current_item = _get_current_equipment()
+	if current_item and current_item.has_method("reload"):
+		current_item.reload()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon():
-	weapon_manager.switch_to_next_weapon()
+	var mgr: Node = null
+	if equipment_manager != null:
+		mgr = equipment_manager
+	elif weapon_manager != null:
+		mgr = weapon_manager
+	if mgr != null:
+		if mgr.has_method("switch_to_next_item"):
+			mgr.switch_to_next_item()
+		elif mgr.has_method("switch_to_next_weapon"):
+			mgr.switch_to_next_weapon()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon_previous():
-	weapon_manager.switch_to_previous_weapon()
+	var mgr: Node = null
+	if equipment_manager != null:
+		mgr = equipment_manager
+	elif weapon_manager != null:
+		mgr = weapon_manager
+	if mgr != null:
+		if mgr.has_method("switch_to_previous_item"):
+			mgr.switch_to_previous_item()
+		elif mgr.has_method("switch_to_previous_weapon"):
+			mgr.switch_to_previous_weapon()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon_slot(slot: int):
-	weapon_manager.switch_to_slot(slot)
+	var mgr: Node = null
+	if equipment_manager != null:
+		mgr = equipment_manager
+	elif weapon_manager != null:
+		mgr = weapon_manager
+	if mgr != null and mgr.has_method("switch_to_slot"):
+		mgr.switch_to_slot(slot)
 
 @rpc("authority", "call_local", "reliable")
 func _remote_drop_weapon():
-	weapon_manager.drop_weapon()
+	var mgr: Node = null
+	if equipment_manager != null:
+		mgr = equipment_manager
+	elif weapon_manager != null:
+		mgr = weapon_manager
+	if mgr != null:
+		if mgr.has_method("drop_current_item"):
+			mgr.drop_current_item()
+		elif mgr.has_method("drop_weapon"):
+			mgr.drop_weapon()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_pickup(pickup_path: NodePath):
@@ -344,7 +407,12 @@ func _remote_pickup(pickup_path: NodePath):
 		push_warning("Pickup node not found for path: %s" % [String(pickup_path)])
 		return
 
-	if weapon_manager.pickup_weapon(weapon_pickup):
+	var mgr: Node = null
+	if equipment_manager != null:
+		mgr = equipment_manager
+	elif weapon_manager != null:
+		mgr = weapon_manager
+	if mgr and mgr.has_method("pickup_weapon") and mgr.pickup_weapon(weapon_pickup):
 		weapon_pickup.queue_free()
 
 func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
@@ -388,10 +456,14 @@ func _remote_die(global_pos: Vector2):
 	velocity = Vector2.ZERO
 	if footstep_player.playing:
 		footstep_player.stop()
-	if weapon_manager and weapon_manager.current_weapon:
-		if weapon_manager.current_weapon.has_method("force_interrupt"):
-			weapon_manager.current_weapon.force_interrupt()
-		weapon_manager.current_weapon.stop_fire()
+	var current_item = _get_current_equipment()
+	if current_item:
+		if current_item.has_method("force_interrupt"):
+			current_item.force_interrupt()
+		if current_item.has_method("stop_fire"):
+			current_item.stop_fire()
+		elif current_item.has_method("stop_use"):
+			current_item.stop_use()
 	hide()
 
 	var dead_scene = preload("res://scenes/player/player_dead.tscn").instantiate()

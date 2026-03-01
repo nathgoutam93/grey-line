@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WeaponAttackMode" format=3 uid="uid://bonul8216okye"]
+
+[ext_resource type="Script" uid="uid://ds6mffk8bhugv" path="res://resources/weapon_modes/weapon_attack_mode.gd" id="1_cjei6"]
+[ext_resource type="AudioStream" uid="uid://cdjgbvnegkgkh" path="res://assets/sounds/rifle-shoot.mp3" id="2_07o5l"]
+
+[resource]
+script = ExtResource("1_cjei6")
+name = "burst"
+cooldown = 0.1
+is_auto = true
+sound = ExtResource("2_07o5l")
+metadata/_custom_type_script = "uid://ds6mffk8bhugv"
