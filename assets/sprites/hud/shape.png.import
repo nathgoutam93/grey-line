@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bc24o2a1i3x6k"
-path="res://.godot/imported/map.png-0e3baa9cdd86860aba7af575f73440fd.ctex"
+uid="uid://dpb1c2ctoob4j"
+path="res://.godot/imported/shape.png-68012a2bb48953a08f436dcfc7b7a1b7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/maps/counter_strike/_assets/map.png"
-dest_files=["res://.godot/imported/map.png-0e3baa9cdd86860aba7af575f73440fd.ctex"]
+source_file="res://assets/sprites/hud/shape.png"
+dest_files=["res://.godot/imported/shape.png-68012a2bb48953a08f436dcfc7b7a1b7.ctex"]
 
 [params]
 

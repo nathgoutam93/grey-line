@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtedsulvbbtp2"
-path="res://.godot/imported/map3.png-6e5ae06b21b6399154a2d23557290940.ctex"
+uid="uid://b1oqmu2ogd23"
+path="res://.godot/imported/torso.png-200861ae7424ff4eeefccc1c695e3347.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/maps/counter_strike/_assets/map3.png"
-dest_files=["res://.godot/imported/map3.png-6e5ae06b21b6399154a2d23557290940.ctex"]
+source_file="res://assets/sprites/character2/torso.png"
+dest_files=["res://.godot/imported/torso.png-200861ae7424ff4eeefccc1c695e3347.ctex"]
 
 [params]
 
