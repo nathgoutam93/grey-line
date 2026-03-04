@@ -434,6 +434,12 @@ func _slot_name(slot: int) -> String:
 			return "secondary"
 		EquipmentData.EquipmentSlot.MELEE:
 			return "melee"
+		EquipmentData.EquipmentSlot.UTILITY_1:
+			return "utility_q"
+		EquipmentData.EquipmentSlot.UTILITY_2:
+			return "utility_e"
+		EquipmentData.EquipmentSlot.UTILITY_3:
+			return "utility_x"
 		_:
 			return "unknown"
 

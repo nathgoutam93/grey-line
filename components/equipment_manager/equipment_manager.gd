@@ -5,8 +5,9 @@ enum EquipmentSlot {
 	PRIMARY = 0,
 	SECONDARY = 1,
 	MELEE = 2,
-	UTILITY = 3,
-	THROWABLE = 4,
+	UTILITY_1 = 3,
+	UTILITY_2 = 4,
+	UTILITY_3 = 5,
 }
 
 @export_group("Inventory")
@@ -21,13 +22,17 @@ var equipped_items := {
 	EquipmentSlot.PRIMARY: null,
 	EquipmentSlot.SECONDARY: null,
 	EquipmentSlot.MELEE: null,
-	EquipmentSlot.UTILITY: null,
-	EquipmentSlot.THROWABLE: null,
+	EquipmentSlot.UTILITY_1: null,
+	EquipmentSlot.UTILITY_2: null,
+	EquipmentSlot.UTILITY_3: null,
 }
 
 @export var current_slot := EquipmentSlot.MELEE
 
 var current_item: EquipmentInstance = null
+const WEAPON_SLOTS := [EquipmentSlot.PRIMARY, EquipmentSlot.SECONDARY, EquipmentSlot.MELEE]
+const EXTRA_SLOTS := [EquipmentSlot.UTILITY_1, EquipmentSlot.UTILITY_2, EquipmentSlot.UTILITY_3]
+var _equip_request_id := 0
 
 func _ready():
 	await get_tree().process_frame
@@ -44,17 +49,22 @@ func setup_default_equipment():
 		# ensure slot is correct for weapon data
 		if equipment_data is Weapon:
 			(equipment_data as Weapon).ensure_slot_synced()
+		var slot = equipment_data.slot
+		if not _can_store_in_slot(equipment_data, slot):
+			push_warning("Invalid equipment slot %d for '%s'" % [slot, equipment_data.name])
+			continue
 		var item = equipment_data.instance_scene.instantiate()
-		# weapons need their own initializer so ammo counts are filled
+		# weapons/utilities need specialized setup where applicable
 		if item is WeaponInstance:
 			(item as WeaponInstance).set_weapon_data(equipment_data as Weapon)
+		elif item is ThrowableInstance:
+			(item as ThrowableInstance).set_throwable_data(equipment_data as ThrowableData)
 		else:
 			item.set_equipment_data(equipment_data)
 		item.player = player
 		skeletal_character.hand_socket.add_child(item)
 		item.unequip()
 
-		var slot = equipment_data.slot
 		print("default equipment: %s slot=%d" % [equipment_data.name, slot])
 		if equipped_items.has(slot) and equipped_items[slot] != null:
 			push_warning("Default equipment slot %d already occupied, overwriting" % slot)
@@ -82,17 +92,29 @@ func equip_slot(slot: int) -> void:
 	var new_item = equipped_items.get(slot)
 	if not new_item:
 		return
-	
+
+	_equip_request_id += 1
+	var request_id := _equip_request_id
+
 	# disconnect any previously bound signals from the old item
-	if current_item:
-		current_item.disconnect("equip_action", _on_item_equip_action)
-		current_item.disconnect("use_action", _on_item_use_action)
-		if current_item.has_signal("shoot_action"):
-			current_item.disconnect("shoot_action", _on_item_shoot_action)
-		if current_item.has_signal("reload_action"):
-			current_item.disconnect("reload_action", _on_item_reload_action)
-		current_item.unequip()
-		current_item.force_interrupt()
+	var previous_item := current_item
+	var unequip_delay := 0.0
+	if previous_item:
+		previous_item.disconnect("equip_action", _on_item_equip_action)
+		previous_item.disconnect("use_action", _on_item_use_action)
+		if previous_item.has_signal("shoot_action"):
+			previous_item.disconnect("shoot_action", _on_item_shoot_action)
+		if previous_item.has_signal("reload_action"):
+			previous_item.disconnect("reload_action", _on_item_reload_action)
+		if previous_item.equipment_data != null:
+			unequip_delay = maxf(previous_item.equipment_data.unequip_time, 0.0)
+		previous_item.force_interrupt()
+		previous_item.unequip()
+
+	if unequip_delay > 0.0:
+		await get_tree().create_timer(unequip_delay).timeout
+		if request_id != _equip_request_id:
+			return
 
 	current_slot = slot as EquipmentSlot
 	current_item = new_item
@@ -119,7 +141,7 @@ func apply_local_view() -> void:
 
 
 func switch_to_next_item() -> void:
-	var slots = [EquipmentSlot.PRIMARY, EquipmentSlot.SECONDARY, EquipmentSlot.MELEE]
+	var slots = WEAPON_SLOTS
 	var start_index = slots.find(current_slot)
 	for i in range(1, slots.size()):
 		var next_slot = slots[(start_index + i) % slots.size()]
@@ -129,7 +151,7 @@ func switch_to_next_item() -> void:
 
 
 func switch_to_previous_item() -> void:
-	var slots = [EquipmentSlot.PRIMARY, EquipmentSlot.SECONDARY, EquipmentSlot.MELEE]
+	var slots = WEAPON_SLOTS
 	var start_index = slots.find(current_slot)
 	for i in range(1, slots.size()):
 		var prev_slot = slots[(start_index - i + slots.size()) % slots.size()]
@@ -143,12 +165,20 @@ func switch_to_slot(slot: int) -> void:
 		return
 	equip_slot(slot)
 
+
+func _can_store_in_slot(equipment_data: EquipmentData, slot: int) -> bool:
+	if equipment_data is Weapon:
+		return WEAPON_SLOTS.has(slot)
+	return EXTRA_SLOTS.has(slot)
+
 # provide a pickup interface so the player controller can call this directly
 func pickup_weapon(pickup: WeaponPickup) -> bool:
 	if pickup == null or pickup.weapon_data == null:
 		return false
 	var wdata = pickup.weapon_data
 	wdata.ensure_slot_synced()
+	if not WEAPON_SLOTS.has(wdata.slot):
+		return false
 	# instantiate the appropriate instance
 	var item = wdata.instance_scene.instantiate() as EquipmentInstance
 	if item is WeaponInstance:
@@ -178,6 +208,8 @@ func pickup_weapon(pickup: WeaponPickup) -> bool:
 
 func drop_current_item() -> void:
 	if current_item:
+		if EXTRA_SLOTS.has(current_slot):
+			return
 		# respect data flag
 		if current_item.equipment_data and not current_item.equipment_data.can_drop:
 			return

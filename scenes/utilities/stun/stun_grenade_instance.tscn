@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dok1lpivjaieg"]
+
+[ext_resource type="Script" uid="uid://dph3lausw4ap6" path="res://scenes/utilities/throwable_instance.gd" id="1_uh2yp"]
+[ext_resource type="Texture2D" uid="uid://diumotgyyxw0w" path="res://scenes/utilities/stun/_assets/stun_grenade.png" id="2_spx83"]
+
+[node name="StunGrenadeInstance" type="Node2D" unique_id=231483787]
+script = ExtResource("1_uh2yp")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1318057225]
+texture = ExtResource("2_spx83")

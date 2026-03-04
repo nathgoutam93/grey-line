@@ -1472,5 +1472,9 @@ _spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
 spawn_path = NodePath("../Map")
 
 [node name="PickupSpawner" type="MultiplayerSpawner" parent="." unique_id=108037772]
-_spawnable_scenes = PackedStringArray("uid://djd5057n31hec", "uid://cy2enpfy31fdt", "uid://bt7txyxfcccff")
+_spawnable_scenes = PackedStringArray("uid://cy2enpfy31fdt", "uid://djd5057n31hec", "uid://bt7txyxfcccff")
+spawn_path = NodePath("../Map")
+
+[node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1643962526]
+_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c")
 spawn_path = NodePath("../Map")

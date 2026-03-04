@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var touch_aim_zone: TouchAimZone = get_node_or_null("Controls/TouchAimZone")
 @onready var kill_feedback_container: VBoxContainer = get_node("KillFeedbackLayer/KillFeedbackContainer")
 @onready var kill_feed_container: VBoxContainer = get_node("KillFeedLayer/KillFeedContainer")
+@onready var stun_flash_overlay: ColorRect = get_node_or_null("StunFlashOverlay")
 
 @onready var health_label: Label = get_node("Control/HBoxContainer/Panel/hp")
 @onready var ammo_panel: Control = get_node("Control/HBoxContainer/Panel2/HBoxContainer")
@@ -13,12 +14,26 @@ extends CanvasLayer
 @onready var primary_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot")
 @onready var secondary_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot2")
 @onready var melee_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot3")
+@onready var utility_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot4")
+@onready var throwable_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot5")
+@onready var utility_extra_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot6")
 
-const HUD_WEAPON_SLOTS := [
+const HUD_EQUIPMENT_SLOTS := [
 	EquipmentData.EquipmentSlot.PRIMARY,
 	EquipmentData.EquipmentSlot.SECONDARY,
-	EquipmentData.EquipmentSlot.MELEE
+	EquipmentData.EquipmentSlot.MELEE,
+	EquipmentData.EquipmentSlot.UTILITY_1,
+	EquipmentData.EquipmentSlot.UTILITY_2,
+	EquipmentData.EquipmentSlot.UTILITY_3
 ]
+const SLOT_HOTKEY_LABELS := {
+	EquipmentData.EquipmentSlot.PRIMARY: "1",
+	EquipmentData.EquipmentSlot.SECONDARY: "2",
+	EquipmentData.EquipmentSlot.MELEE: "3",
+	EquipmentData.EquipmentSlot.UTILITY_1: "Q",
+	EquipmentData.EquipmentSlot.UTILITY_2: "E",
+	EquipmentData.EquipmentSlot.UTILITY_3: "X"
+}
 
 @export var kill_feedback_item_scene: PackedScene
 @export var headshot_feedback_item_scene: PackedScene
@@ -27,12 +42,16 @@ const HUD_WEAPON_SLOTS := [
 var _slot_nodes_by_slot := {}
 var _is_local_hud := false
 var _visibility_initialized := false
+var _stun_flash_tween: Tween = null
 
 func _ready() -> void:
 	_slot_nodes_by_slot = {
 		EquipmentData.EquipmentSlot.PRIMARY: primary_slot_ui,
 		EquipmentData.EquipmentSlot.SECONDARY: secondary_slot_ui,
-		EquipmentData.EquipmentSlot.MELEE: melee_slot_ui
+		EquipmentData.EquipmentSlot.MELEE: melee_slot_ui,
+		EquipmentData.EquipmentSlot.UTILITY_1: utility_slot_ui,
+		EquipmentData.EquipmentSlot.UTILITY_2: throwable_slot_ui,
+		EquipmentData.EquipmentSlot.UTILITY_3: utility_extra_slot_ui
 	}
 
 	await get_tree().process_frame
@@ -79,7 +98,7 @@ func _sync_weapon_slots() -> void:
 	if not equipment_manager:
 		return
 
-	for slot in HUD_WEAPON_SLOTS:
+	for slot in HUD_EQUIPMENT_SLOTS:
 		var item_instance = equipment_manager.get_item_in_slot(slot)
 		var slot_ui := _slot_nodes_by_slot.get(slot) as Control
 		if not slot_ui:
@@ -99,7 +118,7 @@ func _sync_weapon_slots() -> void:
 		if item_name:
 			item_name.text = item_instance.equipment_data.name
 		if key_label:
-			key_label.text = str(slot + 1)
+			key_label.text = SLOT_HOTKEY_LABELS.get(slot, "")
 
 	_update_slot_selection_visual()
 
@@ -228,3 +247,17 @@ func _spawn_kill_feed_item() -> Control:
 
 func get_touch_aim_zone() -> TouchAimZone:
 	return touch_aim_zone
+
+
+func show_stun_flash(duration_seconds: float, max_alpha: float = 0.95) -> void:
+	if not is_instance_valid(stun_flash_overlay):
+		return
+	if _stun_flash_tween != null:
+		_stun_flash_tween.kill()
+	_stun_flash_tween = create_tween()
+	stun_flash_overlay.visible = true
+	stun_flash_overlay.modulate = Color(1.0, 1.0, 1.0, clampf(max_alpha, 0.0, 1.0))
+	_stun_flash_tween.tween_property(stun_flash_overlay, "modulate:a", 0.0, maxf(duration_seconds, 0.05))
+	_stun_flash_tween.tween_callback(func():
+		stun_flash_overlay.visible = false
+	)

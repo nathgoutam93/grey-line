@@ -32,6 +32,11 @@ var _pending_interact_ticks := 0
 var _pending_slot_select_ticks := 0
 var _pending_slot_select_value := -1
 const EDGE_HOLD_TICKS := 3
+var _raw_slot_hotkey_prev := {
+	"q": false,
+	"e": false,
+	"x": false,
+}
 
 func get_aim_world_position() -> Vector2:
 	return mouse_pos
@@ -83,7 +88,7 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 		_pending_switch_prev_ticks = EDGE_HOLD_TICKS
 	if not touch_mode and Input.is_action_just_pressed("scroll_down"):
 		_pending_switch_next_ticks = EDGE_HOLD_TICKS
-	if not touch_mode and Input.is_action_just_pressed("drop_weapon"):
+	if not touch_mode and Input.is_action_just_pressed("drop"):
 		_pending_drop_ticks = EDGE_HOLD_TICKS
 	if not touch_mode and Input.is_action_just_pressed("pickup"):
 		_pending_interact_ticks = EDGE_HOLD_TICKS
@@ -97,6 +102,11 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	elif not touch_mode and Input.is_action_just_pressed("malee"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
 		_pending_slot_select_value = EquipmentManager.EquipmentSlot.MELEE
+	elif not touch_mode:
+		var mapped_slot := _get_direct_slot_hotkey()
+		if mapped_slot >= 0:
+			_pending_slot_select_ticks = EDGE_HOLD_TICKS
+			_pending_slot_select_value = mapped_slot
 
 	# Reload should be an edge trigger to avoid repeated reload RPCs per press.
 	frame.reload_pressed = _pending_reload_ticks == EDGE_HOLD_TICKS
@@ -272,4 +282,22 @@ func _just_pressed_touch(node_name: String) -> bool:
 	var was_pressed := bool(get_meta(key, false))
 	var is_pressed := button.is_pressed()
 	set_meta(key, is_pressed)
+	return is_pressed and not was_pressed
+
+func _get_direct_slot_hotkey() -> int:
+	# Support input actions when they exist; fallback to raw key edges otherwise.
+	if _is_action_or_key_just_pressed("slot_extra_q", KEY_Q, "q"):
+		return EquipmentManager.EquipmentSlot.UTILITY_1
+	if _is_action_or_key_just_pressed("slot_extra_e", KEY_E, "e"):
+		return EquipmentManager.EquipmentSlot.UTILITY_2
+	if _is_action_or_key_just_pressed("slot_extra_x", KEY_X, "x"):
+		return EquipmentManager.EquipmentSlot.UTILITY_3
+	return -1
+
+func _is_action_or_key_just_pressed(action_name: String, keycode: Key, state_key: String) -> bool:
+	if InputMap.has_action(action_name):
+		return Input.is_action_just_pressed(action_name)
+	var is_pressed := Input.is_physical_key_pressed(keycode)
+	var was_pressed := bool(_raw_slot_hotkey_prev.get(state_key, false))
+	_raw_slot_hotkey_prev[state_key] = is_pressed
 	return is_pressed and not was_pressed

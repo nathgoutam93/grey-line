@@ -130,6 +130,11 @@ func _process(_delta: float) -> void:
 		var weapon = current_item as WeaponInstance
 		if weapon.can_play_idle_animation():
 			skeletal_character.anim_player.play(weapon.data.animations.get("idle", ""))
+	elif current_item and current_item.equipment_data != null and not current_item.is_locked:
+		var idle_animation := String(current_item.equipment_data.animations.get("idle", ""))
+		if idle_animation != "" and skeletal_character.anim_player.has_animation(idle_animation):
+			if skeletal_character.anim_player.current_animation != idle_animation:
+				skeletal_character.anim_player.play(idle_animation)
 
 func _physics_process(_delta: float) -> void:
 	pass
@@ -472,6 +477,54 @@ func _enable_hurtbox(hurtbox: Area2D) -> void:
 		return
 	hurtbox.monitoring = true
 	hurtbox.monitorable = true
+
+
+@rpc("authority", "call_local", "reliable")
+func _remote_apply_screen_flash(detonation_pos: Vector2, duration_seconds: float, effect_radius: float, max_angle_deg: float, max_alpha: float = 0.95) -> void:
+	if not is_local_player:
+		return
+	if not is_instance_valid(hud) or not hud.has_method("show_stun_flash"):
+		return
+
+	var to_blast := detonation_pos - global_position
+	var distance := to_blast.length()
+	if effect_radius > 0.0 and distance > effect_radius:
+		return
+	if not _has_flash_line_of_sight(detonation_pos):
+		return
+
+	if distance > 0.001:
+		var facing := Vector2.RIGHT.rotated(rotation).normalized()
+		var blast_direction := to_blast.normalized()
+		var cos_threshold := cos(deg_to_rad(clampf(max_angle_deg, 0.0, 180.0)))
+		if facing.dot(blast_direction) < cos_threshold:
+			return
+
+	var distance_factor := 1.0
+	if effect_radius > 0.0:
+		distance_factor = clampf(1.0 - (distance / effect_radius), 0.0, 1.0)
+	var final_alpha := clampf(max_alpha * distance_factor, 0.0, 1.0)
+	if final_alpha <= 0.01:
+		return
+
+	hud.call("show_stun_flash", maxf(duration_seconds, 0.05), final_alpha)
+
+
+func _has_flash_line_of_sight(detonation_pos: Vector2) -> bool:
+	var space_state := get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(detonation_pos, global_position)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	query.collision_mask = 1 << 0 # Environment layer
+	var exclude: Array = [get_rid()]
+	if is_instance_valid(headHurtBox):
+		exclude.append(headHurtBox.get_rid())
+	if is_instance_valid(bodyHurtBox):
+		exclude.append(bodyHurtBox.get_rid())
+	query.exclude = exclude
+
+	var hit := space_state.intersect_ray(query)
+	return hit.is_empty()
 
 func _wait_network_ticks(tick_count: int) -> void:
 	for _i in range(maxi(0, tick_count)):

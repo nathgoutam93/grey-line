@@ -5,8 +5,9 @@ enum EquipmentSlot {
 	PRIMARY = 0,
 	SECONDARY = 1,
 	MELEE = 2,
-	UTILITY = 3,
-	THROWABLE = 4,
+	UTILITY_1 = 3,
+	UTILITY_2 = 4,
+	UTILITY_3 = 5,
 }
 
 ## Generic equipment properties

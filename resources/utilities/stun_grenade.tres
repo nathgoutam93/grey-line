@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ThrowableData" format=3 uid="uid://dgpa2k1v80tol"]
+
+[ext_resource type="Script" uid="uid://mlyg658g1vcg" path="res://resources/utilities/throwable_data.gd" id="1_81x7v"]
+[ext_resource type="Texture2D" uid="uid://diumotgyyxw0w" path="res://scenes/utilities/stun/_assets/stun_grenade.png" id="1_dkef1"]
+[ext_resource type="PackedScene" uid="uid://dok1lpivjaieg" path="res://scenes/utilities/stun/stun_grenade_instance.tscn" id="1_m267v"]
+[ext_resource type="PackedScene" uid="uid://c1crklx4b4c3c" path="res://scenes/utilities/stun/stun_grenade_projectile.tscn" id="2_dkef1"]
+[ext_resource type="Resource" uid="uid://cuu2glifjoap4" path="res://resources/weapon_sounds/knife_sounds.tres" id="2_g9s3y"]
+
+[resource]
+script = ExtResource("1_81x7v")
+projectile_scene = ExtResource("2_dkef1")
+throw_speed = 760.0
+throw_torque = 10.0
+throw_release_time = 0.1
+arc_peak_height = 22.0
+fuse_time = 1.4
+flash_duration = 2.5
+flash_radius = 950.0
+use_cooldown = 1.25
+max_charges = 0
+name = "stun_grenade"
+icon = ExtResource("1_dkef1")
+equip_time = 0.5
+slot = 3
+animations = {
+"attack": "knife_attack",
+"equip": "knife_equip",
+"idle": "knife_idle",
+"move": "knife_move",
+"reload": ""
+}
+sounds = ExtResource("2_g9s3y")
+instance_scene = ExtResource("1_m267v")
+can_drop = false
