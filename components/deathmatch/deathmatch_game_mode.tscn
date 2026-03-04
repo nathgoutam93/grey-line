@@ -82,7 +82,6 @@ offset_right = 220.0
 offset_bottom = 163.0
 
 [node name="LeaveGameButtonAnchor" type="Control" parent="MatchResultLayer/Control" unique_id=676020495]
-visible = false
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -95,6 +94,7 @@ grow_horizontal = 2
 grow_vertical = 0
 
 [node name="LeaveGameButton" type="TouchScreenButton" parent="MatchResultLayer/Control/LeaveGameButtonAnchor" unique_id=1501672104]
+visible = false
 position = Vector2(-134, 0)
 scale = Vector2(0.5, 0.5)
 texture_normal = ExtResource("4_cvc4k")

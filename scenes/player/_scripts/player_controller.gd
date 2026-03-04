@@ -21,7 +21,6 @@ enum ShotIntent {
 @export var player_input: PlayerInputCollector
 @export var movement_component: MovementCompoent
 @export var health_component: HealthComponent
-@export var weapon_manager: WeaponManager
 @export var equipment_manager: EquipmentManager
 @export var sound_pool: SoundPool
 @export var footstep_player: AudioStreamPlayer2D
@@ -89,26 +88,14 @@ func setup_locals():
 	skeletal_character.material = null
 	if player_input:
 		player_input.on_local_player_spawned()
-	if weapon_manager:
-		weapon_manager.apply_local_view()
 	if equipment_manager and equipment_manager.has_method("apply_local_view"):
 		equipment_manager.apply_local_view()
 
 
 func _get_current_equipment() -> EquipmentInstance:
-	# Choose available manager
-	var mgr: Node = null
-	if equipment_manager != null:
-		mgr = equipment_manager
-	elif weapon_manager != null:
-		mgr = weapon_manager
-	if mgr == null:
+	if equipment_manager == null:
 		return null
-	if mgr is EquipmentManager:
-		return (mgr as EquipmentManager).get_current_item()
-	if mgr is WeaponManager:
-		return (mgr as WeaponManager).current_weapon
-	return null
+	return equipment_manager.get_current_item()
 
 
 func get_speed():
@@ -353,52 +340,23 @@ func _remote_reload():
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon():
-	var mgr: Node = null
-	if equipment_manager != null:
-		mgr = equipment_manager
-	elif weapon_manager != null:
-		mgr = weapon_manager
-	if mgr != null:
-		if mgr.has_method("switch_to_next_item"):
-			mgr.switch_to_next_item()
-		elif mgr.has_method("switch_to_next_weapon"):
-			mgr.switch_to_next_weapon()
+	if equipment_manager != null and equipment_manager.has_method("switch_to_next_item"):
+		equipment_manager.switch_to_next_item()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon_previous():
-	var mgr: Node = null
-	if equipment_manager != null:
-		mgr = equipment_manager
-	elif weapon_manager != null:
-		mgr = weapon_manager
-	if mgr != null:
-		if mgr.has_method("switch_to_previous_item"):
-			mgr.switch_to_previous_item()
-		elif mgr.has_method("switch_to_previous_weapon"):
-			mgr.switch_to_previous_weapon()
+	if equipment_manager != null and equipment_manager.has_method("switch_to_previous_item"):
+		equipment_manager.switch_to_previous_item()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_switch_weapon_slot(slot: int):
-	var mgr: Node = null
-	if equipment_manager != null:
-		mgr = equipment_manager
-	elif weapon_manager != null:
-		mgr = weapon_manager
-	if mgr != null and mgr.has_method("switch_to_slot"):
-		mgr.switch_to_slot(slot)
+	if equipment_manager != null and equipment_manager.has_method("switch_to_slot"):
+		equipment_manager.switch_to_slot(slot)
 
 @rpc("authority", "call_local", "reliable")
 func _remote_drop_weapon():
-	var mgr: Node = null
-	if equipment_manager != null:
-		mgr = equipment_manager
-	elif weapon_manager != null:
-		mgr = weapon_manager
-	if mgr != null:
-		if mgr.has_method("drop_current_item"):
-			mgr.drop_current_item()
-		elif mgr.has_method("drop_weapon"):
-			mgr.drop_weapon()
+	if equipment_manager != null and equipment_manager.has_method("drop_current_item"):
+		equipment_manager.drop_current_item()
 
 @rpc("authority", "call_local", "reliable")
 func _remote_pickup(pickup_path: NodePath):
@@ -407,16 +365,9 @@ func _remote_pickup(pickup_path: NodePath):
 		push_warning("Pickup node not found for path: %s" % [String(pickup_path)])
 		return
 
-	# attempt pickup with whichever manager can handle it; fall back if the first one fails
 	if equipment_manager != null and equipment_manager.has_method("pickup_weapon"):
 		if equipment_manager.pickup_weapon(weapon_pickup):
 			weapon_pickup.queue_free()
-			return
-	if weapon_manager != null and weapon_manager.has_method("pickup_weapon"):
-		if weapon_manager.pickup_weapon(weapon_pickup):
-			weapon_pickup.queue_free()
-			return
-	# if we reach here, nothing handled it; silent fail is acceptable but log for debugging
 
 func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
 	var scene_root := get_tree().current_scene

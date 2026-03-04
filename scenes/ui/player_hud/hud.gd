@@ -68,9 +68,7 @@ func _set_controls_input_enabled(is_enabled: bool) -> void:
 
 
 func _get_equipment_manager() -> Node:
-	if _player.equipment_manager:
-		return _player.equipment_manager
-	return _player.weapon_manager
+	return _player.equipment_manager
 
 
 func _sync_weapon_slots() -> void:
@@ -82,7 +80,7 @@ func _sync_weapon_slots() -> void:
 		return
 
 	for slot in HUD_WEAPON_SLOTS:
-		var item_instance = equipment_manager.get_item_in_slot(slot) if equipment_manager.has_method("get_item_in_slot") else equipment_manager.get_weapon_in_slot(slot)
+		var item_instance = equipment_manager.get_item_in_slot(slot)
 		var slot_ui := _slot_nodes_by_slot.get(slot) as Control
 		if not slot_ui:
 			continue
@@ -135,7 +133,9 @@ func _process(_delta: float) -> void:
 	health_label.text = str(_player.health_component.current_health)
 	
 	var equipment_manager = _get_equipment_manager()
-	var current_item = equipment_manager.get_current_item() if equipment_manager.has_method("get_current_item") else equipment_manager.current_weapon
+	if not equipment_manager:
+		return
+	var current_item = equipment_manager.get_current_item()
 	var uses_ammo := current_item != null and current_item is WeaponInstance and (current_item as WeaponInstance).data != null and (current_item as WeaponInstance).data.uses_ammo
 	ammo_panel.visible = uses_ammo
 	if not uses_ammo:

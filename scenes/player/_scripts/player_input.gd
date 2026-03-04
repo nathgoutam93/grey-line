@@ -90,13 +90,13 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 
 	if not touch_mode and Input.is_action_just_pressed("primary"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
-		_pending_slot_select_value = WeaponManager.WeaponSlot.PRIMARY
+		_pending_slot_select_value = EquipmentManager.EquipmentSlot.PRIMARY
 	elif not touch_mode and Input.is_action_just_pressed("secondary"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
-		_pending_slot_select_value = WeaponManager.WeaponSlot.SECONDARY
+		_pending_slot_select_value = EquipmentManager.EquipmentSlot.SECONDARY
 	elif not touch_mode and Input.is_action_just_pressed("malee"):
 		_pending_slot_select_ticks = EDGE_HOLD_TICKS
-		_pending_slot_select_value = WeaponManager.WeaponSlot.MELEE
+		_pending_slot_select_value = EquipmentManager.EquipmentSlot.MELEE
 
 	# Reload should be an edge trigger to avoid repeated reload RPCs per press.
 	frame.reload_pressed = _pending_reload_ticks == EDGE_HOLD_TICKS

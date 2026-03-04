@@ -1445,6 +1445,7 @@ position = Vector2(1975, -775)
 [node name="BG" type="AudioStreamPlayer" parent="Map" unique_id=711162239]
 stream = ExtResource("8_mflnu")
 volume_db = -20.0
+autoplay = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=83054388]
 

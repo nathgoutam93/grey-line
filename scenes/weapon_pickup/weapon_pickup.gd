@@ -50,9 +50,7 @@ func _on_player_exited(_player):
 	pass
 
 func _get_equipment_manager(player):
-	if player.equipment_manager:
-		return player.equipment_manager
-	return player.weapon_manager
+	return player.equipment_manager
 
 
 func can_auto_pickup(player):
@@ -62,9 +60,6 @@ func can_auto_pickup(player):
 	if mgr and mgr.has_method("get_item_in_slot"):
 		var existing = mgr.get_item_in_slot(weapon_data.slot)
 		return existing == null
-	if mgr and mgr.has_method("get_weapon_in_slot"):
-		var existing_weapon = mgr.get_weapon_in_slot(weapon_data.weapon_type)
-		return existing_weapon == null
 	return false
 
 func pickup_weapon(player):

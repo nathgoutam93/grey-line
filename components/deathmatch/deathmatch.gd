@@ -439,9 +439,7 @@ func _slot_name(slot: int) -> String:
 
 
 func _get_equipment_manager(player: PlayerController) -> Node:
-	if player.equipment_manager:
-		return player.equipment_manager
-	return player.weapon_manager
+	return player.equipment_manager
 
 
 func _weapon_payload(equipment: EquipmentInstance) -> Dictionary:
@@ -480,7 +478,7 @@ func _refresh_player_combat_data(peer_id: int, player: PlayerController = null) 
 	if player:
 		var equipment_manager = _get_equipment_manager(player)
 		if equipment_manager:
-			var current_item = equipment_manager.get_current_item() if equipment_manager.has_method("get_current_item") else equipment_manager.current_weapon
+			var current_item = equipment_manager.get_current_item()
 			current_weapon_payload = _weapon_payload(current_item)
 			if not current_weapon_payload.is_empty():
 				current_weapon_payload["slot"] = _slot_name(int(equipment_manager.current_slot))
