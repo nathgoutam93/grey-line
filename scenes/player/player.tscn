@@ -9,6 +9,7 @@
 [ext_resource type="Resource" uid="uid://dgpa2k1v80tol" path="res://resources/utilities/flashbang.tres" id="10_u6l8k"]
 [ext_resource type="Script" uid="uid://bdqygn78l1df" path="res://components/equipment_manager/equipment_manager.gd" id="11_kvlxm"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
+[ext_resource type="Resource" uid="uid://d1cs44w3ry442" path="res://resources/utilities/frag.tres" id="12_kvlxm"]
 [ext_resource type="Script" uid="uid://cvg436qigjl2v" path="res://resources/equipment_data.gd" id="12_uf5tr"]
 [ext_resource type="Script" uid="uid://btw8i1fo6337l" path="res://scenes/player/_scripts/player_input.gd" id="13_gx1jg"]
 [ext_resource type="PackedScene" uid="uid://c6bubi5tu41qm" path="res://components/skeletal_mesh/character_skeletal.tscn" id="13_u5how"]
@@ -99,7 +100,7 @@ scale = Vector2(0.35, 0.35)
 
 [node name="EquipmentManager" type="Node" parent="." unique_id=604136733 node_paths=PackedStringArray("player", "skeletal_character", "camera_shake")]
 script = ExtResource("11_kvlxm")
-default_equipment = Array[ExtResource("12_uf5tr")]([ExtResource("9_myrg7"), ExtResource("9_fcs02"), ExtResource("3_fcs02"), ExtResource("10_u6l8k")])
+default_equipment = Array[ExtResource("12_uf5tr")]([ExtResource("9_myrg7"), ExtResource("9_fcs02"), ExtResource("3_fcs02"), ExtResource("10_u6l8k"), ExtResource("12_kvlxm")])
 player = NodePath("..")
 skeletal_character = NodePath("../PlayerMesh")
 camera_shake = NodePath("../Camera2D/CameraShake")

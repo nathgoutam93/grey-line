@@ -412,6 +412,7 @@ func _remote_die(global_pos: Vector2):
 		movement_component.set_process(false)
 		movement_component.set_physics_process(false)
 		movement_component.is_moving = false
+		movement_component.external_velocity = Vector2.ZERO
 	velocity = Vector2.ZERO
 	if footstep_player.playing:
 		footstep_player.stop()
@@ -466,6 +467,7 @@ func reset_for_respawn() -> void:
 		movement_component.set_process(true)
 		movement_component.set_physics_process(true)
 		movement_component.is_moving = false
+		movement_component.external_velocity = Vector2.ZERO
 	if health_component:
 		health_component.is_dead = false
 		health_component.current_health = health_component.max_health
@@ -477,6 +479,19 @@ func _enable_hurtbox(hurtbox: Area2D) -> void:
 		return
 	hurtbox.monitoring = true
 	hurtbox.monitorable = true
+
+
+func apply_explosion_force(explosion_origin: Vector2, force_amount: float) -> void:
+	if is_dead:
+		return
+	if movement_component == null:
+		return
+	if force_amount <= 0.0:
+		return
+	var push_dir := global_position - explosion_origin
+	if push_dir.length_squared() <= 0.0001:
+		push_dir = Vector2.RIGHT.rotated(randf() * TAU)
+	movement_component.add_external_velocity(push_dir.normalized() * force_amount)
 
 
 @rpc("authority", "call_local", "reliable")

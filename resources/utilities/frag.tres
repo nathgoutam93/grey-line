@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ThrowableData" format=3 uid="uid://d1cs44w3ry442"]
+
+[ext_resource type="Script" uid="uid://mlyg658g1vcg" path="res://resources/utilities/throwable_data.gd" id="1_h8kjs"]
+[ext_resource type="Texture2D" uid="uid://da6a78c3qh4a0" path="res://scenes/utilities/frag/_assets/frag.png" id="2_6lm5p"]
+[ext_resource type="PackedScene" path="res://scenes/utilities/frag/frag.tscn" id="3_q9f1b"]
+[ext_resource type="PackedScene" path="res://scenes/utilities/frag/frag_projectile.tscn" id="4_h1x2j"]
+[ext_resource type="Resource" uid="uid://cuu2glifjoap4" path="res://resources/weapon_sounds/knife_sounds.tres" id="5_1jlao"]
+
+[resource]
+script = ExtResource("1_h8kjs")
+projectile_scene = ExtResource("4_h1x2j")
+throw_speed = 760.0
+throw_torque = 10.0
+throw_release_time = 0.1
+arc_peak_height = 22.0
+fuse_time = 1.4
+explosion_radius = 340.0
+explosion_force = 720.0
+explosion_min_damage = 20
+use_cooldown = 1.25
+max_charges = 0
+name = "frag_grenade"
+icon = ExtResource("2_6lm5p")
+equip_time = 0.5
+slot = 4
+animations = {
+"attack": "knife_attack",
+"equip": "knife_equip",
+"idle": "knife_idle",
+"move": "knife_move",
+"reload": ""
+}
+sounds = ExtResource("5_1jlao")
+instance_scene = ExtResource("3_q9f1b")
+can_drop = false

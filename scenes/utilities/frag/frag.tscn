@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/utilities/throwable_instance.gd" id="1_86sfy"]
+[ext_resource type="Texture2D" path="res://scenes/utilities/frag/_assets/frag.png" id="2_vyui0"]
+
+[node name="FragInstance" type="Node2D"]
+script = ExtResource("1_86sfy")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_vyui0")

@@ -13,6 +13,10 @@ class_name ThrowableData
 @export var flash_radius: float = 900.0
 @export_range(0.0, 180.0, 1.0) var flash_angle_deg: float = 70.0
 @export_range(0.0, 1.0, 0.05) var flash_max_alpha: float = 0.95
+@export var explosion_radius: float = 320.0
+@export var explosion_force: float = 680.0
+@export var explosion_max_damage: int = 95
+@export var explosion_min_damage: int = 15
 @export var use_cooldown: float = 1.0
 @export var consume_on_use: bool = false
 @export var max_charges: int = 1
