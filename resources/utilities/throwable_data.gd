@@ -2,6 +2,7 @@ extends EquipmentData
 class_name ThrowableData
 
 @export var projectile_scene: PackedScene
+@export var detonate_effect_scene: PackedScene
 @export var throw_speed: float = 700.0
 @export var throw_torque: float = 8.0
 @export var throw_release_time: float = 0.2

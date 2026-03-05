@@ -78,6 +78,7 @@ func start_use() -> void:
 		flash_projectile.flash_angle_deg = data.flash_angle_deg
 		flash_projectile.flash_max_alpha = data.flash_max_alpha
 		flash_projectile.detonate_sound = _get_detonate_sound()
+		flash_projectile.detonate_effect_scene = data.detonate_effect_scene
 	elif projectile is FragProjectile:
 		var frag_projectile := projectile as FragProjectile
 		frag_projectile.detonate_after_seconds = data.fuse_time
@@ -87,6 +88,7 @@ func start_use() -> void:
 		frag_projectile.min_damage = data.explosion_min_damage
 		frag_projectile.instigator_peer_id = player.owner_peer_id
 		frag_projectile.detonate_sound = _get_detonate_sound()
+		frag_projectile.detonate_effect_scene = data.detonate_effect_scene
 
 	var throw_direction := _pending_throw_direction
 	if data.aim_convergence_distance > 0.0:

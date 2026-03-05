@@ -5,10 +5,12 @@
 [ext_resource type="PackedScene" path="res://scenes/utilities/frag/frag.tscn" id="3_q9f1b"]
 [ext_resource type="PackedScene" path="res://scenes/utilities/frag/frag_projectile.tscn" id="4_h1x2j"]
 [ext_resource type="Resource" uid="uid://ba1w56du1qken" path="res://resources/weapon_sounds/frag_sound.tres" id="5_t2q40"]
+[ext_resource type="PackedScene" uid="uid://c16uehx4210kn" path="res://scenes/impact/white_blast.tscn" id="6_detonate_fx"]
 
 [resource]
 script = ExtResource("1_h8kjs")
 projectile_scene = ExtResource("4_h1x2j")
+detonate_effect_scene = ExtResource("6_detonate_fx")
 throw_speed = 760.0
 throw_torque = 10.0
 throw_release_time = 0.1

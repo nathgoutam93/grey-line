@@ -9,6 +9,7 @@ class_name FlashbangProjectile
 @export var speed: float = 760.0
 @export var max_travel_distance: float = 900.0
 @export var detonate_sound: AudioStream = null
+@export var detonate_effect_scene: PackedScene = null
 
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
 
@@ -87,7 +88,14 @@ func _detonate() -> void:
 	_is_server_simulating = false
 	if NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.disconnect(_on_network_tick)
-	_remote_play_detonate_sound.rpc(global_position)
+	var detonate_sound_path := ""
+	if detonate_sound != null:
+		detonate_sound_path = detonate_sound.resource_path
+	var detonate_effect_path := ""
+	if detonate_effect_scene != null:
+		detonate_effect_path = detonate_effect_scene.resource_path
+	_remote_play_detonate_sound.rpc(global_position, detonate_sound_path)
+	_remote_spawn_detonate_effect.rpc(global_position, detonate_effect_path)
 
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
@@ -105,16 +113,34 @@ func _detonate() -> void:
 
 
 @rpc("authority", "call_local", "reliable")
-func _remote_play_detonate_sound(sound_position: Vector2) -> void:
-	_play_detonate_sound(sound_position)
+func _remote_play_detonate_sound(sound_position: Vector2, sound_path: String) -> void:
+	_play_detonate_sound(sound_position, sound_path)
 
 
-func _play_detonate_sound(sound_position: Vector2) -> void:
-	if detonate_sound == null:
+func _play_detonate_sound(sound_position: Vector2, sound_path: String = "") -> void:
+	var stream := detonate_sound
+	if stream == null and not sound_path.is_empty():
+		stream = load(sound_path) as AudioStream
+	if stream == null:
 		return
 	var audio_player := AudioStreamPlayer2D.new()
-	audio_player.stream = detonate_sound
+	audio_player.stream = stream
 	audio_player.global_position = sound_position
 	get_tree().current_scene.add_child(audio_player)
 	audio_player.finished.connect(audio_player.queue_free)
 	audio_player.play()
+
+
+@rpc("authority", "call_local", "reliable")
+func _remote_spawn_detonate_effect(effect_position: Vector2, effect_scene_path: String) -> void:
+	var effect_scene := detonate_effect_scene
+	if effect_scene == null and not effect_scene_path.is_empty():
+		effect_scene = load(effect_scene_path) as PackedScene
+	if effect_scene == null:
+		return
+	var detonate_effect := effect_scene.instantiate()
+	if detonate_effect == null:
+		return
+	if detonate_effect is Node2D:
+		(detonate_effect as Node2D).global_position = effect_position
+	get_tree().current_scene.add_child(detonate_effect)

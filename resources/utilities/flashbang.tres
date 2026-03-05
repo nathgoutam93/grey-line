@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://mlyg658g1vcg" path="res://resources/utilities/throwable_data.gd" id="1_81x7v"]
 [ext_resource type="Texture2D" uid="uid://diumotgyyxw0w" path="res://scenes/utilities/flashbang/_assets/flashbang.png" id="1_dkef1"]
+[ext_resource type="PackedScene" uid="uid://c16uehx4210kn" path="res://scenes/impact/white_blast.tscn" id="1_egilm"]
 [ext_resource type="PackedScene" uid="uid://dok1lpivjaieg" path="res://scenes/utilities/flashbang/flashbang.tscn" id="1_m267v"]
 [ext_resource type="PackedScene" uid="uid://c1crklx4b4c3c" path="res://scenes/utilities/flashbang/flashbang_projectile.tscn" id="2_dkef1"]
 [ext_resource type="Resource" uid="uid://dfapnyjomydta" path="res://resources/weapon_sounds/flashbang_sound.tres" id="5_w70kp"]
@@ -9,6 +10,7 @@
 [resource]
 script = ExtResource("1_81x7v")
 projectile_scene = ExtResource("2_dkef1")
+detonate_effect_scene = ExtResource("1_egilm")
 throw_speed = 760.0
 throw_torque = 10.0
 throw_release_time = 0.1
