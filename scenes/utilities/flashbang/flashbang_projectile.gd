@@ -8,6 +8,7 @@ class_name FlashbangProjectile
 @export_range(0.0, 1.0, 0.05) var flash_max_alpha: float = 0.95
 @export var speed: float = 760.0
 @export var max_travel_distance: float = 900.0
+@export var detonate_sound: AudioStream = null
 
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
 
@@ -86,6 +87,7 @@ func _detonate() -> void:
 	_is_server_simulating = false
 	if NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.disconnect(_on_network_tick)
+	_play_detonate_sound()
 
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
@@ -100,3 +102,14 @@ func _detonate() -> void:
 		)
 
 	queue_free()
+
+
+func _play_detonate_sound() -> void:
+	if detonate_sound == null:
+		return
+	var audio_player := AudioStreamPlayer2D.new()
+	audio_player.stream = detonate_sound
+	audio_player.global_position = global_position
+	get_tree().current_scene.add_child(audio_player)
+	audio_player.finished.connect(audio_player.queue_free)
+	audio_player.play()

@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://da6a78c3qh4a0" path="res://scenes/utilities/frag/_assets/frag.png" id="2_6lm5p"]
 [ext_resource type="PackedScene" path="res://scenes/utilities/frag/frag.tscn" id="3_q9f1b"]
 [ext_resource type="PackedScene" path="res://scenes/utilities/frag/frag_projectile.tscn" id="4_h1x2j"]
-[ext_resource type="Resource" uid="uid://cuu2glifjoap4" path="res://resources/weapon_sounds/knife_sounds.tres" id="5_1jlao"]
+[ext_resource type="Resource" uid="uid://ba1w56du1qken" path="res://resources/weapon_sounds/frag_sound.tres" id="5_t2q40"]
 
 [resource]
 script = ExtResource("1_h8kjs")
@@ -30,6 +30,6 @@ animations = {
 "move": "knife_move",
 "reload": ""
 }
-sounds = ExtResource("5_1jlao")
+sounds = ExtResource("5_t2q40")
 instance_scene = ExtResource("3_q9f1b")
 can_drop = false

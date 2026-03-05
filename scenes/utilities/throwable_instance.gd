@@ -1,6 +1,8 @@
 extends EquipmentInstance
 class_name ThrowableInstance
 
+@export var sound_pool: SoundPool = null
+
 var _charges_left := 0
 var _cooldown_ticks_remaining := 0
 var _throw_request_id := 0
@@ -44,6 +46,7 @@ func start_use() -> void:
 	if data.sounds is WeaponSoundData:
 		use_sound = (data.sounds as WeaponSoundData).shoot_sound
 	emit_signal("use_action", data.animations.get("attack", ""), use_sound)
+	_play_use_sound()
 
 	_throw_request_id += 1
 	var request_id := _throw_request_id
@@ -74,6 +77,7 @@ func start_use() -> void:
 		flash_projectile.flash_radius = data.flash_radius
 		flash_projectile.flash_angle_deg = data.flash_angle_deg
 		flash_projectile.flash_max_alpha = data.flash_max_alpha
+		flash_projectile.detonate_sound = _get_detonate_sound()
 	elif projectile is FragProjectile:
 		var frag_projectile := projectile as FragProjectile
 		frag_projectile.detonate_after_seconds = data.fuse_time
@@ -82,6 +86,7 @@ func start_use() -> void:
 		frag_projectile.max_damage = data.explosion_max_damage
 		frag_projectile.min_damage = data.explosion_min_damage
 		frag_projectile.instigator_peer_id = player.owner_peer_id
+		frag_projectile.detonate_sound = _get_detonate_sound()
 
 	var throw_direction := _pending_throw_direction
 	if data.aim_convergence_distance > 0.0:
@@ -150,3 +155,40 @@ func _unlock_after_delay(delay_seconds: float) -> void:
 		return
 	if is_locked:
 		_unlock()
+
+
+func _play_equip_sound() -> void:
+	var sfx_pool := _resolve_sound_pool()
+	if sfx_pool == null:
+		return
+	if data != null and data.sounds is WeaponSoundData:
+		var stream := (data.sounds as WeaponSoundData).equip_sound
+		if stream != null:
+			sfx_pool.play_stream(stream)
+
+
+func _play_use_sound() -> void:
+	var sfx_pool := _resolve_sound_pool()
+	if sfx_pool == null:
+		return
+	if data != null and data.sounds is WeaponSoundData:
+		var stream := (data.sounds as WeaponSoundData).shoot_sound
+		if stream != null:
+			sfx_pool.play_stream(stream)
+
+
+func _get_detonate_sound() -> AudioStream:
+	if data == null or not (data.sounds is WeaponSoundData):
+		return null
+	var sounds := data.sounds as WeaponSoundData
+	if sounds.detonate_sound != null:
+		return sounds.detonate_sound
+	return sounds.shoot_sound
+
+
+func _resolve_sound_pool() -> SoundPool:
+	if sound_pool != null:
+		return sound_pool
+	if player != null:
+		return player.sound_pool
+	return null

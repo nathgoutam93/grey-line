@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponSoundData" format=3 uid="uid://dfapnyjomydta"]
+
+[ext_resource type="AudioStream" uid="uid://dmx7w3tmgpmjy" path="res://assets/sounds/flashbang.mp3" id="1_d5hwe"]
+[ext_resource type="AudioStream" uid="uid://bclgvuog5xyrp" path="res://assets/sounds/knife-equip.mp3" id="2_yqjjk"]
+[ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="3_0bdex"]
+[ext_resource type="AudioStream" uid="uid://dihdrxvq6vygt" path="res://assets/sounds/knife-attack.mp3" id="4_125cd"]
+
+[resource]
+script = ExtResource("3_0bdex")
+equip_sound = ExtResource("2_yqjjk")
+shoot_sound = ExtResource("4_125cd")
+detonate_sound = ExtResource("1_d5hwe")
+metadata/_custom_type_script = "uid://cjvxii2sa3y0u"
