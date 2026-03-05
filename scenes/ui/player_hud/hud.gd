@@ -257,7 +257,7 @@ func show_stun_flash(duration_seconds: float, max_alpha: float = 0.95) -> void:
 	_stun_flash_tween = create_tween()
 	stun_flash_overlay.visible = true
 	stun_flash_overlay.modulate = Color(1.0, 1.0, 1.0, clampf(max_alpha, 0.0, 1.0))
-	_stun_flash_tween.tween_property(stun_flash_overlay, "modulate:a", 0.0, maxf(duration_seconds, 0.05))
+	_stun_flash_tween.tween_property(stun_flash_overlay, "modulate:a", 0.0, maxf(duration_seconds, 0.05)).set_ease(Tween.EASE_OUT)
 	_stun_flash_tween.tween_callback(func():
 		stun_flash_overlay.visible = false
 	)
