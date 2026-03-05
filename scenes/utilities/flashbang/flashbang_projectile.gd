@@ -87,7 +87,7 @@ func _detonate() -> void:
 	_is_server_simulating = false
 	if NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.disconnect(_on_network_tick)
-	_play_detonate_sound()
+	_remote_play_detonate_sound.rpc(global_position)
 
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
@@ -104,12 +104,17 @@ func _detonate() -> void:
 	queue_free()
 
 
-func _play_detonate_sound() -> void:
+@rpc("authority", "call_local", "reliable")
+func _remote_play_detonate_sound(sound_position: Vector2) -> void:
+	_play_detonate_sound(sound_position)
+
+
+func _play_detonate_sound(sound_position: Vector2) -> void:
 	if detonate_sound == null:
 		return
 	var audio_player := AudioStreamPlayer2D.new()
 	audio_player.stream = detonate_sound
-	audio_player.global_position = global_position
+	audio_player.global_position = sound_position
 	get_tree().current_scene.add_child(audio_player)
 	audio_player.finished.connect(audio_player.queue_free)
 	audio_player.play()
