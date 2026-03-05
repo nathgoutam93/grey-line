@@ -67,13 +67,13 @@ func start_use() -> void:
 		return
 	if multiplayer.is_server():
 		projectile.set_multiplayer_authority(1)
-	if projectile is StunGrenadeProjectile:
-		var stun_projectile := projectile as StunGrenadeProjectile
-		stun_projectile.detonate_after_seconds = data.fuse_time
-		stun_projectile.flash_duration = data.flash_duration
-		stun_projectile.flash_radius = data.flash_radius
-		stun_projectile.flash_angle_deg = data.flash_angle_deg
-		stun_projectile.flash_max_alpha = data.flash_max_alpha
+	if projectile is FlashbangProjectile:
+		var flash_projectile := projectile as FlashbangProjectile
+		flash_projectile.detonate_after_seconds = data.fuse_time
+		flash_projectile.flash_duration = data.flash_duration
+		flash_projectile.flash_radius = data.flash_radius
+		flash_projectile.flash_angle_deg = data.flash_angle_deg
+		flash_projectile.flash_max_alpha = data.flash_max_alpha
 
 	var throw_direction := _pending_throw_direction
 	if data.aim_convergence_distance > 0.0:

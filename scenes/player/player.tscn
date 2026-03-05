@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
 [ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/pistol.tres" id="9_fcs02"]
 [ext_resource type="Resource" uid="uid://bc18r0r4gbkx3" path="res://resources/weapons/rifle.tres" id="9_myrg7"]
-[ext_resource type="Resource" path="res://resources/utilities/stun_grenade.tres" id="10_u6l8k"]
+[ext_resource type="Resource" uid="uid://dgpa2k1v80tol" path="res://resources/utilities/flashbang.tres" id="10_u6l8k"]
 [ext_resource type="Script" uid="uid://bdqygn78l1df" path="res://components/equipment_manager/equipment_manager.gd" id="11_kvlxm"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
 [ext_resource type="Script" uid="uid://cvg436qigjl2v" path="res://resources/equipment_data.gd" id="12_uf5tr"]

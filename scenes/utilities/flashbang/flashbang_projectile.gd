@@ -1,5 +1,5 @@
 extends RigidBody2D
-class_name StunGrenadeProjectile
+class_name FlashbangProjectile
 
 @export var detonate_after_seconds: float = 1.6
 @export var flash_duration: float = 2.0

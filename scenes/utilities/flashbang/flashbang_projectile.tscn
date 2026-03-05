@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c1crklx4b4c3c"]
 
-[ext_resource type="Script" uid="uid://boxrag0gmmy8t" path="res://scenes/utilities/stun/stun_grenade_projectile.gd" id="1_31pa2"]
-[ext_resource type="Texture2D" uid="uid://diumotgyyxw0w" path="res://scenes/utilities/stun/_assets/stun_grenade.png" id="2_31pa2"]
+[ext_resource type="Script" uid="uid://boxrag0gmmy8t" path="res://scenes/utilities/flashbang/flashbang_projectile.gd" id="1_220om"]
+[ext_resource type="Texture2D" uid="uid://diumotgyyxw0w" path="res://scenes/utilities/flashbang/_assets/flashbang.png" id="2_prguh"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_stun"]
 friction = 0.2
@@ -24,17 +24,17 @@ properties/3/path = NodePath(".:max_travel_distance")
 properties/3/spawn = true
 properties/3/replication_mode = 1
 
-[node name="StunGrenadeProjectile" type="RigidBody2D" unique_id=92119188]
+[node name="FlashbangProjectile" type="RigidBody2D" unique_id=92119188]
 physics_material_override = SubResource("PhysicsMaterial_stun")
 gravity_scale = 0.0
 continuous_cd = 1
-script = ExtResource("1_31pa2")
+script = ExtResource("1_220om")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1144500185]
 shape = SubResource("CircleShape2D_31pa2")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=9665707]
-texture = ExtResource("2_31pa2")
+texture = ExtResource("2_prguh")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1638404718]
 replication_config = SubResource("SceneReplicationConfig_stun")
