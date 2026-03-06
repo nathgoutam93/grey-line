@@ -53,6 +53,7 @@ var _interpolator := RemoteInterpolator.new()
 var _is_firing_net := false
 var _tick_offset := 0.0
 var _last_authoritative_input_tick := 0
+var _last_received_snapshot_tick := 0
 var _death_sequence_id := 0
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 
@@ -145,7 +146,7 @@ func _on_network_tick(tick: int) -> void:
 	if _is_server_role():
 		_server_tick(tick)
 	elif _is_owner_role():
-		_owner_tick(_estimated_server_tick(tick))
+		_owner_tick(tick)
 	else:
 		_proxy_tick(_estimated_server_tick(tick))
 
@@ -242,7 +243,7 @@ func _send_snapshot(tick: int) -> void:
 		"position": global_position,
 		"velocity": velocity,
 		"rotation": rotation,
-		"ack_tick": _last_processed_tick
+		"ack_tick": _last_authoritative_input_tick
 	}
 	rpc("client_receive_snapshot", snapshot)
 
@@ -263,8 +264,12 @@ func server_receive_input(frame_data: Dictionary) -> void:
 @rpc("any_peer", "unreliable")
 func client_receive_snapshot(snapshot: Dictionary) -> void:
 	var server_tick := int(snapshot.get("tick", 0))
-	if server_tick > 0:
-		_update_tick_offset(server_tick)
+	if server_tick <= 0:
+		return
+	if server_tick <= _last_received_snapshot_tick:
+		return
+	_last_received_snapshot_tick = server_tick
+	_update_tick_offset(server_tick)
 	if _is_owner_role():
 		_reconciler.reconcile(
 			self ,
@@ -460,6 +465,8 @@ func reset_for_respawn() -> void:
 	_input_queue.clear()
 	_last_input = null
 	_last_processed_tick = 0
+	_last_authoritative_input_tick = 0
+	_last_received_snapshot_tick = 0
 	_interpolator.snapshot_buffer.clear()
 	set_process(true)
 	set_physics_process(true)

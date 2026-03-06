@@ -6,7 +6,23 @@ var interpolation_delay_ticks := 2
 var max_buffer_size := 32
 
 func push_snapshot(snapshot: Dictionary) -> void:
-	snapshot_buffer.append(snapshot)
+	var snapshot_tick := int(snapshot.get("tick", 0))
+	if snapshot_tick <= 0:
+		return
+
+	for i in range(snapshot_buffer.size() - 1, -1, -1):
+		var existing: Dictionary = snapshot_buffer[i]
+		var existing_tick := int(existing.get("tick", 0))
+		if existing_tick == snapshot_tick:
+			snapshot_buffer[i] = snapshot
+			return
+		if existing_tick < snapshot_tick:
+			snapshot_buffer.insert(i + 1, snapshot)
+			while snapshot_buffer.size() > max_buffer_size:
+				snapshot_buffer.pop_front()
+			return
+
+	snapshot_buffer.insert(0, snapshot)
 	while snapshot_buffer.size() > max_buffer_size:
 		snapshot_buffer.pop_front()
 
