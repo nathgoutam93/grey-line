@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://sbpe206k8tqq" path="res://assets/sprites/icons/shoot_btn.png" id="10_5si8t"]
 [ext_resource type="Texture2D" uid="uid://d0dsyxq6uk4cx" path="res://assets/sprites/icons/headshot-icon.png" id="10_limek"]
 [ext_resource type="Texture2D" uid="uid://dt13r06u87fib" path="res://addons/virtual_joystick/textures/joystick_tip_arrows.png" id="10_x4jlu"]
-[ext_resource type="Texture2D" uid="uid://bv3tmnyrolkun" path="res://assets/sprites/icons/swap_btn.png" id="11_x4jlu"]
 [ext_resource type="Texture2D" uid="uid://d2bm1lo2pb2s4" path="res://assets/sprites/icons/reload.png" id="12_5si8t"]
 [ext_resource type="PackedScene" uid="uid://hl11c6gdnfgv" path="res://components/touch_aim_zone/touch_aim_zone.tscn" id="13_bq2wh"]
 
@@ -30,9 +29,6 @@ font_size = 32
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_x4jlu"]
 radius = 100.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5si8t"]
-size = Vector2(200, 200)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_limek"]
 radius = 80.0
@@ -302,12 +298,6 @@ modulate = Color(1, 1, 1, 0.5882353)
 position = Vector2(379, 286)
 texture_normal = ExtResource("10_limek")
 shape = SubResource("CircleShape2D_x4jlu")
-
-[node name="Swap" type="TouchScreenButton" parent="Controls" unique_id=1494978597]
-position = Vector2(1100, 300)
-scale = Vector2(0.7, 0.7)
-texture_normal = ExtResource("11_x4jlu")
-shape = SubResource("RectangleShape2D_5si8t")
 
 [node name="Reload" type="TouchScreenButton" parent="Controls" unique_id=2131536144]
 modulate = Color(1, 1, 1, 0.3)

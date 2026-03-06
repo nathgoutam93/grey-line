@@ -84,7 +84,7 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	frame.shot_intent = PlayerController.ShotIntent.HEAD if headshot_requested else PlayerController.ShotIntent.BODY
 	if (touch_mode and _just_pressed_touch("Reload")) or (not touch_mode and Input.is_action_just_pressed("reload")):
 		_pending_reload_ticks = EDGE_HOLD_TICKS
-	if (touch_mode and _just_pressed_touch("Swap")) or (not touch_mode and Input.is_action_just_pressed("scroll_up")):
+	if not touch_mode and Input.is_action_just_pressed("scroll_up"):
 		_pending_switch_prev_ticks = EDGE_HOLD_TICKS
 	if not touch_mode and Input.is_action_just_pressed("scroll_down"):
 		_pending_switch_next_ticks = EDGE_HOLD_TICKS
@@ -117,9 +117,11 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	# Drop should be a single-shot action per press; holding this edge for
 	# multiple ticks can drop multiple weapons in sequence.
 	frame.drop_pressed = _pending_drop_ticks == EDGE_HOLD_TICKS
-	# Interact and slot-select are single-shot actions.
+	# Interact is single-shot.
 	frame.interact_pressed = _pending_interact_ticks == EDGE_HOLD_TICKS
-	if _pending_slot_select_ticks == EDGE_HOLD_TICKS:
+	# Slot-select is replayed for a few ticks to tolerate dropped
+	# unreliable input packets on remote clients.
+	if _pending_slot_select_ticks > 0:
 		frame.slot_select = _pending_slot_select_value
 
 	_pending_reload_ticks = maxi(_pending_reload_ticks - 1, 0)
@@ -230,7 +232,7 @@ func _can_control_mouse_capture() -> bool:
 func _set_touch_controls_visible(is_visible: bool) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
 		return
-	var touch_nodes := ["MovementJoystick", "Shoot", "Reload", "Headshot", "Swap", "TouchAimZone"]
+	var touch_nodes := ["MovementJoystick", "Shoot", "Reload", "Headshot", "TouchAimZone"]
 	for node_name in touch_nodes:
 		var node := player.hud.get_node_or_null("Controls/%s" % node_name)
 		if node is CanvasItem:

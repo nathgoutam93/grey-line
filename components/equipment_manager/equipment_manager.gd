@@ -33,6 +33,7 @@ var current_item: EquipmentInstance = null
 const WEAPON_SLOTS := [EquipmentSlot.PRIMARY, EquipmentSlot.SECONDARY, EquipmentSlot.MELEE]
 const EXTRA_SLOTS := [EquipmentSlot.UTILITY_1, EquipmentSlot.UTILITY_2, EquipmentSlot.UTILITY_3]
 var _equip_request_id := 0
+var _requested_slot := -1
 
 func _ready():
 	await get_tree().process_frame
@@ -91,7 +92,12 @@ func get_item_in_slot(slot: int) -> EquipmentInstance:
 func equip_slot(slot: int) -> void:
 	var new_item = equipped_items.get(slot)
 	if not new_item:
+		if _requested_slot == slot:
+			_requested_slot = -1
 		return
+	if _requested_slot == slot:
+		return
+	_requested_slot = slot
 
 	_equip_request_id += 1
 	var request_id := _equip_request_id
@@ -129,6 +135,8 @@ func equip_slot(slot: int) -> void:
 		current_item.connect("reload_action", _on_item_reload_action)
 	apply_local_view()
 	current_item.equip()
+	if request_id == _equip_request_id and _requested_slot == slot:
+		_requested_slot = -1
 
 
 func apply_local_view() -> void:
@@ -161,7 +169,7 @@ func switch_to_previous_item() -> void:
 
 
 func switch_to_slot(slot: int) -> void:
-	if slot == current_slot:
+	if slot == current_slot or slot == _requested_slot:
 		return
 	equip_slot(slot)
 
