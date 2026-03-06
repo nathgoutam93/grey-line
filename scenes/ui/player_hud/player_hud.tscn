@@ -131,7 +131,7 @@ texture = ExtResource("5_m752x")
 expand_mode = 1
 flip_h = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=74728659]
+[node name="Weapons" type="VBoxContainer" parent="Control" unique_id=74728659]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -145,22 +145,36 @@ offset_bottom = -36.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="WeaponSlot5" parent="Control/VBoxContainer" unique_id=1067519158 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot3" parent="Control/Weapons" unique_id=1931268970 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="WeaponSlot6" parent="Control/VBoxContainer" unique_id=1317652041 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot2" parent="Control/Weapons" unique_id=273435493 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="WeaponSlot4" parent="Control/VBoxContainer" unique_id=1315126842 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot" parent="Control/Weapons" unique_id=1434248854 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="WeaponSlot3" parent="Control/VBoxContainer" unique_id=1931268970 instance=ExtResource("3_m5iw4")]
+[node name="Utilities" type="HBoxContainer" parent="Control" unique_id=1540910334]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -120.0
+offset_right = 210.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="WeaponSlot5" parent="Control/Utilities" unique_id=1067519158 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="WeaponSlot2" parent="Control/VBoxContainer" unique_id=273435493 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot6" parent="Control/Utilities" unique_id=1317652041 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
-[node name="WeaponSlot" parent="Control/VBoxContainer" unique_id=1434248854 instance=ExtResource("3_m5iw4")]
+[node name="WeaponSlot4" parent="Control/Utilities" unique_id=1315126842 instance=ExtResource("3_m5iw4")]
 layout_mode = 2
 
 [node name="KillFeedbackLayer" type="Control" parent="." unique_id=37248392]
@@ -313,11 +327,9 @@ label_settings = SubResource("LabelSettings_je7p5")
 [node name="StunFlashOverlay" type="ColorRect" parent="." unique_id=746915204]
 visible = false
 modulate = Color(1, 1, 1, 0)
-layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 1, 1, 1)

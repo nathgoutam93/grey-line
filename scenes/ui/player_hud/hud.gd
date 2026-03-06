@@ -11,12 +11,12 @@ extends CanvasLayer
 @onready var ammo_panel: Control = get_node("Control/HBoxContainer/Panel2/HBoxContainer")
 @onready var ammo_left_label: Label = get_node("Control/HBoxContainer/Panel2/HBoxContainer/ammo_left")
 @onready var mag_size_label: Label = get_node("Control/HBoxContainer/Panel2/HBoxContainer/mag_size")
-@onready var primary_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot")
-@onready var secondary_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot2")
-@onready var melee_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot3")
-@onready var utility_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot4")
-@onready var throwable_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot5")
-@onready var utility_extra_slot_ui: Control = get_node("Control/VBoxContainer/WeaponSlot6")
+@onready var primary_slot_ui: Control = get_node("Control/Weapons/WeaponSlot")
+@onready var secondary_slot_ui: Control = get_node("Control/Weapons/WeaponSlot2")
+@onready var melee_slot_ui: Control = get_node("Control/Weapons/WeaponSlot3")
+@onready var utility_slot_ui: Control = get_node("Control/Utilities/WeaponSlot4")
+@onready var throwable_slot_ui: Control = get_node("Control/Utilities/WeaponSlot5")
+@onready var utility_extra_slot_ui: Control = get_node("Control/Utilities/WeaponSlot6")
 
 const HUD_EQUIPMENT_SLOTS := [
 	EquipmentData.EquipmentSlot.PRIMARY,
@@ -53,11 +53,34 @@ func _ready() -> void:
 		EquipmentData.EquipmentSlot.UTILITY_2: throwable_slot_ui,
 		EquipmentData.EquipmentSlot.UTILITY_3: utility_extra_slot_ui
 	}
+	_connect_slot_touch_buttons()
 
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_sync_weapon_slots()
 	_update_visibility()
+
+func _connect_slot_touch_buttons() -> void:
+	for slot in _slot_nodes_by_slot:
+		var slot_ui := _slot_nodes_by_slot[slot] as Control
+		if not is_instance_valid(slot_ui):
+			continue
+		var touch_button := slot_ui.get_node_or_null("TouchButton") as TouchScreenButton
+		if touch_button == null:
+			continue
+		var call := Callable(self, "_on_slot_touch_pressed").bind(slot)
+		if not touch_button.pressed.is_connected(call):
+			touch_button.pressed.connect(call)
+
+func _on_slot_touch_pressed(slot: int) -> void:
+	if not _is_local_hud:
+		return
+	if not is_instance_valid(_player):
+		return
+	if not is_instance_valid(_player.player_input):
+		return
+	if _player.player_input.has_method("queue_slot_select"):
+		_player.player_input.queue_slot_select(slot)
 	
 func _local_peer_id_or_zero() -> int:
 	var peer := multiplayer.multiplayer_peer

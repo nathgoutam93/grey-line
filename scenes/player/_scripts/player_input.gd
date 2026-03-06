@@ -218,6 +218,10 @@ func on_local_player_spawned() -> void:
 	if _can_control_mouse_capture() and not _is_touch_mode():
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
+func queue_slot_select(slot: int) -> void:
+	_pending_slot_select_ticks = EDGE_HOLD_TICKS
+	_pending_slot_select_value = slot
+
 func _can_control_mouse_capture() -> bool:
 	if not is_instance_valid(player):
 		return false

@@ -7,10 +7,14 @@ line_spacing = 1.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_e6okb"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
+size = Vector2(160, 75)
+
 [node name="WeaponSlot" type="Panel" unique_id=1777084631]
 self_modulate = Color(1, 1, 1, 0)
 offset_right = 60.0
 offset_bottom = 40.0
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="icon" type="TextureRect" parent="." unique_id=1053525201]
@@ -18,7 +22,8 @@ layout_mode = 1
 offset_right = 150.0
 offset_bottom = 50.0
 texture = ExtResource("1_h4hdm")
-expand_mode = 2
+expand_mode = 3
+stretch_mode = 5
 flip_h = true
 
 [node name="name" type="Label" parent="." unique_id=352515408]
@@ -41,3 +46,7 @@ text = "1"
 label_settings = SubResource("LabelSettings_e6okb")
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="TouchButton" type="TouchScreenButton" parent="." unique_id=206118337]
+position = Vector2(80, 37.5)
+shape = SubResource("RectangleShape2D_touch")
