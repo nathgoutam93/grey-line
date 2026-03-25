@@ -1,23 +1,23 @@
-[gd_scene load_steps=5 format=3 uid="uid://dsppvc6bkscd3"]
+[gd_scene format=3 uid="uid://dsppvc6bkscd3"]
 
 [ext_resource type="PackedScene" uid="uid://r6ta42rhscx2" path="res://scenes/weapon/base_weapon.tscn" id="1_70cis"]
 [ext_resource type="Texture2D" uid="uid://ctjmwgpl5udrb" path="res://assets/sprites/muzzle_flash_01.png" id="2_gpfw8"]
 [ext_resource type="Texture2D" uid="uid://bvk3d81x52p7d" path="res://assets/sprites/pistol.png" id="2_yqhu3"]
 [ext_resource type="AudioStream" uid="uid://ckjagesvyxko6" path="res://assets/sounds/pistol-reload.mp3" id="4_yqhu3"]
 
-[node name="Pistol" instance=ExtResource("1_70cis")]
+[node name="Pistol" unique_id=2023818907 instance=ExtResource("1_70cis")]
 
-[node name="Sprite2D" parent="." index="0"]
+[node name="Sprite2D" parent="." index="0" unique_id=929480544]
 texture = ExtResource("2_yqhu3")
 
-[node name="MuzzleFlash" type="Sprite2D" parent="." index="1"]
+[node name="MuzzleFlash" type="Sprite2D" parent="." index="1" unique_id=1493841843]
 visible = false
 position = Vector2(41, 2)
 scale = Vector2(0.075, 0.075)
 texture = ExtResource("2_gpfw8")
 
-[node name="SoundPool" parent="." index="2"]
+[node name="SoundPool" parent="." index="2" unique_id=1135292231]
 pool_size = 8
 
-[node name="ReloadSfxPlayer" parent="." index="3"]
+[node name="ReloadSfxPlayer" parent="." index="3" unique_id=1561638232]
 stream = ExtResource("4_yqhu3")

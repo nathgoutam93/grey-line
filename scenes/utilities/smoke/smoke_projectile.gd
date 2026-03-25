@@ -10,12 +10,16 @@ class_name SmokeProjectile
 @export var smoke_scene: PackedScene = preload("res://scenes/utilities/smoke/smoke_cloud.tscn")
 @export var mask_smoke_scene: PackedScene = preload("res://scenes/utilities/smoke/smoke_cloud_mask.tscn")
 
+@export var detonate_sfx_max_distance := 1500.0
+@export var detonate_sfx_attenuation := 2.0
+
 var traveled_distance := 0.0
 var _detonated := false
 var _is_server_simulating := false
 var _fuse_ticks_remaining := 0
 var _has_impacted := false
 var _last_position := Vector2.ZERO
+
 
 func _ready() -> void:
 	if not multiplayer.is_server():
@@ -120,6 +124,8 @@ func _play_detonate_sound(sound_position: Vector2, sound_path: String = "") -> v
 	var audio_player := AudioStreamPlayer2D.new()
 	audio_player.stream = stream
 	audio_player.global_position = sound_position
+	audio_player.max_distance = detonate_sfx_max_distance
+	audio_player.attenuation = detonate_sfx_attenuation
 	get_tree().current_scene.add_child(audio_player)
 	audio_player.finished.connect(audio_player.queue_free)
 	audio_player.play()

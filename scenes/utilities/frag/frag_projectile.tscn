@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dh2nskt0itnox"]
 
-[ext_resource type="Script" path="res://scenes/utilities/frag/frag_projectile.gd" id="1_gf7rp"]
-[ext_resource type="Texture2D" path="res://scenes/utilities/frag/_assets/frag.png" id="2_v3r2b"]
+[ext_resource type="Script" uid="uid://u6cqywfodesb" path="res://scenes/utilities/frag/frag_projectile.gd" id="1_gf7rp"]
+[ext_resource type="Texture2D" uid="uid://da6a78c3qh4a0" path="res://scenes/utilities/frag/_assets/frag.png" id="2_v3r2b"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_frag"]
 friction = 0.2
@@ -24,17 +24,18 @@ properties/3/path = NodePath(".:max_travel_distance")
 properties/3/spawn = true
 properties/3/replication_mode = 1
 
-[node name="FragProjectile" type="RigidBody2D"]
+[node name="FragProjectile" type="RigidBody2D" unique_id=771101971]
 physics_material_override = SubResource("PhysicsMaterial_frag")
 gravity_scale = 0.0
 continuous_cd = 1
 script = ExtResource("1_gf7rp")
+detonate_sfx_max_distance = 2000.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=294424561]
 shape = SubResource("CircleShape2D_frag")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=129373371]
 texture = ExtResource("2_v3r2b")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=722818305]
 replication_config = SubResource("SceneReplicationConfig_frag")

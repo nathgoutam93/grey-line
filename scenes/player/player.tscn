@@ -6,8 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://dnq1k2tl7o02m" path="res://components/health/health.tscn" id="5_fm80t"]
 [ext_resource type="Resource" uid="uid://cop5hxltvyjt7" path="res://resources/weapons/pistol.tres" id="9_fcs02"]
 [ext_resource type="Resource" uid="uid://bc18r0r4gbkx3" path="res://resources/weapons/rifle.tres" id="9_myrg7"]
+[ext_resource type="Resource" uid="uid://dpnmms83vngn0" path="res://resources/utilities/smoke.tres" id="10_7c8x2"]
 [ext_resource type="Resource" uid="uid://dgpa2k1v80tol" path="res://resources/utilities/flashbang.tres" id="10_u6l8k"]
-[ext_resource type="Resource" path="res://resources/utilities/smoke.tres" id="10_7c8x2"]
 [ext_resource type="Script" uid="uid://bdqygn78l1df" path="res://components/equipment_manager/equipment_manager.gd" id="11_kvlxm"]
 [ext_resource type="PackedScene" uid="uid://cn2p2tt8leglj" path="res://components/movement/movement_component.tscn" id="12_hoixd"]
 [ext_resource type="Resource" uid="uid://d1cs44w3ry442" path="res://resources/utilities/frag.tres" id="12_kvlxm"]
@@ -54,7 +54,7 @@ footstep_player = NodePath("Footsteps")
 camera_shake = NodePath("Camera2D/CameraShake")
 hud = NodePath("HUD")
 camera = NodePath("Camera2D")
-audio_listner = NodePath("Camera2D/AudioListener2D")
+audio_listner = NodePath("AudioListener2D")
 metadata/_edit_vertical_guides_ = [-39.0]
 metadata/surface_type = "flesh"
 
@@ -82,8 +82,6 @@ enabled = false
 zoom = Vector2(0.75, 0.75)
 
 [node name="CameraShake" parent="Camera2D" unique_id=1871293477 instance=ExtResource("181_ooe3s")]
-
-[node name="AudioListener2D" type="AudioListener2D" parent="Camera2D" unique_id=1130780519]
 
 [node name="Health" parent="." unique_id=808461477 instance=ExtResource("5_fm80t")]
 
@@ -116,6 +114,9 @@ stream = ExtResource("3_m8vw7")
 volume_db = -20.0
 max_distance = 500.0
 
+[node name="AudioListener2D" type="AudioListener2D" parent="." unique_id=1130780519]
+rotation = 1.5707964
+
 [node name="SoundPool" parent="." unique_id=351196777 instance=ExtResource("187_ooe3s")]
 pool_size = 3
 
@@ -123,5 +124,4 @@ pool_size = 3
 
 [node name="PlayerInput" type="Node" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
 script = ExtResource("13_gx1jg")
-input_mode = 1
 player = NodePath("..")

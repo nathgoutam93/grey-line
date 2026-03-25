@@ -122,6 +122,8 @@ func _process(_delta: float) -> void:
 		if is_local_player and is_instance_valid(player_input):
 			spread_velocity = player_input.input_vector * get_speed()
 		crosshair.player_velocity = spread_velocity
+	if camera and audio_listner:
+		audio_listner.rotation = -camera.rotation
 	
 	if footstep_player and footstep_player.playing:
 		footstep_player.stop()

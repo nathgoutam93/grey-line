@@ -11,6 +11,9 @@ class_name FragProjectile
 @export var detonate_sound: AudioStream = null
 @export var detonate_effect_scene: PackedScene = null
 
+@export var detonate_sfx_max_distance := 1500.0
+@export var detonate_sfx_attenuation := 2.0
+
 var instigator_peer_id := 0
 var traveled_distance := 0.0
 var _detonated := false
@@ -134,6 +137,8 @@ func _play_detonate_sound(sound_position: Vector2, sound_path: String = "") -> v
 	var audio_player := AudioStreamPlayer2D.new()
 	audio_player.stream = stream
 	audio_player.global_position = sound_position
+	audio_player.max_distance = detonate_sfx_max_distance
+	audio_player.attenuation = detonate_sfx_attenuation
 	get_tree().current_scene.add_child(audio_player)
 	audio_player.finished.connect(audio_player.queue_free)
 	audio_player.play()

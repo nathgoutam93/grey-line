@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cpo2ct5tbyue3"]
 
-[ext_resource type="Script" path="res://scenes/utilities/smoke/smoke_projectile.gd" id="1_5m1e2"]
-[ext_resource type="Texture2D" path="res://scenes/utilities/smoke/_assets/smoke-nade.png" id="2_pbluh"]
+[ext_resource type="Script" uid="uid://dohd08tt0i0wc" path="res://scenes/utilities/smoke/smoke_projectile.gd" id="1_5m1e2"]
+[ext_resource type="Texture2D" uid="uid://dm4c6txeitfon" path="res://scenes/utilities/smoke/_assets/smoke-nade.png" id="2_pbluh"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_smoke"]
 friction = 0.2
@@ -24,17 +24,17 @@ properties/3/path = NodePath(".:max_travel_distance")
 properties/3/spawn = true
 properties/3/replication_mode = 1
 
-[node name="SmokeProjectile" type="RigidBody2D"]
+[node name="SmokeProjectile" type="RigidBody2D" unique_id=1213622992]
 physics_material_override = SubResource("PhysicsMaterial_smoke")
 gravity_scale = 0.0
 continuous_cd = 1
 script = ExtResource("1_5m1e2")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=831475358]
 shape = SubResource("CircleShape2D_smoke")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1837630175]
 texture = ExtResource("2_pbluh")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1619176941]
 replication_config = SubResource("SceneReplicationConfig_smoke")
