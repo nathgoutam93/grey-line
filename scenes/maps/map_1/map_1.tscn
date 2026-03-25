@@ -1476,5 +1476,5 @@ _spawnable_scenes = PackedStringArray("uid://cy2enpfy31fdt", "uid://djd5057n31he
 spawn_path = NodePath("../Map")
 
 [node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1643962526]
-_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "res://scenes/utilities/frag/frag_projectile.tscn")
+_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "res://scenes/utilities/frag/frag_projectile.tscn", "res://scenes/utilities/smoke/smoke_projectile.tscn")
 spawn_path = NodePath("../Map")

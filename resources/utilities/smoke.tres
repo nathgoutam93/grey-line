@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ThrowableData" format=3 uid="uid://dpnmms83vngn0"]
+
+[ext_resource type="Script" uid="uid://mlyg658g1vcg" path="res://resources/utilities/throwable_data.gd" id="1_4r74e"]
+[ext_resource type="Texture2D" uid="uid://dm4c6txeitfon" path="res://scenes/utilities/smoke/_assets/smoke-nade.png" id="2_hhmx7"]
+[ext_resource type="PackedScene" uid="uid://cwn14t4l5vjyy" path="res://scenes/utilities/smoke/smoke.tscn" id="3_3a0kb"]
+[ext_resource type="PackedScene" path="res://scenes/utilities/smoke/smoke_projectile.tscn" id="4_5r1x6"]
+[ext_resource type="Resource" uid="uid://b0d1aosh1qhdh" path="res://resources/weapon_sounds/smoke_sounds.tres" id="5_n84d7"]
+
+[resource]
+script = ExtResource("1_4r74e")
+projectile_scene = ExtResource("4_5r1x6")
+throw_speed = 760.0
+throw_torque = 10.0
+throw_release_time = 0.1
+arc_peak_height = 22.0
+fuse_time = 1.4
+smoke_duration = 10.0
+use_cooldown = 1.25
+max_charges = 0
+name = "smoke_grenade"
+icon = ExtResource("2_hhmx7")
+equip_time = 0.5
+slot = 5
+animations = {
+"attack": "knife_attack",
+"equip": "knife_equip",
+"idle": "knife_idle",
+"move": "knife_move",
+"reload": ""
+}
+sounds = ExtResource("5_n84d7")
+instance_scene = ExtResource("3_3a0kb")
+can_drop = false

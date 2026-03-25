@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://cwn14t4l5vjyy"]
+
+[ext_resource type="Script" uid="uid://dph3lausw4ap6" path="res://scenes/utilities/throwable_instance.gd" id="1_rhpee"]
+[ext_resource type="Texture2D" uid="uid://dm4c6txeitfon" path="res://scenes/utilities/smoke/_assets/smoke-nade.png" id="2_6st4a"]
+
+[node name="SmokeInstance" type="Node2D" unique_id=1055906236]
+script = ExtResource("1_rhpee")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=166856]
+texture = ExtResource("2_6st4a")

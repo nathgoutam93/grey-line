@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dnuynclpcsuuw"]
+
+[ext_resource type="Script" path="res://scenes/utilities/smoke/smoke_cloud.gd" id="1_h49mx"]
+[ext_resource type="Texture2D" uid="uid://bi8rxqrw0fjg" path="res://scenes/utilities/smoke/_assets/smoke-texture.png" id="2_s5dxb"]
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_7m1p3"]
+polygon = PackedVector2Array(-98.46155, 3.0769234, -76.92308, -63.076927, -36.92308, -95.38463, 44.615387, -92.3077, 81.53847, -58.461544, 92.3077, -29.230772, 100.00001, 27.69231, 76.92308, 55.38462, 47.692314, 95.38463, 3.0769234, 96.92309, -36.92308, 81.53847, -76.92308, 58.461544)
+
+[node name="SmokeCloudMask" type="Node2D" unique_id=2123394593]
+script = ExtResource("1_h49mx")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=776403969]
+texture = ExtResource("2_s5dxb")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="." unique_id=1177499767]
+occluder = SubResource("OccluderPolygon2D_7m1p3")

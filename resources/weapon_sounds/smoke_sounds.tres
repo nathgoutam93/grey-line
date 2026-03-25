@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponSoundData" format=3 uid="uid://b0d1aosh1qhdh"]
+
+[ext_resource type="AudioStream" uid="uid://fap6xl5d65qu" path="res://assets/sounds/smoke-nade.mp3" id="1_ehmqt"]
+[ext_resource type="AudioStream" uid="uid://h6cqywwqvt1v" path="res://assets/sounds/equip1.mp3" id="2_503ep"]
+[ext_resource type="AudioStream" uid="uid://bdcx3r6kem8hg" path="res://assets/sounds/equip2.mp3" id="2_meya6"]
+[ext_resource type="Script" uid="uid://cjvxii2sa3y0u" path="res://resources/weapon_sounds/weapon_sounds.gd" id="3_503ep"]
+
+[resource]
+script = ExtResource("3_503ep")
+equip_sound = ExtResource("2_503ep")
+shoot_sound = ExtResource("2_meya6")
+detonate_sound = ExtResource("1_ehmqt")
+metadata/_custom_type_script = "uid://cjvxii2sa3y0u"

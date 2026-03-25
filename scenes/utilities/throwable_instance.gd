@@ -89,6 +89,12 @@ func start_use() -> void:
 		frag_projectile.instigator_peer_id = player.owner_peer_id
 		frag_projectile.detonate_sound = _get_detonate_sound()
 		frag_projectile.detonate_effect_scene = data.detonate_effect_scene
+	elif projectile is SmokeProjectile:
+		var smoke_projectile := projectile as SmokeProjectile
+		smoke_projectile.detonate_after_seconds = data.fuse_time
+		smoke_projectile.smoke_duration = data.smoke_duration
+		smoke_projectile.detonate_sound = _get_detonate_sound()
+		smoke_projectile.detonate_effect_scene = data.detonate_effect_scene
 
 	var throw_direction := _pending_throw_direction
 	if data.aim_convergence_distance > 0.0:
