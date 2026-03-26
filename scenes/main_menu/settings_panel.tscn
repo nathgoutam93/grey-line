@@ -36,11 +36,19 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="SettingsPopup/Margin/VBox" unique_id=1201507287]
+[node name="HBoxContainer" type="HBoxContainer" parent="SettingsPopup/Margin/VBox" unique_id=1242188421]
 layout_mode = 2
+
+[node name="Title" type="Label" parent="SettingsPopup/Margin/VBox/HBoxContainer" unique_id=1201507287]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 30
 text = "Game Settings"
 horizontal_alignment = 1
+
+[node name="LeaveGame" type="Button" parent="SettingsPopup/Margin/VBox/HBoxContainer" unique_id=651126300]
+layout_mode = 2
+text = "  Leave Game  "
 
 [node name="Tabs" type="TabContainer" parent="SettingsPopup/Margin/VBox" unique_id=140319845]
 layout_mode = 2
@@ -52,37 +60,81 @@ layout_mode = 2
 theme_override_constants/separation = 10
 metadata/_tab_index = 0
 
-[node name="UsernameLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=1462315571]
+[node name="ProfileContent" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=127713578]
 layout_mode = 2
-text = "Username"
+size_flags_vertical = 3
+theme_override_constants/separation = 20
 
-[node name="UsernameInput" type="LineEdit" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=796626655]
+[node name="AvatarGridPanel" type="PanelContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent" unique_id=122409181]
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
-placeholder_text = "Player name"
+size_flags_vertical = 3
 
-[node name="AvatarLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=599504363]
+[node name="GridMargin" type="MarginContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/AvatarGridPanel" unique_id=1099512349]
 layout_mode = 2
-text = "Avatar"
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
 
-[node name="AvatarOption" type="OptionButton" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=495485975]
+[node name="AvatarGridScroll" type="ScrollContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/AvatarGridPanel/GridMargin" unique_id=288485007]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="AvatarGrid" type="GridContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/AvatarGridPanel/GridMargin/AvatarGridScroll" unique_id=612775498]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="RightColumn" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent" unique_id=1785058174]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="AvatarPreviewFrame" type="PanelContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn" unique_id=726359964]
+custom_minimum_size = Vector2(240, 240)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="AvatarPreviewCenter" type="CenterContainer" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/AvatarPreviewFrame" unique_id=1566688671]
 layout_mode = 2
 
-[node name="AvatarPreview" type="TextureRect" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=2005525317]
-custom_minimum_size = Vector2(120, 120)
+[node name="AvatarPreview" type="TextureRect" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/AvatarPreviewFrame/AvatarPreviewCenter" unique_id=2005525317]
+custom_minimum_size = Vector2(180, 180)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="OnboardingHint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=1432368147]
+[node name="AvatarNameLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn" unique_id=323641877]
+layout_mode = 2
+text = "avatar_01"
+horizontal_alignment = 1
+
+[node name="UsernameLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn" unique_id=599504363]
+layout_mode = 2
+text = "Username"
+
+[node name="UsernameInput" type="LineEdit" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn" unique_id=796626655]
+layout_mode = 2
+placeholder_text = "Player name"
+
+[node name="OnboardingHint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn" unique_id=1432368147]
 visible = false
 layout_mode = 2
 text = "First launch setup: choose username and avatar to continue."
 autowrap_mode = 3
 
-[node name="CompleteProfileButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=130447239]
+[node name="CompleteProfileButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn" unique_id=130447239]
 visible = false
 layout_mode = 2
 text = "Save Profile and Continue"
+
+[node name="AvatarOptionData" type="OptionButton" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=495485975]
+layout_mode = 2
 
 [node name="Keybinds" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs" unique_id=377678915]
 visible = false
@@ -90,17 +142,13 @@ layout_mode = 2
 theme_override_constants/separation = 8
 metadata/_tab_index = 1
 
-[node name="Hint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds" unique_id=1506063575]
-layout_mode = 2
-text = "Click Rebind then press a key or mouse button."
-autowrap_mode = 3
-
 [node name="ActionsScroll" type="ScrollContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds" unique_id=1852981930]
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="ActionsList" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll" unique_id=1746669440]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
 [node name="move_left" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=2015186979]
@@ -347,11 +395,6 @@ layout_mode = 2
 theme_override_constants/separation = 8
 metadata/_tab_index = 2
 
-[node name="Hint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=905524481]
-layout_mode = 2
-text = "Adjust each control position in normalized screen space (0.0 to 1.0)."
-autowrap_mode = 3
-
 [node name="MovementJoystick" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=291916473]
 layout_mode = 2
 
@@ -488,3 +531,8 @@ autowrap_mode = 3
 [node name="CloseButton" type="Button" parent="SettingsPopup/Margin/VBox" unique_id=888930488]
 layout_mode = 2
 text = "Close"
+
+[node name="LeaveGameConfirm" type="ConfirmationDialog" parent="SettingsPopup" unique_id=290382713]
+title = "Leave Game?"
+ok_button_text = "Leave"
+dialog_text = "Do you want to leave the game now?"

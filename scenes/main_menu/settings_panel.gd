@@ -34,13 +34,17 @@ const TOUCH_CONTROL_IDS: Array[String] = [
 @export var _settings_button: TouchScreenButton;
 @onready var _settings_popup: PanelContainer = get_node_or_null("SettingsPopup")
 @onready var _tabs: TabContainer = get_node_or_null("SettingsPopup/Margin/VBox/Tabs")
-@onready var _username_input: LineEdit = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/UsernameInput")
-@onready var _avatar_option: OptionButton = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/AvatarOption")
-@onready var _avatar_preview: TextureRect = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/AvatarPreview")
-@onready var _onboarding_hint: Label = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/OnboardingHint")
-@onready var _complete_profile_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/CompleteProfileButton")
+@onready var _username_input: LineEdit = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/UsernameInput")
+@onready var _avatar_option: OptionButton = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/AvatarOptionData")
+@onready var _avatar_grid: GridContainer = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/AvatarGridPanel/GridMargin/AvatarGridScroll/AvatarGrid")
+@onready var _avatar_preview: TextureRect = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/AvatarPreviewFrame/AvatarPreviewCenter/AvatarPreview")
+@onready var _avatar_name_label: Label = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/AvatarNameLabel")
+@onready var _onboarding_hint: Label = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/OnboardingHint")
+@onready var _complete_profile_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/ProfileContent/RightColumn/CompleteProfileButton")
 @onready var _status_label: Label = get_node_or_null("SettingsPopup/Margin/VBox/StatusLabel")
 @onready var _close_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/CloseButton")
+@onready var _leave_game_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/HBoxContainer/LeaveGame")
+@onready var _leave_game_confirm: ConfirmationDialog = get_node_or_null("SettingsPopup/LeaveGameConfirm")
 @onready var _reset_keybinds_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Keybinds/ResetKeybindsButton")
 @onready var _reset_touch_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/TouchControls/ResetTouchButton")
 @onready var _join_button: BaseButton = get_node_or_null("../UI/Control/HBoxContainer/join")
@@ -52,6 +56,8 @@ var _keybind_buttons: Dictionary = {}
 var _touch_x_sliders: Dictionary = {}
 var _touch_y_sliders: Dictionary = {}
 var _touch_value_labels: Dictionary = {}
+var _avatar_buttons: Dictionary = {}
+var _avatar_button_group := ButtonGroup.new()
 var _updating_touch_ui := false
 var _onboarding_required := false
 
@@ -86,6 +92,10 @@ func _connect_signals() -> void:
 		_settings_button.pressed.connect(_on_toggle_settings_pressed)
 	if _close_button != null and not _close_button.pressed.is_connected(_on_toggle_settings_pressed):
 		_close_button.pressed.connect(_on_toggle_settings_pressed)
+	if _leave_game_button != null and not _leave_game_button.pressed.is_connected(_on_leave_game_pressed):
+		_leave_game_button.pressed.connect(_on_leave_game_pressed)
+	if _leave_game_confirm != null and not _leave_game_confirm.confirmed.is_connected(_on_leave_game_confirmed):
+		_leave_game_confirm.confirmed.connect(_on_leave_game_confirmed)
 
 	if _username_input != null:
 		if not _username_input.text_changed.is_connected(_on_username_changed):
@@ -127,6 +137,7 @@ func _load_profile_into_ui() -> void:
 	if _avatar_option != null:
 		var catalog_variant: Variant = _profile.call("get_avatar_catalog")
 		_avatar_option.clear()
+		_rebuild_avatar_grid({})
 		if catalog_variant is Dictionary:
 			var catalog := catalog_variant as Dictionary
 			var ids: Array[String] = []
@@ -136,15 +147,14 @@ func _load_profile_into_ui() -> void:
 			for avatar_id in ids:
 				_avatar_option.add_item(avatar_id)
 				_avatar_option.set_item_metadata(_avatar_option.item_count - 1, avatar_id)
+			_rebuild_avatar_grid(catalog)
 
 			var selected_avatar_variant: Variant = _profile.call("get_avatar_id")
 			if selected_avatar_variant is String:
 				var selected_avatar_id := selected_avatar_variant as String
-				for idx in range(_avatar_option.item_count):
-					var metadata: Variant = _avatar_option.get_item_metadata(idx)
-					if String(metadata) == selected_avatar_id:
-						_avatar_option.select(idx)
-						break
+				_select_avatar_by_id(selected_avatar_id, false)
+			elif _avatar_option.item_count > 0:
+				_select_avatar_by_id(String(_avatar_option.get_item_metadata(0)), false)
 
 	_refresh_avatar_preview()
 	_refresh_keybind_buttons()
@@ -161,6 +171,59 @@ func _refresh_avatar_preview() -> void:
 	var catalog := catalog_variant as Dictionary
 	var path := String(catalog.get(avatar_id, ""))
 	_avatar_preview.texture = load(path) as Texture2D if path.strip_edges() != "" else null
+	if _avatar_name_label != null:
+		_avatar_name_label.text = avatar_id
+
+func _rebuild_avatar_grid(catalog: Dictionary) -> void:
+	_avatar_buttons.clear()
+	if _avatar_grid == null:
+		return
+	for child in _avatar_grid.get_children():
+		child.queue_free()
+
+	var ids: Array[String] = []
+	for id_variant in catalog.keys():
+		ids.append(String(id_variant))
+	ids.sort()
+
+	for avatar_id in ids:
+		var avatar_button := Button.new()
+		avatar_button.custom_minimum_size = Vector2(96, 96)
+		avatar_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		avatar_button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		avatar_button.toggle_mode = true
+		avatar_button.button_group = _avatar_button_group
+		avatar_button.focus_mode = Control.FOCUS_NONE
+		avatar_button.text = ""
+		avatar_button.expand_icon = true
+		avatar_button.tooltip_text = avatar_id
+		var texture_path := String(catalog.get(avatar_id, ""))
+		if texture_path.strip_edges() != "":
+			avatar_button.icon = load(texture_path) as Texture2D
+		avatar_button.pressed.connect(_on_avatar_grid_pressed.bind(avatar_id))
+		_avatar_grid.add_child(avatar_button)
+		_avatar_buttons[avatar_id] = avatar_button
+
+func _select_avatar_by_id(avatar_id: String, persist: bool) -> void:
+	if _avatar_option != null:
+		for idx in range(_avatar_option.item_count):
+			var metadata: Variant = _avatar_option.get_item_metadata(idx)
+			if String(metadata) == avatar_id:
+				_avatar_option.select(idx)
+				break
+	if _avatar_buttons.has(avatar_id):
+		var button := _avatar_buttons[avatar_id] as Button
+		if button != null:
+			button.set_pressed_no_signal(true)
+	_refresh_avatar_preview()
+	if persist and _profile != null:
+		_profile.call("set_avatar_id", avatar_id)
+		profile_changed.emit()
+		_refresh_onboarding_gate(false)
+		_set_status("Avatar saved.")
+
+func _on_avatar_grid_pressed(avatar_id: String) -> void:
+	_select_avatar_by_id(avatar_id, true)
 
 func _refresh_keybind_buttons() -> void:
 	for action in _keybind_buttons.keys():
@@ -239,6 +302,15 @@ func _on_toggle_settings_pressed() -> void:
 		_waiting_rebind_action = ""
 		_set_status("")
 
+func _on_leave_game_pressed() -> void:
+	if _leave_game_confirm != null:
+		_leave_game_confirm.popup_centered()
+		return
+	_on_leave_game_confirmed()
+
+func _on_leave_game_confirmed() -> void:
+	get_tree().quit()
+
 func _on_username_changed(new_text: String) -> void:
 	if _profile == null:
 		return
@@ -254,11 +326,7 @@ func _on_avatar_selected(index: int) -> void:
 	if _profile == null or _avatar_option == null:
 		return
 	var avatar_id := String(_avatar_option.get_item_metadata(index))
-	_profile.call("set_avatar_id", avatar_id)
-	profile_changed.emit()
-	_refresh_avatar_preview()
-	_refresh_onboarding_gate(false)
-	_set_status("Avatar saved.")
+	_select_avatar_by_id(avatar_id, true)
 
 func _on_rebind_button_pressed(action: String) -> void:
 	_waiting_rebind_action = action

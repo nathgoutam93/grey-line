@@ -44,7 +44,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.160784, 0.180392, 0.227451, 1)
+color = Color(0, 0, 0, 1)
 
 [node name="PlayerCard" type="PanelContainer" parent="UI/Control" unique_id=1055940014]
 layout_mode = 1
@@ -206,6 +206,8 @@ offset_left = -420.0
 offset_top = -120.0
 offset_right = -20.0
 offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 0
 theme_override_constants/separation = 10
 
 [node name="join" type="Button" parent="UI/Control/HBoxContainer" unique_id=1581238594]
