@@ -110,7 +110,7 @@ layout_mode = 2
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 0
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_bottom = 20
 
 [node name="PlayerSlots" type="HBoxContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer" unique_id=1660429564]
 layout_mode = 2
@@ -229,10 +229,12 @@ label_settings = SubResource("LabelSettings_status")
 horizontal_alignment = 1
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=339750004]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 alignment = 1
 
 [node name="start_match" type="Button" parent="UI/Control/LobbyFrame/VBoxContainer/HBoxContainer2" unique_id=661664788]
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_font_sizes/font_size = 32
 text = "START"
