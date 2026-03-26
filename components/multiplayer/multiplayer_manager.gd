@@ -14,19 +14,19 @@ extends Node
 @onready var ui_layer: CanvasLayer = get_node("../UI")
 @onready var hostname_input: LineEdit = get_node_or_null("../UI/Control/hostname")
 @onready var discovery_status_label: Label = get_node_or_null("../UI/Control/discovery_status")
-@onready var lobby_status_label: Label = get_node_or_null("../UI/Control/lobby_status")
-@onready var lobby_players_label: Label = get_node_or_null("../UI/Control/lobby_players")
-@onready var start_match_button: TouchScreenButton = get_node_or_null("../UI/Control/start_match")
 
 var local_player_name := ""
 var player_names := {}
+var player_avatar_ids := {}
 var match_started := false
 var discovery_listener: PacketPeerUDP
 var discovery_listener_active := false
 const DEFAULT_PLAYER_NAME := "Player"
+const DEFAULT_AVATAR_ID := "avatar_01"
 const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
 static var persisted_player_names := {}
+static var persisted_player_avatar_ids := {}
 static var persisted_match_started := false
 static var persisted_map_scene_path := ""
 
@@ -39,13 +39,16 @@ func _ready():
 		# Entering main menu always starts from a clean networking state.
 		_reset_network_session()
 		player_names.clear()
+		player_avatar_ids.clear()
 		match_started = false
 		persisted_player_names.clear()
+		persisted_player_avatar_ids.clear()
 		persisted_match_started = false
 		if ui_layer:
 			ui_layer.show()
 	elif multiplayer.multiplayer_peer != null:
 		player_names = persisted_player_names.duplicate(true)
+		player_avatar_ids = persisted_player_avatar_ids.duplicate(true)
 		match_started = persisted_match_started
 
 	_apply_default_player_name()
@@ -64,9 +67,6 @@ func _ready():
 		multiplayer.peer_connected.connect(_on_peer_connected)
 	if not multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
-
-	if start_match_button != null and not start_match_button.pressed.is_connected(start_match):
-		start_match_button.pressed.connect(start_match)
 
 	if OS.has_feature("dedicated_server"):
 		local_player_name = "DedicatedServer"
@@ -115,6 +115,7 @@ func host_game():
 	local_player_name = _resolve_local_player_name()
 	_set_profile_username(local_player_name)
 	_set_player_name_for_peer(multiplayer.get_unique_id(), local_player_name)
+	_set_player_avatar_for_peer(multiplayer.get_unique_id(), _resolve_local_avatar_id())
 	match_started = false
 	_start_lan_discovery_listener()
 	print("Hosting game on port %d..." % port)
@@ -164,7 +165,7 @@ func _connect_to_server(target_address: String, target_port: int) -> void:
 	_set_discovery_status("Connecting to %s:%d..." % [target_address, target_port])
 
 func _on_connected_to_server() -> void:
-	rpc_id(1, "_register_player_name", local_player_name)
+	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
 	_open_lobby_scene()
 
 func _on_peer_connected(id: int) -> void:
@@ -175,14 +176,15 @@ func _on_peer_connected(id: int) -> void:
 		if peer != null and peer.has_method("disconnect_peer"):
 			peer.disconnect_peer(id)
 		return
-	_sync_player_names_to_all.rpc(player_names, match_started)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
 	_persist_runtime_state()
 	_refresh_lobby_ui()
 
 func _on_peer_disconnected(id: int) -> void:
 	if multiplayer.is_server():
 		player_names.erase(id)
-		_sync_player_names_to_all.rpc(player_names, match_started)
+		player_avatar_ids.erase(id)
+		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
 		_persist_runtime_state()
 	_refresh_lobby_ui()
 
@@ -201,7 +203,7 @@ func _on_server_disconnected() -> void:
 		ui_layer.show()
 
 @rpc("any_peer", "reliable")
-func _register_player_name(raw_name: String) -> void:
+func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
 	if not multiplayer.is_server():
 		return
 
@@ -214,7 +216,8 @@ func _register_player_name(raw_name: String) -> void:
 	var peer_id := multiplayer.get_remote_sender_id()
 	var resolved_name := _sanitize_player_name(raw_name, peer_id)
 	_set_player_name_for_peer(peer_id, resolved_name)
-	_sync_player_names_to_all.rpc(player_names, match_started)
+	_set_player_avatar_for_peer(peer_id, raw_avatar_id)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
 	_persist_runtime_state()
 
 func get_player_name(peer_id: int) -> String:
@@ -229,6 +232,10 @@ func is_peer_connected(peer_id: int) -> bool:
 
 func _set_player_name_for_peer(peer_id: int, raw_name: String) -> void:
 	player_names[peer_id] = _sanitize_player_name(raw_name, peer_id)
+	_persist_runtime_state()
+
+func _set_player_avatar_for_peer(peer_id: int, raw_avatar_id: String) -> void:
+	player_avatar_ids[peer_id] = _sanitize_avatar_id(raw_avatar_id)
 	_persist_runtime_state()
 
 func _resolve_local_player_name() -> String:
@@ -250,11 +257,30 @@ func _resolve_local_player_name() -> String:
 		peer_id = multiplayer.get_unique_id()
 	return _sanitize_player_name(raw_name, peer_id)
 
+func _resolve_local_avatar_id() -> String:
+	var profile := get_node_or_null("/root/PlayerProfile")
+	if profile != null and profile.has_method("get_avatar_id"):
+		return _sanitize_avatar_id(String(profile.call("get_avatar_id")))
+	return DEFAULT_AVATAR_ID
+
 func _sanitize_player_name(raw_name: String, peer_id: int) -> String:
 	var cleaned := raw_name.strip_edges()
 	if cleaned == "":
 		cleaned = DEFAULT_PLAYER_NAME
 	return cleaned.substr(0, 24)
+
+func _sanitize_avatar_id(raw_avatar_id: String) -> String:
+	var cleaned := raw_avatar_id.strip_edges()
+	if cleaned == "":
+		return DEFAULT_AVATAR_ID
+	var profile := get_node_or_null("/root/PlayerProfile")
+	if profile != null and profile.has_method("get_avatar_catalog"):
+		var catalog_variant: Variant = profile.call("get_avatar_catalog")
+		if catalog_variant is Dictionary:
+			var catalog := catalog_variant as Dictionary
+			if catalog.has(cleaned):
+				return cleaned
+	return DEFAULT_AVATAR_ID
 
 func _load_map_scene() -> PackedScene:
 	if map_scene_path.strip_edges() == "":
@@ -274,6 +300,7 @@ func set_selected_map_scene_path(path: String) -> void:
 		return
 	map_scene_path = cleaned_path
 	persisted_map_scene_path = cleaned_path
+	_refresh_lobby_ui()
 
 func _apply_persisted_map_scene_path() -> void:
 	if persisted_map_scene_path.strip_edges() != "":
@@ -307,8 +334,10 @@ func return_to_lobby_after_match() -> void:
 	_reset_network_session()
 
 	player_names.clear()
+	player_avatar_ids.clear()
 	match_started = false
 	persisted_player_names.clear()
+	persisted_player_avatar_ids.clear()
 	persisted_match_started = false
 	if ui_layer:
 		ui_layer.show()
@@ -332,7 +361,7 @@ func start_match() -> void:
 
 	match_started = true
 	_stop_lan_discovery_listener()
-	_sync_player_names_to_all.rpc(player_names, match_started)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
 	_persist_runtime_state()
 	_start_match_ui.rpc()
 	_start_game()
@@ -343,40 +372,31 @@ func _start_match_ui() -> void:
 		ui_layer.hide()
 
 @rpc("authority", "call_local", "reliable")
-func _sync_player_names_to_all(names: Dictionary, has_started: bool) -> void:
+func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, has_started: bool) -> void:
 	player_names = names.duplicate(true)
+	player_avatar_ids = avatars.duplicate(true)
 	match_started = has_started
 	_persist_runtime_state()
 	_refresh_lobby_ui()
 
 func _refresh_lobby_ui() -> void:
-	var is_lobby := _is_lobby_scene()
-	if start_match_button != null:
-		start_match_button.visible = is_lobby and multiplayer.multiplayer_peer != null and multiplayer.is_server() and not match_started
+	if not _is_lobby_scene():
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not scene.has_method("sync_lobby"):
+		return
+	scene.call("sync_lobby", get_lobby_sync_payload())
 
-	if lobby_status_label != null:
-		if not is_lobby:
-			lobby_status_label.text = ""
-		elif multiplayer.multiplayer_peer == null:
-			lobby_status_label.text = "Not connected"
-		elif match_started:
-			lobby_status_label.text = "Match started"
-		elif multiplayer.is_server():
-			lobby_status_label.text = "Lobby ready - host can start"
-		else:
-			lobby_status_label.text = "Waiting for host to start"
-
-	if lobby_players_label != null:
-		if not is_lobby:
-			lobby_players_label.text = ""
-			return
-		var ids := player_names.keys()
-		ids.sort()
-		var lines: Array[String] = []
-		for id_variant in ids:
-			var peer_id := int(id_variant)
-			lines.append("%d - %s" % [peer_id, String(player_names.get(peer_id, "Player %d" % peer_id))])
-		lobby_players_label.text = "\n".join(lines)
+func get_lobby_sync_payload() -> Dictionary:
+	return {
+		"player_names": player_names.duplicate(true),
+		"player_avatar_ids": player_avatar_ids.duplicate(true),
+		"match_started": match_started,
+		"map_scene_path": map_scene_path,
+		"is_connected": multiplayer.multiplayer_peer != null,
+		"is_server": multiplayer.multiplayer_peer != null and multiplayer.is_server(),
+		"local_peer_id": multiplayer.get_unique_id() if multiplayer.multiplayer_peer != null else -1,
+	}
 
 func _open_lobby_scene() -> void:
 	_persist_runtime_state()
@@ -390,6 +410,7 @@ func _change_scene_to_lobby() -> void:
 func _persist_runtime_state() -> void:
 	_set_profile_username(local_player_name)
 	persisted_player_names = player_names.duplicate(true)
+	persisted_player_avatar_ids = player_avatar_ids.duplicate(true)
 	persisted_match_started = match_started
 	persisted_map_scene_path = map_scene_path.strip_edges()
 
@@ -415,7 +436,7 @@ func _request_lobby_sync_from_server() -> void:
 		return
 	if multiplayer.is_server():
 		return
-	rpc_id(1, "_register_player_name", local_player_name)
+	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
 	request_lobby_sync.rpc_id(1)
 
 @rpc("any_peer", "reliable")
@@ -425,7 +446,7 @@ func request_lobby_sync() -> void:
 	var peer_id := multiplayer.get_remote_sender_id()
 	if peer_id <= 0:
 		return
-	_sync_player_names_to_all.rpc_id(peer_id, player_names, match_started)
+	_sync_lobby_data_to_all.rpc_id(peer_id, player_names, player_avatar_ids, match_started)
 
 func _reset_network_session() -> void:
 	var existing_peer := multiplayer.multiplayer_peer

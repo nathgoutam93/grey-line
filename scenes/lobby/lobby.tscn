@@ -1,18 +1,36 @@
 [gd_scene format=3 uid="uid://dusrn6n2aocxf"]
 
 [ext_resource type="PackedScene" uid="uid://dnijy4kf8kg8f" path="res://components/multiplayer/multiplayer_manager.tscn" id="1_ytcab"]
-[ext_resource type="Texture2D" uid="uid://lwnvlq5a0l5j" path="res://assets/sprites/icons/btn_shape.png" id="2_jg1x8"]
+[ext_resource type="Script" uid="uid://fontgr836jnv" path="res://scenes/lobby/lobby.gd" id="2_lobby"]
+[ext_resource type="Texture2D" uid="uid://bci55yf43g5le" path="res://scenes/maps/map_1/_assets/map_f.png" id="3_mapthumb"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_w6xj4"]
-font_size = 28
+[sub_resource type="LabelSettings" id="LabelSettings_title"]
+font_size = 40
 
-[sub_resource type="LabelSettings" id="LabelSettings_4ys48"]
-font_size = 22
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_map"]
+bg_color = Color(0.129412, 0.215686, 0.176471, 0.82)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.235294, 0.898039, 0.462745, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_start_match"]
-size = Vector2(500, 100)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot"]
+bg_color = Color(0.137255, 0.239216, 0.188235, 0.7)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.235294, 0.898039, 0.462745, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_slot"]
+font_size = 24
+
+[sub_resource type="LabelSettings" id="LabelSettings_status"]
+font_size = 24
 
 [node name="Lobby" type="Node2D" unique_id=785555685]
+script = ExtResource("2_lobby")
 
 [node name="Level" type="Node2D" parent="." unique_id=318857380]
 
@@ -22,6 +40,7 @@ spawn_path = NodePath("../Level")
 spawn_limit = 1
 
 [node name="MultiplayerManager" parent="." unique_id=1887861196 instance=ExtResource("1_ytcab")]
+max_players = 6
 map_scene_path = "res://scenes/maps/map_1/map_1.tscn"
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1281686523]
@@ -34,68 +53,186 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="title" type="Label" parent="UI/Control" unique_id=913663059]
+[node name="Background" type="ColorRect" parent="UI/Control" unique_id=213673321]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -96.0
-offset_top = -316.0
-offset_right = 94.0
-offset_bottom = -274.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "LOBBY"
-label_settings = SubResource("LabelSettings_w6xj4")
+color = Color(0.0196078, 0.027451, 0.0470588, 1)
+
+[node name="LobbyFrame" type="MarginContainer" parent="UI/Control" unique_id=1603324884]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 26
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Control/LobbyFrame" unique_id=1318872558]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=147952479]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.235294, 0.898039, 0.462745, 1)
+text = "Team Deathmatch"
+label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
-[node name="lobby_status" type="Label" parent="UI/Control" unique_id=509964045]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -311.0
-offset_top = -262.0
-offset_right = 311.0
-offset_bottom = -224.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Waiting..."
-label_settings = SubResource("LabelSettings_4ys48")
-horizontal_alignment = 1
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=396398370]
+layout_mode = 2
 
-[node name="lobby_players" type="Label" parent="UI/Control" unique_id=1439604238]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -311.0
-offset_top = -199.0
-offset_right = 311.0
-offset_bottom = 109.0
-grow_horizontal = 2
-grow_vertical = 2
-label_settings = SubResource("LabelSettings_4ys48")
+[node name="MapThumbnailPanel" type="PanelContainer" parent="UI/Control/LobbyFrame/VBoxContainer/HBoxContainer" unique_id=952757359]
+custom_minimum_size = Vector2(400, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_map")
+
+[node name="MapThumbnail" type="TextureRect" parent="UI/Control/LobbyFrame/VBoxContainer/HBoxContainer/MapThumbnailPanel" unique_id=1798673708]
+layout_mode = 2
+texture = ExtResource("3_mapthumb")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MapOverlay" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer/HBoxContainer/MapThumbnailPanel" unique_id=1543557759]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "MAP NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="start_match" type="TouchScreenButton" parent="UI/Control" unique_id=1033616912]
-position = Vector2(500, 550)
-scale = Vector2(0.48, 0.58)
-texture_normal = ExtResource("2_jg1x8")
-shape = SubResource("RectangleShape2D_start_match")
+[node name="MarginContainer" type="MarginContainer" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=1692232791]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 5
 
-[node name="Label" type="Label" parent="UI/Control/start_match" unique_id=884793373]
-offset_right = 500.0
-offset_bottom = 100.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+[node name="PlayerSlots" type="HBoxContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer" unique_id=1660429564]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="slot_1" type="PanelContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots" unique_id=700203890]
+custom_minimum_size = Vector2(200, 350)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="avatar_slot_1" type="TextureRect" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_1" unique_id=1195714567]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="player_slot_1" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_1" unique_id=1432995721]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+text = "+"
+label_settings = SubResource("LabelSettings_slot")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="slot_2" type="PanelContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots" unique_id=322105561]
+custom_minimum_size = Vector2(200, 350)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="avatar_slot_2" type="TextureRect" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_2" unique_id=2047018961]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="player_slot_2" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_2" unique_id=1806191353]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+text = "+"
+label_settings = SubResource("LabelSettings_slot")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="slot_3" type="PanelContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots" unique_id=79950522]
+custom_minimum_size = Vector2(250, 350)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="avatar_slot_3" type="TextureRect" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_3" unique_id=1365496495]
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="player_slot_3" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_3" unique_id=58956555]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+text = "local_player_avatar"
+label_settings = SubResource("LabelSettings_slot")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="slot_4" type="PanelContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots" unique_id=1462294841]
+custom_minimum_size = Vector2(200, 350)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="avatar_slot_4" type="TextureRect" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_4" unique_id=1532238756]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="player_slot_4" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_4" unique_id=608700642]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+text = "+"
+label_settings = SubResource("LabelSettings_slot")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="slot_5" type="PanelContainer" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots" unique_id=60606698]
+custom_minimum_size = Vector2(200, 350)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
+
+[node name="avatar_slot_5" type="TextureRect" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_5" unique_id=526181159]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="player_slot_5" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer/MarginContainer/PlayerSlots/slot_5" unique_id=1321225913]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+text = "+"
+label_settings = SubResource("LabelSettings_slot")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="lobby_players" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=1439604238]
+visible = false
+layout_mode = 2
+
+[node name="lobby_status" type="Label" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=509964045]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.235294, 0.898039, 0.462745, 1)
+text = "waiting for players..."
+label_settings = SubResource("LabelSettings_status")
+horizontal_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/Control/LobbyFrame/VBoxContainer" unique_id=339750004]
+layout_mode = 2
+alignment = 1
+
+[node name="start_match" type="Button" parent="UI/Control/LobbyFrame/VBoxContainer/HBoxContainer2" unique_id=661664788]
+layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "Start Match"
-horizontal_alignment = 1
-vertical_alignment = 1
+text = "START"
