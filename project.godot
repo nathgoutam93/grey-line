@@ -21,6 +21,7 @@ config/icon="uid://b656ppaqmcoi2"
 
 [autoload]
 
+PlayerProfile="*res://scripts/profile/player_profile.gd"
 MaskViewProvider="*res://scripts/MaskViewProvider.gd"
 NetworkTick="*res://scripts/network/network_tick_clock.gd"
 

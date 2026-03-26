@@ -54,11 +54,23 @@ func _ready() -> void:
 		EquipmentData.EquipmentSlot.UTILITY_3: utility_extra_slot_ui
 	}
 	_connect_slot_touch_buttons()
+	call_deferred("_apply_persisted_touch_layout")
 
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_sync_weapon_slots()
 	_update_visibility()
+
+func _apply_persisted_touch_layout() -> void:
+	if not is_instance_valid(controls_root):
+		return
+	var profile := get_node_or_null("/root/PlayerProfile")
+	if profile == null:
+		return
+	if profile.has_method("ensure_touch_layout_defaults_from_controls"):
+		profile.call("ensure_touch_layout_defaults_from_controls", controls_root)
+	if profile.has_method("apply_touch_layout_to_controls"):
+		profile.call("apply_touch_layout_to_controls", controls_root)
 
 func _connect_slot_touch_buttons() -> void:
 	for slot in _slot_nodes_by_slot:

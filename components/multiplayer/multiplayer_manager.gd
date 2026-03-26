@@ -27,7 +27,6 @@ var discovery_listener_active := false
 const DEFAULT_PLAYER_NAME := "Player"
 const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
-static var persisted_local_player_name := ""
 static var persisted_player_names := {}
 static var persisted_match_started := false
 
@@ -40,14 +39,11 @@ func _ready():
 		_reset_network_session()
 		player_names.clear()
 		match_started = false
-		persisted_local_player_name = ""
 		persisted_player_names.clear()
 		persisted_match_started = false
 		if ui_layer:
 			ui_layer.show()
 	elif multiplayer.multiplayer_peer != null:
-		if persisted_local_player_name.strip_edges() != "":
-			local_player_name = persisted_local_player_name
 		player_names = persisted_player_names.duplicate(true)
 		match_started = persisted_match_started
 
@@ -70,6 +66,8 @@ func _ready():
 
 	if start_match_button != null and not start_match_button.pressed.is_connected(start_match):
 		start_match_button.pressed.connect(start_match)
+	if player_name_input != null:
+		player_name_input.editable = false
 
 	if OS.has_feature("dedicated_server"):
 		local_player_name = "DedicatedServer"
@@ -105,6 +103,9 @@ func _exit_tree() -> void:
 
 
 func host_game():
+	if not _is_profile_ready():
+		_set_discovery_status("Complete profile in Settings.")
+		return
 	var peer = ENetMultiplayerPeer.new()
 	var error = peer.create_server(port, max_players)
 	if error != OK:
@@ -113,6 +114,7 @@ func host_game():
 
 	multiplayer.multiplayer_peer = peer
 	local_player_name = _resolve_local_player_name()
+	_set_profile_username(local_player_name)
 	_set_player_name_for_peer(multiplayer.get_unique_id(), local_player_name)
 	match_started = false
 	_start_lan_discovery_listener()
@@ -120,7 +122,11 @@ func host_game():
 	_open_lobby_scene()
 
 func join_game():
+	if not _is_profile_ready():
+		_set_discovery_status("Complete profile in Settings.")
+		return
 	local_player_name = _resolve_local_player_name()
+	_set_profile_username(local_player_name)
 	_stop_lan_discovery_listener()
 	var target_address := ""
 	var target_port := port
@@ -227,13 +233,12 @@ func _set_player_name_for_peer(peer_id: int, raw_name: String) -> void:
 	_persist_runtime_state()
 
 func _resolve_local_player_name() -> String:
-	if persisted_local_player_name.strip_edges() != "":
-		return _sanitize_player_name(persisted_local_player_name, 1)
+	var profile_name := _get_profile_username()
+	if profile_name.strip_edges() != "":
+		return _sanitize_player_name(profile_name, 1)
 
 	var raw_name := ""
-	if player_name_input:
-		raw_name = player_name_input.text
-	elif OS.has_feature("dedicated_server"):
+	if OS.has_feature("dedicated_server"):
 		raw_name = "DedicatedServer"
 	else:
 		raw_name = OS.get_environment("USER")
@@ -265,8 +270,9 @@ func _load_map_scene() -> PackedScene:
 	return null
 
 func _apply_default_player_name() -> void:
-	if player_name_input == null and persisted_local_player_name.strip_edges() != "":
-		local_player_name = persisted_local_player_name
+	var profile_name := _get_profile_username()
+	if player_name_input == null and profile_name.strip_edges() != "":
+		local_player_name = _sanitize_player_name(profile_name, 1)
 		return
 
 	local_player_name = _resolve_local_player_name()
@@ -274,10 +280,10 @@ func _apply_default_player_name() -> void:
 		push_warning("player_name LineEdit not found at ../UI/Control/player_name")
 		return
 
-	if player_name_input.text.strip_edges() == "":
-		player_name_input.text = local_player_name
+	player_name_input.editable = false
+	player_name_input.text = local_player_name
 	if player_name_input.placeholder_text.strip_edges() == "":
-		player_name_input.placeholder_text = local_player_name
+		player_name_input.placeholder_text = "Change in Settings"
 
 func _start_game():
 	if ui_layer:
@@ -303,7 +309,6 @@ func return_to_lobby_after_match() -> void:
 
 	player_names.clear()
 	match_started = false
-	persisted_local_player_name = ""
 	persisted_player_names.clear()
 	persisted_match_started = false
 	if ui_layer:
@@ -384,9 +389,26 @@ func _change_scene_to_lobby() -> void:
 	get_tree().change_scene_to_file(LOBBY_SCENE_PATH)
 
 func _persist_runtime_state() -> void:
-	persisted_local_player_name = local_player_name
+	_set_profile_username(local_player_name)
 	persisted_player_names = player_names.duplicate(true)
 	persisted_match_started = match_started
+
+func _get_profile_username() -> String:
+	var profile := get_node_or_null("/root/PlayerProfile")
+	if profile != null and profile.has_method("get_username"):
+		return String(profile.call("get_username"))
+	return ""
+
+func _is_profile_ready() -> bool:
+	var profile := get_node_or_null("/root/PlayerProfile")
+	if profile != null and profile.has_method("is_profile_completed"):
+		return bool(profile.call("is_profile_completed"))
+	return true
+
+func _set_profile_username(name: String) -> void:
+	var profile := get_node_or_null("/root/PlayerProfile")
+	if profile != null and profile.has_method("set_username"):
+		profile.call("set_username", name)
 
 func _request_lobby_sync_from_server() -> void:
 	if multiplayer.multiplayer_peer == null:

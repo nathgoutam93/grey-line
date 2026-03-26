@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dnijy4kf8kg8f" path="res://components/multiplayer/multiplayer_manager.tscn" id="1_fsom3"]
 [ext_resource type="Texture2D" uid="uid://b73f3g1jo0kbp" path="res://assets/sprites/icons/join_btn.png" id="2_ob46e"]
 [ext_resource type="Texture2D" uid="uid://bgyfv7fwytm4t" path="res://assets/sprites/icons/host_btn.png" id="3_uqeha"]
+[ext_resource type="PackedScene" path="res://scenes/main_menu/settings_panel.tscn" id="5_settings"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wem23"]
 size = Vector2(1200, 200)
@@ -70,7 +71,8 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 32
 text = "Player"
-placeholder_text = "Player name"
+editable = false
+placeholder_text = "Change in Settings"
 alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/Control" unique_id=1795477928]
@@ -115,6 +117,8 @@ grow_vertical = 2
 text = "Auto-discover LAN host"
 label_settings = SubResource("LabelSettings_ob46e")
 horizontal_alignment = 1
+
+[node name="SettingsPanel" parent="UI" unique_id=2096235019 instance=ExtResource("5_settings")]
 
 [connection signal="pressed" from="UI/Control/HBoxContainer/join" to="MultiplayerManager" method="join_game"]
 [connection signal="pressed" from="UI/Control/HBoxContainer/host" to="MultiplayerManager" method="host_game"]
