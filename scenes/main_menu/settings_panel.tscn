@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dgxmuvlglplsj"]
 
-[ext_resource type="Script" path="res://scenes/main_menu/settings_panel.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://0r5ekhb8atcm" path="res://scenes/main_menu/settings_panel.gd" id="1_script"]
 
-[node name="SettingsPanel" type="Control"]
+[node name="SettingsPanel" type="Control" unique_id=294617173]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +12,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="SettingsButton" type="Button" parent="."]
+[node name="SettingsButton" type="Button" parent="." unique_id=564151113]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -24,7 +24,7 @@ offset_bottom = 66.0
 grow_horizontal = 0
 text = "Settings"
 
-[node name="SettingsPopup" type="PanelContainer" parent="."]
+[node name="SettingsPopup" type="PanelContainer" parent="." unique_id=1973225778]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -39,461 +39,466 @@ offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Margin" type="MarginContainer" parent="SettingsPopup"]
+[node name="Margin" type="MarginContainer" parent="SettingsPopup" unique_id=1367786689]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 14
 
-[node name="VBox" type="VBoxContainer" parent="SettingsPopup/Margin"]
+[node name="VBox" type="VBoxContainer" parent="SettingsPopup/Margin" unique_id=1478778302]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="SettingsPopup/Margin/VBox"]
+[node name="Title" type="Label" parent="SettingsPopup/Margin/VBox" unique_id=1201507287]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Game Settings"
 horizontal_alignment = 1
 
-[node name="Tabs" type="TabContainer" parent="SettingsPopup/Margin/VBox"]
+[node name="Tabs" type="TabContainer" parent="SettingsPopup/Margin/VBox" unique_id=140319845]
 layout_mode = 2
 size_flags_vertical = 3
+current_tab = 0
 
-[node name="Profile" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs"]
+[node name="Profile" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs" unique_id=1300561376]
 layout_mode = 2
 theme_override_constants/separation = 10
+metadata/_tab_index = 0
 
-[node name="UsernameLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="UsernameLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=1462315571]
 layout_mode = 2
 text = "Username"
 
-[node name="UsernameInput" type="LineEdit" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="UsernameInput" type="LineEdit" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=796626655]
 layout_mode = 2
 placeholder_text = "Player name"
 
-[node name="AvatarLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="AvatarLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=599504363]
 layout_mode = 2
 text = "Avatar"
 
-[node name="AvatarOption" type="OptionButton" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="AvatarOption" type="OptionButton" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=495485975]
 layout_mode = 2
 
-[node name="AvatarPreview" type="TextureRect" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="AvatarPreview" type="TextureRect" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=2005525317]
 custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="OnboardingHint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="OnboardingHint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=1432368147]
 visible = false
 layout_mode = 2
 text = "First launch setup: choose username and avatar to continue."
 autowrap_mode = 3
 
-[node name="CompleteProfileButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Profile"]
+[node name="CompleteProfileButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Profile" unique_id=130447239]
 visible = false
 layout_mode = 2
 text = "Save Profile and Continue"
 
-[node name="Keybinds" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs"]
+[node name="Keybinds" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs" unique_id=377678915]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
+metadata/_tab_index = 1
 
-[node name="Hint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds"]
+[node name="Hint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds" unique_id=1506063575]
 layout_mode = 2
 text = "Click Rebind then press a key or mouse button."
 autowrap_mode = 3
 
-[node name="ActionsScroll" type="ScrollContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds"]
+[node name="ActionsScroll" type="ScrollContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds" unique_id=1852981930]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ActionsList" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll"]
+[node name="ActionsList" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll" unique_id=1746669440]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="move_left" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="move_left" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=2015186979]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_left"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_left" unique_id=591400928]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Move Left"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_left"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_left" unique_id=1050332605]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="move_right" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="move_right" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=880445245]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_right"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_right" unique_id=214393509]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Move Right"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_right"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_right" unique_id=246334760]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="move_up" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="move_up" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=570489813]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_up"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_up" unique_id=2133400721]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Move Up"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_up"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_up" unique_id=628562870]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="move_down" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="move_down" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=2133058122]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_down"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_down" unique_id=529286145]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Move Down"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_down"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/move_down" unique_id=904139270]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="shoot" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="shoot" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1605303332]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/shoot"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/shoot" unique_id=1802419390]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Shoot"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/shoot"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/shoot" unique_id=1364869108]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="reload" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="reload" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1785332584]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/reload"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/reload" unique_id=20839728]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Reload"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/reload"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/reload" unique_id=907283524]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="scroll_up" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="scroll_up" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=993324153]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_up"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_up" unique_id=1775474401]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Scroll Up"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_up"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_up" unique_id=1875068467]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="scroll_down" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="scroll_down" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1901758931]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_down"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_down" unique_id=2046046583]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Scroll Down"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_down"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/scroll_down" unique_id=48986778]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="slow_walk" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="slow_walk" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1910309884]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slow_walk"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slow_walk" unique_id=363913246]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Slow Walk"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slow_walk"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slow_walk" unique_id=1087020249]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="drop" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="drop" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=512179073]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/drop"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/drop" unique_id=1105101023]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Drop"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/drop"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/drop" unique_id=2065786922]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="pickup" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="pickup" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1889827481]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/pickup"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/pickup" unique_id=1571383946]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Pickup"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/pickup"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/pickup" unique_id=1868782877]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="primary" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="primary" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1717946507]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/primary"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/primary" unique_id=1166100376]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Primary"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/primary"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/primary" unique_id=451570321]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="secondary" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="secondary" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1667869772]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/secondary"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/secondary" unique_id=123052932]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Secondary"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/secondary"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/secondary" unique_id=1261814830]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="malee" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="malee" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=141679614]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/malee"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/malee" unique_id=1337126105]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Malee"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/malee"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/malee" unique_id=262633280]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="stats" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="stats" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=60087159]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/stats"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/stats" unique_id=449724388]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Stats"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/stats"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/stats" unique_id=2077887645]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="slot_extra_q" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="slot_extra_q" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=440554236]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_q"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_q" unique_id=1840362597]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Slot Extra Q"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_q"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_q" unique_id=41190234]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="slot_extra_e" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="slot_extra_e" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=1246105021]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_e"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_e" unique_id=1248986322]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Slot Extra E"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_e"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_e" unique_id=1077585998]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="slot_extra_x" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList"]
+[node name="slot_extra_x" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList" unique_id=2095721613]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_x"]
+[node name="ActionLabel" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_x" unique_id=1638384332]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 text = "Slot Extra X"
 
-[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_x"]
+[node name="RebindButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds/ActionsScroll/ActionsList/slot_extra_x" unique_id=1947201587]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Rebind"
 
-[node name="ResetKeybindsButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds"]
+[node name="ResetKeybindsButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/Keybinds" unique_id=392922091]
 layout_mode = 2
 text = "Reset Keybinds to Default"
 
-[node name="TouchControls" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs"]
+[node name="TouchControls" type="VBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs" unique_id=461385647]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
+metadata/_tab_index = 2
 
-[node name="Hint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="Hint" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=905524481]
 layout_mode = 2
 text = "Adjust each control position in normalized screen space (0.0 to 1.0)."
 autowrap_mode = 3
 
-[node name="MovementJoystick" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="MovementJoystick" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=291916473]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick"]
+[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick" unique_id=2076512240]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "MovementJoystick"
 
-[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick"]
+[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick" unique_id=1519425936]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick"]
+[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick" unique_id=2088314085]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick"]
+[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/MovementJoystick" unique_id=164028474]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "(0.00, 0.00)"
 
-[node name="Shoot" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="Shoot" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=1290237403]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot"]
+[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot" unique_id=972732539]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "Shoot"
 
-[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot"]
+[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot" unique_id=208352736]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot"]
+[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot" unique_id=1851627496]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot"]
+[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Shoot" unique_id=1975451733]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "(0.00, 0.00)"
 
-[node name="Headshot" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="Headshot" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=339596161]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot"]
+[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot" unique_id=1281683016]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "Headshot"
 
-[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot"]
+[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot" unique_id=641522663]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot"]
+[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot" unique_id=1874978833]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot"]
+[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Headshot" unique_id=614863701]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "(0.00, 0.00)"
 
-[node name="Reload" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="Reload" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=990482317]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload"]
+[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload" unique_id=661817914]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "Reload"
 
-[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload"]
+[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload" unique_id=456243842]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload"]
+[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload" unique_id=1162423646]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload"]
+[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/Reload" unique_id=662616936]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "(0.00, 0.00)"
 
-[node name="TouchAimZone" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="TouchAimZone" type="HBoxContainer" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=52317437]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone"]
+[node name="Name" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone" unique_id=1080268101]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "TouchAimZone"
 
-[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone"]
+[node name="X" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone" unique_id=1895205141]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone"]
+[node name="Y" type="HSlider" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone" unique_id=748488537]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 1.0
 step = 0.001
 
-[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone"]
+[node name="Value" type="Label" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls/TouchAimZone" unique_id=1968485845]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "(0.00, 0.00)"
 
-[node name="ResetTouchButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls"]
+[node name="ResetTouchButton" type="Button" parent="SettingsPopup/Margin/VBox/Tabs/TouchControls" unique_id=98484692]
 layout_mode = 2
 text = "Reset Touch Layout to Default"
 
-[node name="StatusLabel" type="Label" parent="SettingsPopup/Margin/VBox"]
+[node name="StatusLabel" type="Label" parent="SettingsPopup/Margin/VBox" unique_id=1373531535]
 layout_mode = 2
-text = ""
 autowrap_mode = 3
 
-[node name="CloseButton" type="Button" parent="SettingsPopup/Margin/VBox"]
+[node name="CloseButton" type="Button" parent="SettingsPopup/Margin/VBox" unique_id=888930488]
 layout_mode = 2
 text = "Close"

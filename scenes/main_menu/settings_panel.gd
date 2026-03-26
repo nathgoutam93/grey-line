@@ -1,6 +1,8 @@
 extends Control
 class_name MainMenuSettingsPanel
 
+signal profile_changed
+
 const ACTIONS: Array[String] = [
 	"move_left",
 	"move_right",
@@ -29,7 +31,6 @@ const TOUCH_CONTROL_IDS: Array[String] = [
 	"TouchAimZone",
 ]
 
-@onready var _menu_player_name_input: LineEdit = get_node_or_null("../UI/Control/player_name")
 @onready var _settings_button: Button = get_node_or_null("SettingsButton")
 @onready var _settings_popup: PanelContainer = get_node_or_null("SettingsPopup")
 @onready var _tabs: TabContainer = get_node_or_null("SettingsPopup/Margin/VBox/Tabs")
@@ -115,9 +116,6 @@ func _connect_signals() -> void:
 	if _complete_profile_button != null and not _complete_profile_button.pressed.is_connected(_on_complete_profile_pressed):
 		_complete_profile_button.pressed.connect(_on_complete_profile_pressed)
 
-	if _menu_player_name_input != null and not _menu_player_name_input.text_changed.is_connected(_on_menu_name_changed):
-		_menu_player_name_input.text_changed.connect(_on_menu_name_changed)
-
 func _load_profile_into_ui() -> void:
 	if _profile == null:
 		return
@@ -125,8 +123,6 @@ func _load_profile_into_ui() -> void:
 	var username_variant: Variant = _profile.call("get_username")
 	if username_variant is String and _username_input != null:
 		_username_input.text = username_variant as String
-		if _menu_player_name_input != null and _menu_player_name_input.text != _username_input.text:
-			_menu_player_name_input.text = _username_input.text
 
 	if _avatar_option != null:
 		var catalog_variant: Variant = _profile.call("get_avatar_catalog")
@@ -247,23 +243,19 @@ func _on_username_changed(new_text: String) -> void:
 	if _profile == null:
 		return
 	_profile.call("set_username", new_text)
-	if _menu_player_name_input != null and _menu_player_name_input.text != new_text:
-		_menu_player_name_input.text = new_text
+	profile_changed.emit()
 	_refresh_onboarding_gate(false)
 	_set_status("Username saved.")
 
 func _on_username_submitted(new_text: String) -> void:
 	_on_username_changed(new_text)
 
-func _on_menu_name_changed(new_text: String) -> void:
-	if _username_input != null and _username_input.text != new_text:
-		_username_input.text = new_text
-
 func _on_avatar_selected(index: int) -> void:
 	if _profile == null or _avatar_option == null:
 		return
 	var avatar_id := String(_avatar_option.get_item_metadata(index))
 	_profile.call("set_avatar_id", avatar_id)
+	profile_changed.emit()
 	_refresh_avatar_preview()
 	_refresh_onboarding_gate(false)
 	_set_status("Avatar saved.")
@@ -360,6 +352,7 @@ func _on_complete_profile_pressed() -> void:
 	_profile.call("set_username", username)
 	_profile.call("set_avatar_id", avatar_id)
 	_profile.call("complete_profile_setup")
+	profile_changed.emit()
 	_load_profile_into_ui()
 	_refresh_onboarding_gate(false)
 	if _settings_popup != null:

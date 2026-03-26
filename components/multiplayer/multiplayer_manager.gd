@@ -13,7 +13,6 @@ extends Node
 @onready var level: Node2D = get_node("../Level")
 @onready var ui_layer: CanvasLayer = get_node("../UI")
 @onready var hostname_input: LineEdit = get_node_or_null("../UI/Control/hostname")
-@onready var player_name_input: LineEdit = get_node_or_null("../UI/Control/player_name")
 @onready var discovery_status_label: Label = get_node_or_null("../UI/Control/discovery_status")
 @onready var lobby_status_label: Label = get_node_or_null("../UI/Control/lobby_status")
 @onready var lobby_players_label: Label = get_node_or_null("../UI/Control/lobby_players")
@@ -66,8 +65,6 @@ func _ready():
 
 	if start_match_button != null and not start_match_button.pressed.is_connected(start_match):
 		start_match_button.pressed.connect(start_match)
-	if player_name_input != null:
-		player_name_input.editable = false
 
 	if OS.has_feature("dedicated_server"):
 		local_player_name = "DedicatedServer"
@@ -270,20 +267,7 @@ func _load_map_scene() -> PackedScene:
 	return null
 
 func _apply_default_player_name() -> void:
-	var profile_name := _get_profile_username()
-	if player_name_input == null and profile_name.strip_edges() != "":
-		local_player_name = _sanitize_player_name(profile_name, 1)
-		return
-
 	local_player_name = _resolve_local_player_name()
-	if player_name_input == null:
-		push_warning("player_name LineEdit not found at ../UI/Control/player_name")
-		return
-
-	player_name_input.editable = false
-	player_name_input.text = local_player_name
-	if player_name_input.placeholder_text.strip_edges() == "":
-		player_name_input.placeholder_text = "Change in Settings"
 
 func _start_game():
 	if ui_layer:
