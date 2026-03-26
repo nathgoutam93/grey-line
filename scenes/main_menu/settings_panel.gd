@@ -31,7 +31,7 @@ const TOUCH_CONTROL_IDS: Array[String] = [
 	"TouchAimZone",
 ]
 
-@onready var _settings_button: Button = get_node_or_null("SettingsButton")
+@export var _settings_button: TouchScreenButton;
 @onready var _settings_popup: PanelContainer = get_node_or_null("SettingsPopup")
 @onready var _tabs: TabContainer = get_node_or_null("SettingsPopup/Margin/VBox/Tabs")
 @onready var _username_input: LineEdit = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Profile/UsernameInput")
@@ -43,8 +43,8 @@ const TOUCH_CONTROL_IDS: Array[String] = [
 @onready var _close_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/CloseButton")
 @onready var _reset_keybinds_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/Keybinds/ResetKeybindsButton")
 @onready var _reset_touch_button: Button = get_node_or_null("SettingsPopup/Margin/VBox/Tabs/TouchControls/ResetTouchButton")
-@onready var _join_button: TouchScreenButton = get_node_or_null("../UI/Control/HBoxContainer/join")
-@onready var _host_button: TouchScreenButton = get_node_or_null("../UI/Control/HBoxContainer/host")
+@onready var _join_button: BaseButton = get_node_or_null("../UI/Control/HBoxContainer/join")
+@onready var _host_button: BaseButton = get_node_or_null("../UI/Control/HBoxContainer/host")
 
 var _profile: Node = null
 var _waiting_rebind_action := ""

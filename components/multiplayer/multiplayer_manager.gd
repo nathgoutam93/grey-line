@@ -28,10 +28,12 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
 static var persisted_player_names := {}
 static var persisted_match_started := false
+static var persisted_map_scene_path := ""
 
 func _ready():
 	add_to_group("multiplayer_manager")
 	_release_mouse_capture()
+	_apply_persisted_map_scene_path()
 
 	if _is_main_menu_scene():
 		# Entering main menu always starts from a clean networking state.
@@ -266,6 +268,19 @@ func _load_map_scene() -> PackedScene:
 	push_error("Failed to load map scene at path: %s" % map_scene_path)
 	return null
 
+func set_selected_map_scene_path(path: String) -> void:
+	var cleaned_path := path.strip_edges()
+	if cleaned_path == "":
+		return
+	map_scene_path = cleaned_path
+	persisted_map_scene_path = cleaned_path
+
+func _apply_persisted_map_scene_path() -> void:
+	if persisted_map_scene_path.strip_edges() != "":
+		map_scene_path = persisted_map_scene_path
+	else:
+		persisted_map_scene_path = map_scene_path.strip_edges()
+
 func _apply_default_player_name() -> void:
 	local_player_name = _resolve_local_player_name()
 
@@ -376,6 +391,7 @@ func _persist_runtime_state() -> void:
 	_set_profile_username(local_player_name)
 	persisted_player_names = player_names.duplicate(true)
 	persisted_match_started = match_started
+	persisted_map_scene_path = map_scene_path.strip_edges()
 
 func _get_profile_username() -> String:
 	var profile := get_node_or_null("/root/PlayerProfile")
