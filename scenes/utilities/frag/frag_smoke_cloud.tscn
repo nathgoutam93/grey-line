@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://3hooedfuel1u"]
+
+[ext_resource type="Script" uid="uid://b15pce3ch22p1" path="res://scenes/utilities/smoke/smoke_cloud.gd" id="1_1yp8w"]
+[ext_resource type="Texture2D" uid="uid://deeu1tupq1lk1" path="res://scenes/utilities/frag/_assets/explosion.png" id="2_6r11w"]
+
+[node name="FragSmokeCloud" type="Node2D" unique_id=720984495]
+z_index = 20
+script = ExtResource("1_1yp8w")
+duration = 0.18
+grow_duration = 0.08
+fade_in_duration = 0.02
+fade_out_duration = 0.14
+start_scale_multiplier = 0.3
+end_scale_multiplier = 1.15
+layer_count = 2
+layer_spread = 12.0
+min_layer_scale = 0.2
+max_layer_scale = 0.5
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1318814775]
+texture = ExtResource("2_6r11w")

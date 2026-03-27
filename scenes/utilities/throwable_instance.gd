@@ -88,7 +88,6 @@ func start_use() -> void:
 		frag_projectile.min_damage = data.explosion_min_damage
 		frag_projectile.instigator_peer_id = player.owner_peer_id
 		frag_projectile.detonate_sound = _get_detonate_sound()
-		frag_projectile.detonate_effect_scene = data.detonate_effect_scene
 	elif projectile is SmokeProjectile:
 		var smoke_projectile := projectile as SmokeProjectile
 		smoke_projectile.detonate_after_seconds = data.fuse_time

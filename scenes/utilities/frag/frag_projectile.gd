@@ -10,7 +10,8 @@ const RPC_CHANNEL_UI := 2
 @export var speed: float = 760.0
 @export var max_travel_distance: float = 900.0
 @export var detonate_sound: AudioStream = null
-@export var detonate_effect_scene: PackedScene = null
+@export var detonate_smoke_duration: float = 0.18
+@export var detonate_smoke_scene: PackedScene = preload("res://scenes/utilities/frag/frag_smoke_cloud.tscn")
 
 @export var detonate_sfx_max_distance := 1500.0
 @export var detonate_sfx_attenuation := 2.0
@@ -94,11 +95,15 @@ func _detonate() -> void:
 	var detonate_sound_path := ""
 	if detonate_sound != null:
 		detonate_sound_path = detonate_sound.resource_path
-	var detonate_effect_path := ""
-	if detonate_effect_scene != null:
-		detonate_effect_path = detonate_effect_scene.resource_path
+	var detonate_smoke_scene_path := ""
+	if detonate_smoke_scene != null:
+		detonate_smoke_scene_path = detonate_smoke_scene.resource_path
 	_remote_play_detonate_sound.rpc(global_position, detonate_sound_path)
-	_remote_spawn_detonate_effect.rpc(global_position, detonate_effect_path)
+	_remote_spawn_detonate_smoke.rpc(
+		global_position,
+		detonate_smoke_duration,
+		detonate_smoke_scene_path
+	)
 
 	var effective_radius := maxf(explosion_radius, 1.0)
 	for node in get_tree().get_nodes_in_group("Player"):
@@ -146,15 +151,21 @@ func _play_detonate_sound(sound_position: Vector2, sound_path: String = "") -> v
 
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_spawn_detonate_effect(effect_position: Vector2, effect_scene_path: String) -> void:
-	var effect_scene := detonate_effect_scene
-	if effect_scene == null and not effect_scene_path.is_empty():
-		effect_scene = load(effect_scene_path) as PackedScene
-	if effect_scene == null:
-		return
-	var detonate_effect := effect_scene.instantiate()
-	if detonate_effect == null:
-		return
-	if detonate_effect is Node2D:
-		(detonate_effect as Node2D).global_position = effect_position
-	get_tree().current_scene.add_child(detonate_effect)
+func _remote_spawn_detonate_smoke(smoke_position: Vector2, duration: float, smoke_scene_path: String) -> void:
+	var duration_value := maxf(duration, 0.05)
+	var motion_seed := float(
+		(int(round(smoke_position.x * 10.0)) * 92821)
+		+ (int(round(smoke_position.y * 10.0)) * 68917)
+	)
+
+	var world_smoke_scene := detonate_smoke_scene
+	if world_smoke_scene == null and not smoke_scene_path.is_empty():
+		world_smoke_scene = load(smoke_scene_path) as PackedScene
+	if world_smoke_scene != null:
+		var smoke := world_smoke_scene.instantiate()
+		if smoke is Node2D:
+			(smoke as Node2D).global_position = smoke_position
+		if smoke != null:
+			smoke.set("duration", duration_value)
+			smoke.set("motion_seed", motion_seed)
+		get_tree().current_scene.add_child(smoke)
