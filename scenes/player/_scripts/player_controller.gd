@@ -42,6 +42,9 @@ var is_local_player := false
 const HISTORY_SECONDS := 1.0
 const INTERP_DELAY_TICKS := 2
 const TICK_OFFSET_SMOOTHING := 0.1
+const RPC_CHANNEL_INPUT := 0
+const RPC_CHANNEL_WORLD := 1
+const RPC_CHANNEL_UI := 2
 
 var _input_buffer: Dictionary = {}
 var _input_queue: Dictionary = {}
@@ -54,6 +57,7 @@ var _is_firing_net := false
 var _tick_offset := 0.0
 var _last_authoritative_input_tick := 0
 var _last_received_snapshot_tick := 0
+var _last_reload_request_tick := -1
 var _death_sequence_id := 0
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 
@@ -148,7 +152,10 @@ func _on_network_tick(tick: int) -> void:
 	if _is_server_role():
 		_server_tick(tick)
 	elif _is_owner_role():
-		_owner_tick(tick)
+		# Owner clients must stamp inputs using estimated server tick, otherwise
+		# server-side dequeue/comparison can treat fresh inputs as stale when
+		# local and server tick counters are offset.
+		_owner_tick(_estimated_server_tick(tick))
 	else:
 		_proxy_tick(_estimated_server_tick(tick))
 
@@ -206,7 +213,8 @@ func _apply_input_actions(frame: PlayerInputFrame) -> void:
 	if not _is_server_role():
 		return
 
-	if frame.reload_pressed:
+	if frame.reload_pressed and frame.tick > _last_reload_request_tick:
+		_last_reload_request_tick = frame.tick
 		_remote_reload.rpc()
 	if frame.switch_prev_pressed:
 		_remote_switch_weapon_previous.rpc()
@@ -249,7 +257,7 @@ func _send_snapshot(tick: int) -> void:
 	}
 	rpc("client_receive_snapshot", snapshot)
 
-@rpc("any_peer", "unreliable")
+@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
 func server_receive_input(frame_data: Dictionary) -> void:
 	if not _is_server_role():
 		return
@@ -263,7 +271,7 @@ func server_receive_input(frame_data: Dictionary) -> void:
 		return
 	_input_queue[frame.tick] = frame
 
-@rpc("any_peer", "unreliable")
+@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_WORLD)
 func client_receive_snapshot(snapshot: Dictionary) -> void:
 	var server_tick := int(snapshot.get("tick", 0))
 	if server_tick <= 0:
@@ -311,7 +319,7 @@ func add_interactable(item: Interactable):
 func remove_interactable(item: Interactable):
 	interactables.erase(item)
 
-@rpc("authority", "call_local")
+@rpc("authority", "call_local", "unreliable", RPC_CHANNEL_UI)
 func _remote_interact(target_path: NodePath):
 	if target_path == NodePath(""):
 		return
@@ -319,7 +327,7 @@ func _remote_interact(target_path: NodePath):
 	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
 		interactable.owner_ref.on_interact(self )
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
 	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
 		shot_intent = ShotIntent.BODY
@@ -336,7 +344,7 @@ func can_register_hit(is_head_hit: bool) -> bool:
 		return is_head_hit
 	return not is_head_hit
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_stop_fire():
 	var current_item = _get_current_equipment()
 	if current_item and current_item.has_method("stop_fire"):
@@ -344,33 +352,33 @@ func _remote_stop_fire():
 	elif current_item and current_item.has_method("stop_use"):
 		current_item.stop_use()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_reload():
 	var current_item = _get_current_equipment()
 	if current_item and current_item.has_method("reload"):
 		current_item.reload()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon():
 	if equipment_manager != null and equipment_manager.has_method("switch_to_next_item"):
 		equipment_manager.switch_to_next_item()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_previous():
 	if equipment_manager != null and equipment_manager.has_method("switch_to_previous_item"):
 		equipment_manager.switch_to_previous_item()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_slot(slot: int):
 	if equipment_manager != null and equipment_manager.has_method("switch_to_slot"):
 		equipment_manager.switch_to_slot(slot)
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_drop_weapon():
 	if equipment_manager != null and equipment_manager.has_method("drop_current_item"):
 		equipment_manager.drop_current_item()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_pickup(pickup_path: NodePath):
 	var weapon_pickup := _resolve_pickup_node(pickup_path)
 	if weapon_pickup == null:
@@ -403,7 +411,7 @@ func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
 
 	return null
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_die(global_pos: Vector2):
 	_death_sequence_id += 1
 	var death_sequence := _death_sequence_id
@@ -469,6 +477,7 @@ func reset_for_respawn() -> void:
 	_last_processed_tick = 0
 	_last_authoritative_input_tick = 0
 	_last_received_snapshot_tick = 0
+	_last_reload_request_tick = -1
 	_interpolator.snapshot_buffer.clear()
 	set_process(true)
 	set_physics_process(true)
@@ -503,7 +512,7 @@ func apply_explosion_force(explosion_origin: Vector2, force_amount: float) -> vo
 	movement_component.add_external_velocity(push_dir.normalized() * force_amount)
 
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_apply_screen_flash(detonation_pos: Vector2, duration_seconds: float, effect_radius: float, max_angle_deg: float, max_alpha: float = 0.95) -> void:
 	if not is_local_player:
 		return

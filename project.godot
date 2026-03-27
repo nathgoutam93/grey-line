@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="GreyLine"
 run/main_scene="uid://bglb3r2wa4lrs"
 config/features=PackedStringArray("4.6", "Mobile")
-config/icon="uid://b656ppaqmcoi2"
+config/icon="uid://c13svdd1v10yw"
 
 [autoload]
 

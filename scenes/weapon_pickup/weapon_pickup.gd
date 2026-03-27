@@ -2,6 +2,7 @@ extends RigidBody2D
 class_name WeaponPickup
 
 @export var REST_THRESHOLD = 0.2
+const RPC_CHANNEL_WORLD := 1
 
 var weapon_data: Weapon
 var ammo_in_mag := 0
@@ -25,7 +26,7 @@ func _ready():
 	interactable_component.player_exited.connect(_on_player_exited)
 	freeze = true
 
-@rpc("authority", "call_local")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_WORLD)
 func initialize_weapon(data: Dictionary, ammo: int, reserve: int = 0):
 	await get_tree().process_frame
 	weapon_data_dict = data

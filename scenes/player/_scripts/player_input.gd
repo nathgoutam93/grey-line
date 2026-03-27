@@ -108,8 +108,9 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 			_pending_slot_select_ticks = EDGE_HOLD_TICKS
 			_pending_slot_select_value = mapped_slot
 
-	# Reload should be an edge trigger to avoid repeated reload RPCs per press.
-	frame.reload_pressed = _pending_reload_ticks == EDGE_HOLD_TICKS
+	# Replay reload intent for a few ticks to tolerate dropped unreliable
+	# input packets. Server-side logic deduplicates the same press.
+	frame.reload_pressed = _pending_reload_ticks > 0
 	# Weapon swap must be edge-triggered; holding it for multiple ticks can
 	# cycle through slots and land back on the original weapon.
 	frame.switch_prev_pressed = _pending_switch_prev_ticks == EDGE_HOLD_TICKS

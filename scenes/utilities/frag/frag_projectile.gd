@@ -1,5 +1,6 @@
 extends RigidBody2D
 class_name FragProjectile
+const RPC_CHANNEL_UI := 2
 
 @export var detonate_after_seconds: float = 1.6
 @export var explosion_radius: float = 320.0
@@ -123,7 +124,7 @@ func _detonate() -> void:
 	queue_free()
 
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_play_detonate_sound(sound_position: Vector2, sound_path: String) -> void:
 	_play_detonate_sound(sound_position, sound_path)
 
@@ -144,7 +145,7 @@ func _play_detonate_sound(sound_position: Vector2, sound_path: String = "") -> v
 	audio_player.play()
 
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_spawn_detonate_effect(effect_position: Vector2, effect_scene_path: String) -> void:
 	var effect_scene := detonate_effect_scene
 	if effect_scene == null and not effect_scene_path.is_empty():

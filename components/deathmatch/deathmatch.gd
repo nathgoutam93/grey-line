@@ -30,6 +30,8 @@ var post_match_scene_change_requested := false
 const STATS_REFRESH_INTERVAL := 0.35
 const TIMER_REFRESH_INTERVAL := 1.0
 const PING_PROBE_INTERVAL := 1.0
+const RPC_CHANNEL_WORLD := 1
+const RPC_CHANNEL_UI := 2
 
 func _ready():
 	_cache_spawn_points()
@@ -205,7 +207,7 @@ func register_death(victim_id: int, killer_id: int, is_headshot: bool = false):
 	_update_stats.rpc(player_stats)
 
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _notify_local_kill_feedback(is_headshot: bool = false) -> void:
 	if not _has_active_multiplayer_peer():
 		return
@@ -221,7 +223,7 @@ func _notify_local_kill_feedback(is_headshot: bool = false) -> void:
 		local_player.hud.call("show_kill_feedback", is_headshot)
 
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _notify_kill_feed(killer_name: String, victim_name: String) -> void:
 	if not _has_active_multiplayer_peer():
 		return
@@ -237,7 +239,7 @@ func _notify_kill_feed(killer_name: String, victim_name: String) -> void:
 		local_player.hud.call("show_kill_feed_toast", killer_name, victim_name)
 
 
-@rpc("call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _update_stats(stats: Dictionary):
 	if not is_instance_valid(leaderboard):
 		return
@@ -245,7 +247,7 @@ func _update_stats(stats: Dictionary):
 	leaderboard.populate_leaderboard(stats)
 
 
-@rpc("call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_WORLD)
 func _setup_player(peer_id, player_path: NodePath, spawn_position: Vector2, server_tick: int):
 	for _i in range(30):
 		if not is_inside_tree():
@@ -337,7 +339,7 @@ func _sync_existing_players_to_peer(peer_id: int) -> void:
 			continue
 		rpc_id(peer_id, "_setup_player", player.owner_peer_id, player.get_path(), player.global_position, NetworkTick.tick)
 
-@rpc("any_peer", "reliable")
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_WORLD)
 func request_players_resync() -> void:
 	if not multiplayer.is_server():
 		return
@@ -391,7 +393,7 @@ func _new_player_stats(peer_id: int) -> Dictionary:
 		"current_weapon": {}
 	}
 
-@rpc("any_peer", "unreliable")
+@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_UI)
 func _request_ping_echo(client_send_msec: int) -> void:
 	if not multiplayer.is_server():
 		return
@@ -400,7 +402,7 @@ func _request_ping_echo(client_send_msec: int) -> void:
 		return
 	_receive_ping_echo.rpc_id(peer_id, client_send_msec)
 
-@rpc("authority", "call_local", "unreliable")
+@rpc("authority", "call_local", "unreliable", RPC_CHANNEL_UI)
 func _receive_ping_echo(client_send_msec: int) -> void:
 	if multiplayer.is_server():
 		return
@@ -409,7 +411,7 @@ func _receive_ping_echo(client_send_msec: int) -> void:
 	var rtt_ms := maxi(0, int(Time.get_ticks_msec() - client_send_msec))
 	_report_client_ping.rpc_id(1, rtt_ms)
 
-@rpc("any_peer", "unreliable")
+@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_UI)
 func _report_client_ping(rtt_ms: int) -> void:
 	if not multiplayer.is_server():
 		return
@@ -554,7 +556,7 @@ func _end_match(winner_id: int, reason: String) -> void:
 	_update_match_timer_ui.rpc("")
 	_show_match_end_ui_and_return.rpc(winner_id, final_stats)
 
-@rpc("call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _update_match_timer_ui(text: String) -> void:
 	_update_match_timer_ui_local(text)
 
@@ -573,7 +575,7 @@ func _has_active_multiplayer_peer() -> bool:
 		return peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
 	return true
 
-@rpc("call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:
 	if post_match_transition_started:
 		return

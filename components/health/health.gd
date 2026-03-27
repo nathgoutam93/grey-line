@@ -2,6 +2,7 @@ extends Node
 class_name HealthComponent
 
 @export var max_health: int = 100
+const RPC_CHANNEL_WORLD := 1
 
 var current_health: int
 var is_dead := false
@@ -36,7 +37,7 @@ func take_damage(amount: int, killer_id: int, is_headshot: bool = false):
 func _is_damage_authority() -> bool:
 	return multiplayer.multiplayer_peer == null or multiplayer.is_server()
 
-@rpc("authority", "reliable")
+@rpc("authority", "call_remote", "reliable", RPC_CHANNEL_WORLD)
 func _remote_sync_health(new_health: int, dead: bool) -> void:
 	current_health = clampi(new_health, 0, max_health)
 	is_dead = dead

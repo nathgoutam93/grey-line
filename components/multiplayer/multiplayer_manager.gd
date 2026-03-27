@@ -25,6 +25,7 @@ const DEFAULT_PLAYER_NAME := "Player"
 const DEFAULT_AVATAR_ID := "avatar_01"
 const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
+const RPC_CHANNEL_UI := 2
 static var persisted_player_names := {}
 static var persisted_player_avatar_ids := {}
 static var persisted_match_started := false
@@ -202,7 +203,7 @@ func _on_server_disconnected() -> void:
 	if ui_layer:
 		ui_layer.show()
 
-@rpc("any_peer", "reliable")
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
 func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
 	if not multiplayer.is_server():
 		return
@@ -366,12 +367,12 @@ func start_match() -> void:
 	_start_match_ui.rpc()
 	_start_game()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _start_match_ui() -> void:
 	if ui_layer:
 		ui_layer.hide()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, has_started: bool) -> void:
 	player_names = names.duplicate(true)
 	player_avatar_ids = avatars.duplicate(true)
@@ -439,7 +440,7 @@ func _request_lobby_sync_from_server() -> void:
 	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
 	request_lobby_sync.rpc_id(1)
 
-@rpc("any_peer", "reliable")
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
 func request_lobby_sync() -> void:
 	if not multiplayer.is_server():
 		return
