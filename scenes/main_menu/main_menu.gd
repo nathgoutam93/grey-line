@@ -21,6 +21,7 @@ const MAP_1_THUMBNAIL_PATH := "res://scenes/maps/map_1/_assets/map_f.png"
 var _selected_map_scene_path := MAP_1_SCENE_PATH
 
 func _ready() -> void:
+	Input.emulate_mouse_from_touch = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	MultiplayerSession.enter_main_menu()
 	if not MultiplayerSession.main_menu_state_changed.is_connected(_on_main_menu_state_changed):

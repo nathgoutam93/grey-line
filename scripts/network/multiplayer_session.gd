@@ -446,6 +446,7 @@ func _reset_network_session() -> void:
 		multiplayer.multiplayer_peer = null
 
 func _release_mouse_capture() -> void:
+	Input.emulate_mouse_from_touch = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _start_lan_discovery_listener() -> void:
