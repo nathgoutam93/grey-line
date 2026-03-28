@@ -3,7 +3,8 @@ extends Node2D
 const DEFAULT_AVATAR_ID := "avatar_01"
 const DEFAULT_AVATAR_PATH := "res://assets/sprites/character/head.png"
 
-@onready var _multiplayer_manager: Node = get_node_or_null("MultiplayerManager")
+@onready var _ui_layer: CanvasLayer = get_node_or_null("UI")
+@onready var _level: Node2D = get_node_or_null("Level")
 @onready var _start_match_button: BaseButton = _find_button(["UI/Control/start_match", "UI/Control/LobbyFrame/VBoxContainer/HBoxContainer2/start_match"])
 @onready var _lobby_status_label: Label = _find_label(["UI/Control/lobby_status", "UI/Control/LobbyFrame/VBoxContainer/lobby_status"])
 @onready var _lobby_players_label: Label = _find_label(["UI/Control/lobby_players", "UI/Control/LobbyFrame/VBoxContainer/lobby_players"])
@@ -26,9 +27,49 @@ var _avatar_texture_cache: Dictionary = {}
 
 func _ready() -> void:
 	_load_avatar_catalog()
+	if not MultiplayerSession.lobby_sync_updated.is_connected(_on_lobby_sync_updated):
+		MultiplayerSession.lobby_sync_updated.connect(_on_lobby_sync_updated)
+	if not MultiplayerSession.lobby_ui_visibility_requested.is_connected(_on_lobby_ui_visibility_requested):
+		MultiplayerSession.lobby_ui_visibility_requested.connect(_on_lobby_ui_visibility_requested)
+	if not MultiplayerSession.server_map_load_requested.is_connected(_on_server_map_load_requested):
+		MultiplayerSession.server_map_load_requested.connect(_on_server_map_load_requested)
 	_connect_start_button()
-	if _multiplayer_manager != null and _multiplayer_manager.has_method("get_lobby_sync_payload"):
-		sync_lobby(_multiplayer_manager.call("get_lobby_sync_payload"))
+	MultiplayerSession.enter_lobby()
+	sync_lobby(MultiplayerSession.get_lobby_sync_payload())
+
+func _exit_tree() -> void:
+	if MultiplayerSession.lobby_sync_updated.is_connected(_on_lobby_sync_updated):
+		MultiplayerSession.lobby_sync_updated.disconnect(_on_lobby_sync_updated)
+	if MultiplayerSession.lobby_ui_visibility_requested.is_connected(_on_lobby_ui_visibility_requested):
+		MultiplayerSession.lobby_ui_visibility_requested.disconnect(_on_lobby_ui_visibility_requested)
+	if MultiplayerSession.server_map_load_requested.is_connected(_on_server_map_load_requested):
+		MultiplayerSession.server_map_load_requested.disconnect(_on_server_map_load_requested)
+
+func _on_lobby_sync_updated(payload: Dictionary) -> void:
+	sync_lobby(payload)
+
+func _on_lobby_ui_visibility_requested(visible: bool) -> void:
+	if _ui_layer != null:
+		_ui_layer.visible = visible
+
+func _on_server_map_load_requested(map_path: String) -> void:
+	if multiplayer.multiplayer_peer == null or not multiplayer.is_server():
+		return
+	if _level == null:
+		return
+	var packed := load(map_path)
+	if not (packed is PackedScene):
+		push_error("Failed to load map scene at path: %s" % map_path)
+		return
+	_clear_level_children()
+	_level.add_child((packed as PackedScene).instantiate())
+
+func _clear_level_children() -> void:
+	if _level == null:
+		return
+	for child in _level.get_children():
+		_level.remove_child(child)
+		child.queue_free()
 
 func sync_lobby(payload: Dictionary) -> void:
 	var names_variant: Variant = payload.get("player_names", {})
@@ -154,11 +195,9 @@ func _load_avatar_catalog() -> void:
 			_avatar_catalog = (catalog_variant as Dictionary).duplicate(true)
 
 func _connect_start_button() -> void:
-	if _start_match_button == null or _multiplayer_manager == null:
+	if _start_match_button == null:
 		return
-	if not _multiplayer_manager.has_method("start_match"):
-		return
-	var call := Callable(_multiplayer_manager, "start_match")
+	var call := Callable(MultiplayerSession, "start_match")
 	if not _start_match_button.is_connected("pressed", call):
 		_start_match_button.connect("pressed", call)
 

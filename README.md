@@ -2,14 +2,14 @@
 
   1. Session/connection layer
 
-  - Uses ENetMultiplayerPeer (create_server / create_client) in components/multiplayer/multiplayer_manager.gd.
+  - Uses ENetMultiplayerPeer (create_server / create_client) in scripts/network/multiplayer_session.gd.
   - Default server port is 3000; LAN discovery uses UDP broadcast on 3001 with token GREYLINE_DISCOVERY_V1 (same file).
   - Client join flow: auto-discover host, fallback to manual IP input, then register profile via RPC _register_player_profile.
   - Networking singleton tick clock is autoloaded as NetworkTick in project.godot:22.
 
   2. Scene flow
 
-  - Main scene is scenes/main_menu/main_menu.tscn; HOST/JOIN buttons call MultiplayerManager.host_game/join_game.
+  - Main scene is scenes/main_menu/main_menu.tscn; HOST/JOIN buttons route through scenes/main_menu/main_menu.gd to MultiplayerSession.host_game/join_game.
   - Lobby scene scenes/lobby/lobby.tscn syncs roster/map/start state through sync_lobby(...) in scenes/lobby/lobby.gd.
   - Server starts match via start_match(), loads selected map into Level, and hides lobby UI.
 

@@ -370,9 +370,9 @@ func _should_respawn_peer(peer_id: int) -> bool:
 	if peer_id == multiplayer.get_unique_id():
 		return true
 
-	var multiplayer_manager := get_tree().get_first_node_in_group("multiplayer_manager")
-	if multiplayer_manager != null and multiplayer_manager.has_method("is_peer_connected"):
-		return bool(multiplayer_manager.call("is_peer_connected", peer_id))
+	var session := _get_multiplayer_session()
+	if session != null and session.has_method("is_peer_connected"):
+		return bool(session.call("is_peer_connected", peer_id))
 
 	return multiplayer.get_peers().has(peer_id)
 
@@ -517,18 +517,15 @@ func _refresh_all_player_combat_data() -> bool:
 	return has_any_change
 
 func _player_identifier(peer_id: int) -> String:
-	var multiplayer_manager := _get_multiplayer_manager()
-	if multiplayer_manager and multiplayer_manager.has_method("get_player_name"):
-		var player_name := String(multiplayer_manager.get_player_name(peer_id)).strip_edges()
+	var session := _get_multiplayer_session()
+	if session != null and session.has_method("get_player_name"):
+		var player_name := String(session.call("get_player_name", peer_id)).strip_edges()
 		if player_name != "":
 			return player_name
 	return str(peer_id)
 
-func _get_multiplayer_manager() -> Node:
-	var nodes := get_tree().get_nodes_in_group("multiplayer_manager")
-	if nodes.is_empty():
-		return null
-	return nodes[0]
+func _get_multiplayer_session() -> Node:
+	return get_node_or_null("/root/MultiplayerSession")
 
 func _sync_match_state_to_peer(peer_id: int) -> void:
 	_update_stats.rpc_id(peer_id, player_stats)
@@ -609,9 +606,9 @@ func _change_to_post_match_scene() -> bool:
 	if not is_inside_tree():
 		return false
 	_clear_local_fow_camera_reference()
-	var multiplayer_manager := _get_multiplayer_manager()
-	if multiplayer_manager and multiplayer_manager.has_method("return_to_lobby_after_match"):
-		multiplayer_manager.call_deferred("return_to_lobby_after_match")
+	var session := _get_multiplayer_session()
+	if session != null and session.has_method("return_to_lobby_after_match"):
+		session.call_deferred("return_to_lobby_after_match")
 		return true
 	var target_scene_path := post_match_scene_path.strip_edges()
 	if target_scene_path != "":

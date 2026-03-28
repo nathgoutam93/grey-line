@@ -1,87 +1,51 @@
 extends Node
 
+signal main_menu_state_changed(status_text: String, manual_join_visible: bool)
+signal lobby_sync_updated(payload: Dictionary)
+signal lobby_ui_visibility_requested(visible: bool)
+signal server_map_load_requested(map_scene_path: String)
+
 @export var port: int = 3000
 @export var max_players: int = 8
 @export var address: String = "127.0.0.1"
-@export var map_scene_path: String = "res://scenes/maps/counter_strike/counter_strike.tscn"
+@export var map_scene_path: String = "res://scenes/maps/map_1/map_1.tscn"
 @export var enable_lan_discovery: bool = true
 @export var discovery_port: int = 3001
 @export var discovery_timeout_seconds: float = 0.4
 @export var discovery_attempts: int = 3
 @export var discovery_token: String = "GREYLINE_DISCOVERY_V1"
 
-@onready var level: Node2D = get_node("../Level")
-@onready var ui_layer: CanvasLayer = get_node("../UI")
-@onready var hostname_input: LineEdit = get_node_or_null("../UI/Control/hostname")
-@onready var discovery_status_label: Label = get_node_or_null("../UI/Control/discovery_status")
-
 var local_player_name := ""
 var player_names := {}
 var player_avatar_ids := {}
 var match_started := false
+
 var discovery_listener: PacketPeerUDP
 var discovery_listener_active := false
+var manual_join_visible := false
+var discovery_status_text := "Auto-discover LAN host"
+
 const DEFAULT_PLAYER_NAME := "Player"
 const DEFAULT_AVATAR_ID := "avatar_01"
 const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
 const RPC_CHANNEL_UI := 2
+
 static var persisted_player_names := {}
 static var persisted_player_avatar_ids := {}
 static var persisted_match_started := false
 static var persisted_map_scene_path := ""
 
-func _ready():
-	add_to_group("multiplayer_manager")
-	_release_mouse_capture()
+func _ready() -> void:
 	_apply_persisted_map_scene_path()
-
-	if _is_main_menu_scene():
-		# Entering main menu always starts from a clean networking state.
-		_reset_network_session()
-		player_names.clear()
-		player_avatar_ids.clear()
-		match_started = false
-		persisted_player_names.clear()
-		persisted_player_avatar_ids.clear()
-		persisted_match_started = false
-		if ui_layer:
-			ui_layer.show()
-	elif multiplayer.multiplayer_peer != null:
-		player_names = persisted_player_names.duplicate(true)
-		player_avatar_ids = persisted_player_avatar_ids.duplicate(true)
-		match_started = persisted_match_started
-
 	_apply_default_player_name()
-	if hostname_input and hostname_input.text.strip_edges() == "" and not _is_loopback_address(address):
-		hostname_input.text = address
-	_set_manual_join_visible(false)
-	_set_discovery_status("Auto-discover LAN host")
-
-	if not multiplayer.connected_to_server.is_connected(_on_connected_to_server):
-		multiplayer.connected_to_server.connect(_on_connected_to_server)
-	if not multiplayer.connection_failed.is_connected(_on_connection_failed):
-		multiplayer.connection_failed.connect(_on_connection_failed)
-	if not multiplayer.server_disconnected.is_connected(_on_server_disconnected):
-		multiplayer.server_disconnected.connect(_on_server_disconnected)
-	if not multiplayer.peer_connected.is_connected(_on_peer_connected):
-		multiplayer.peer_connected.connect(_on_peer_connected)
-	if not multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
-		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	_connect_multiplayer_signals()
+	_release_mouse_capture()
 
 	if OS.has_feature("dedicated_server"):
 		local_player_name = "DedicatedServer"
 		host_game()
 		return
-
-	_refresh_lobby_ui()
-	if multiplayer.multiplayer_peer != null and multiplayer.is_server():
-		_start_lan_discovery_listener()
-	if _is_lobby_scene() and multiplayer.multiplayer_peer != null and not multiplayer.is_server():
-		call_deferred("_request_lobby_sync_from_server")
-
-	# Some Android builds can alter LineEdit state after initial _ready().
-	call_deferred("_apply_default_player_name")
 
 func _process(_delta: float) -> void:
 	if not discovery_listener_active or discovery_listener == null:
@@ -101,16 +65,47 @@ func _exit_tree() -> void:
 	_stop_lan_discovery_listener()
 	_release_mouse_capture()
 
+func enter_main_menu() -> void:
+	_release_mouse_capture()
+	_reset_network_session()
+	_stop_lan_discovery_listener()
+	player_names.clear()
+	player_avatar_ids.clear()
+	match_started = false
+	persisted_player_names.clear()
+	persisted_player_avatar_ids.clear()
+	persisted_match_started = false
+	manual_join_visible = false
+	discovery_status_text = "Auto-discover LAN host"
+	_emit_main_menu_state()
 
-func host_game():
+func enter_lobby() -> void:
+	_release_mouse_capture()
+	_apply_default_player_name()
+
+	if multiplayer.multiplayer_peer != null:
+		player_names = persisted_player_names.duplicate(true)
+		player_avatar_ids = persisted_player_avatar_ids.duplicate(true)
+		match_started = persisted_match_started
+
+	if multiplayer.multiplayer_peer != null and multiplayer.is_server():
+		_start_lan_discovery_listener()
+
+	if multiplayer.multiplayer_peer != null and not multiplayer.is_server():
+		call_deferred("request_lobby_sync_from_server")
+
+	_emit_lobby_sync()
+
+func host_game() -> Dictionary:
 	if not _is_profile_ready():
 		_set_discovery_status("Complete profile in Settings.")
-		return
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_server(port, max_players)
+		return {"ok": false, "message": "Profile incomplete."}
+
+	var peer := ENetMultiplayerPeer.new()
+	var error := peer.create_server(port, max_players)
 	if error != OK:
 		push_error("Failed to start server: %s (%s)" % [error, error_string(error)])
-		return
+		return {"ok": false, "message": "Failed to start server."}
 
 	multiplayer.multiplayer_peer = peer
 	local_player_name = _resolve_local_player_name()
@@ -119,89 +114,130 @@ func host_game():
 	_set_player_avatar_for_peer(multiplayer.get_unique_id(), _resolve_local_avatar_id())
 	match_started = false
 	_start_lan_discovery_listener()
-	print("Hosting game on port %d..." % port)
+	_persist_runtime_state()
 	_open_lobby_scene()
+	return {"ok": true}
 
-func join_game():
+func join_game(manual_host: String = "", manual_mode: bool = false) -> Dictionary:
 	if not _is_profile_ready():
 		_set_discovery_status("Complete profile in Settings.")
-		return
+		return {"ok": false, "manual_required": false}
+
 	local_player_name = _resolve_local_player_name()
 	_set_profile_username(local_player_name)
 	_stop_lan_discovery_listener()
-	var target_address := ""
+
+	var target_address := manual_host.strip_edges()
 	var target_port := port
 
-	if hostname_input and hostname_input.visible:
-		target_address = hostname_input.text.strip_edges()
-		if target_address == "":
-			_set_discovery_status("Enter host/IP manually.")
-			return
-		_connect_to_server(target_address, target_port)
-		return
+	if manual_mode and target_address == "":
+		_set_manual_join_visible(true)
+		_set_discovery_status("Enter host/IP manually.")
+		return {"ok": false, "manual_required": true}
+
+	if target_address != "":
+		_set_manual_join_visible(true)
+		return _connect_to_server(target_address, target_port)
 
 	_set_discovery_status("Searching LAN hosts...")
 	var discovered_host := await _discover_lan_host()
 	if discovered_host.is_empty():
 		_set_manual_join_visible(true)
 		_set_discovery_status("No LAN host found. Enter host/IP manually.")
-		return
+		return {"ok": false, "manual_required": true}
 
 	target_address = String(discovered_host.get("address", "")).strip_edges()
 	target_port = int(discovered_host.get("port", port))
 	_set_discovery_status("Host found: %s" % target_address)
-	_connect_to_server(target_address, target_port)
+	return _connect_to_server(target_address, target_port)
 
-func _connect_to_server(target_address: String, target_port: int) -> void:
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_client(target_address, target_port)
-	if error != OK:
-		push_error("Failed to connect to server: %s (%s)" % [error, error_string(error)])
-		_set_manual_join_visible(true)
-		_set_discovery_status("Connect failed. Enter host/IP manually.")
+func start_match() -> void:
+	if multiplayer.multiplayer_peer == null:
 		return
-
-	multiplayer.multiplayer_peer = peer
-	print("Connecting to server at %s:%d..." % [target_address, target_port])
-	_set_discovery_status("Connecting to %s:%d..." % [target_address, target_port])
-
-func _on_connected_to_server() -> void:
-	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
-	_open_lobby_scene()
-
-func _on_peer_connected(id: int) -> void:
 	if not multiplayer.is_server():
 		return
 	if match_started:
-		var peer := multiplayer.multiplayer_peer
-		if peer != null and peer.has_method("disconnect_peer"):
-			peer.disconnect_peer(id)
 		return
+
+	match_started = true
+	_stop_lan_discovery_listener()
 	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
 	_persist_runtime_state()
-	_refresh_lobby_ui()
+	_start_match_ui.rpc()
+	_emit_server_map_load_requested()
 
-func _on_peer_disconnected(id: int) -> void:
+func return_to_lobby_after_match() -> void:
+	_stop_lan_discovery_listener()
+	_release_mouse_capture()
+	_reset_network_session()
+
+	player_names.clear()
+	player_avatar_ids.clear()
+	match_started = false
+	persisted_player_names.clear()
+	persisted_player_avatar_ids.clear()
+	persisted_match_started = false
+	manual_join_visible = false
+	discovery_status_text = "Auto-discover LAN host"
+	_emit_main_menu_state()
+
+	if get_tree().current_scene == null or get_tree().current_scene.scene_file_path != MAIN_MENU_SCENE_PATH:
+		get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+func set_selected_map_scene_path(path: String) -> void:
+	var cleaned_path := path.strip_edges()
+	if cleaned_path == "":
+		return
+	map_scene_path = cleaned_path
+	persisted_map_scene_path = cleaned_path
+	_emit_lobby_sync()
+
+func get_lobby_sync_payload() -> Dictionary:
+	return {
+		"player_names": player_names.duplicate(true),
+		"player_avatar_ids": player_avatar_ids.duplicate(true),
+		"match_started": match_started,
+		"map_scene_path": map_scene_path,
+		"is_connected": multiplayer.multiplayer_peer != null,
+		"is_server": multiplayer.multiplayer_peer != null and multiplayer.is_server(),
+		"local_peer_id": multiplayer.get_unique_id() if multiplayer.multiplayer_peer != null else -1,
+	}
+
+func get_player_name(peer_id: int) -> String:
+	return String(player_names.get(peer_id, "Player %d" % peer_id))
+
+func is_peer_connected(peer_id: int) -> bool:
+	if multiplayer.multiplayer_peer == null:
+		return false
+	if peer_id == multiplayer.get_unique_id():
+		return true
+	return multiplayer.get_peers().has(peer_id)
+
+func get_discovery_status_text() -> String:
+	return discovery_status_text
+
+func is_manual_join_visible() -> bool:
+	return manual_join_visible
+
+func request_lobby_sync_from_server() -> void:
+	if multiplayer.multiplayer_peer == null:
+		return
 	if multiplayer.is_server():
-		player_names.erase(id)
-		player_avatar_ids.erase(id)
-		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
-		_persist_runtime_state()
-	_refresh_lobby_ui()
+		return
+	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
+	request_lobby_sync.rpc_id(1)
 
-func _on_connection_failed() -> void:
-	_set_manual_join_visible(true)
-	_set_discovery_status("Connection failed. Enter host/IP manually.")
-	_release_mouse_capture()
-	if ui_layer:
-		ui_layer.show()
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
+func _start_match_ui() -> void:
+	lobby_ui_visibility_requested.emit(false)
 
-func _on_server_disconnected() -> void:
-	_set_manual_join_visible(true)
-	_set_discovery_status("Disconnected from server.")
-	_release_mouse_capture()
-	if ui_layer:
-		ui_layer.show()
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
+func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, has_started: bool) -> void:
+	player_names = names.duplicate(true)
+	player_avatar_ids = avatars.duplicate(true)
+	match_started = has_started
+	_persist_runtime_state()
+	_emit_lobby_sync()
 
 @rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
 func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
@@ -221,15 +257,101 @@ func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
 	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
 	_persist_runtime_state()
 
-func get_player_name(peer_id: int) -> String:
-	return String(player_names.get(peer_id, "Player %d" % peer_id))
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
+func request_lobby_sync() -> void:
+	if not multiplayer.is_server():
+		return
+	var peer_id := multiplayer.get_remote_sender_id()
+	if peer_id <= 0:
+		return
+	_sync_lobby_data_to_all.rpc_id(peer_id, player_names, player_avatar_ids, match_started)
 
-func is_peer_connected(peer_id: int) -> bool:
-	if multiplayer.multiplayer_peer == null:
-		return false
-	if peer_id == multiplayer.get_unique_id():
-		return true
-	return multiplayer.get_peers().has(peer_id)
+func _open_lobby_scene() -> void:
+	_persist_runtime_state()
+	if get_tree().current_scene != null and get_tree().current_scene.scene_file_path == LOBBY_SCENE_PATH:
+		return
+	call_deferred("_change_scene_to_lobby")
+
+func _change_scene_to_lobby() -> void:
+	get_tree().change_scene_to_file(LOBBY_SCENE_PATH)
+
+func _emit_server_map_load_requested() -> void:
+	if multiplayer.multiplayer_peer == null or not multiplayer.is_server():
+		return
+	server_map_load_requested.emit(map_scene_path)
+
+func _emit_lobby_sync() -> void:
+	lobby_sync_updated.emit(get_lobby_sync_payload())
+
+func _emit_main_menu_state() -> void:
+	main_menu_state_changed.emit(discovery_status_text, manual_join_visible)
+
+func _set_manual_join_visible(visible: bool) -> void:
+	manual_join_visible = visible
+	_emit_main_menu_state()
+
+func _set_discovery_status(text: String) -> void:
+	discovery_status_text = text
+	_emit_main_menu_state()
+
+func _connect_to_server(target_address: String, target_port: int) -> Dictionary:
+	var peer := ENetMultiplayerPeer.new()
+	var error := peer.create_client(target_address, target_port)
+	if error != OK:
+		push_error("Failed to connect to server: %s (%s)" % [error, error_string(error)])
+		_set_manual_join_visible(true)
+		_set_discovery_status("Connect failed. Enter host/IP manually.")
+		return {"ok": false, "manual_required": true}
+
+	multiplayer.multiplayer_peer = peer
+	_set_discovery_status("Connecting to %s:%d..." % [target_address, target_port])
+	return {"ok": true, "manual_required": false}
+
+func _connect_multiplayer_signals() -> void:
+	if not multiplayer.connected_to_server.is_connected(_on_connected_to_server):
+		multiplayer.connected_to_server.connect(_on_connected_to_server)
+	if not multiplayer.connection_failed.is_connected(_on_connection_failed):
+		multiplayer.connection_failed.connect(_on_connection_failed)
+	if not multiplayer.server_disconnected.is_connected(_on_server_disconnected):
+		multiplayer.server_disconnected.connect(_on_server_disconnected)
+	if not multiplayer.peer_connected.is_connected(_on_peer_connected):
+		multiplayer.peer_connected.connect(_on_peer_connected)
+	if not multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
+		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+
+func _on_connected_to_server() -> void:
+	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
+	_open_lobby_scene()
+
+func _on_connection_failed() -> void:
+	_set_manual_join_visible(true)
+	_set_discovery_status("Connection failed. Enter host/IP manually.")
+	_release_mouse_capture()
+
+func _on_server_disconnected() -> void:
+	_set_manual_join_visible(true)
+	_set_discovery_status("Disconnected from server.")
+	_release_mouse_capture()
+
+func _on_peer_connected(id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if match_started:
+		var peer := multiplayer.multiplayer_peer
+		if peer != null and peer.has_method("disconnect_peer"):
+			peer.disconnect_peer(id)
+		return
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	_persist_runtime_state()
+	_emit_lobby_sync()
+
+func _on_peer_disconnected(id: int) -> void:
+	if multiplayer.is_server():
+		player_names.erase(id)
+		player_avatar_ids.erase(id)
+		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+		_persist_runtime_state()
+	_emit_lobby_sync()
 
 func _set_player_name_for_peer(peer_id: int, raw_name: String) -> void:
 	player_names[peer_id] = _sanitize_player_name(raw_name, peer_id)
@@ -283,130 +405,14 @@ func _sanitize_avatar_id(raw_avatar_id: String) -> String:
 				return cleaned
 	return DEFAULT_AVATAR_ID
 
-func _load_map_scene() -> PackedScene:
-	if map_scene_path.strip_edges() == "":
-		push_error("No map_scene_path configured on MultiplayerManager.")
-		return null
-
-	var loaded := load(map_scene_path)
-	if loaded is PackedScene:
-		return loaded
-
-	push_error("Failed to load map scene at path: %s" % map_scene_path)
-	return null
-
-func set_selected_map_scene_path(path: String) -> void:
-	var cleaned_path := path.strip_edges()
-	if cleaned_path == "":
-		return
-	map_scene_path = cleaned_path
-	persisted_map_scene_path = cleaned_path
-	_refresh_lobby_ui()
+func _apply_default_player_name() -> void:
+	local_player_name = _resolve_local_player_name()
 
 func _apply_persisted_map_scene_path() -> void:
 	if persisted_map_scene_path.strip_edges() != "":
 		map_scene_path = persisted_map_scene_path
 	else:
 		persisted_map_scene_path = map_scene_path.strip_edges()
-
-func _apply_default_player_name() -> void:
-	local_player_name = _resolve_local_player_name()
-
-func _start_game():
-	if ui_layer:
-		ui_layer.hide()
-
-	if multiplayer.is_server():
-		var map_scene := _load_map_scene()
-		if map_scene == null:
-			return
-		_change_level.call_deferred(map_scene)
-
-func _change_level(scene: PackedScene):
-	for c in level.get_children():
-		level.remove_child(c)
-		c.queue_free()
-
-	level.add_child(scene.instantiate())
-
-func return_to_lobby_after_match() -> void:
-	_stop_lan_discovery_listener()
-	_release_mouse_capture()
-	_reset_network_session()
-
-	player_names.clear()
-	player_avatar_ids.clear()
-	match_started = false
-	persisted_player_names.clear()
-	persisted_player_avatar_ids.clear()
-	persisted_match_started = false
-	if ui_layer:
-		ui_layer.show()
-	_set_manual_join_visible(false)
-	_set_discovery_status("Auto-discover LAN host")
-
-	for c in level.get_children():
-		level.remove_child(c)
-		c.queue_free()
-
-	if not _is_main_menu_scene():
-		get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
-
-func start_match() -> void:
-	if multiplayer.multiplayer_peer == null:
-		return
-	if not multiplayer.is_server():
-		return
-	if match_started:
-		return
-
-	match_started = true
-	_stop_lan_discovery_listener()
-	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
-	_persist_runtime_state()
-	_start_match_ui.rpc()
-	_start_game()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _start_match_ui() -> void:
-	if ui_layer:
-		ui_layer.hide()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, has_started: bool) -> void:
-	player_names = names.duplicate(true)
-	player_avatar_ids = avatars.duplicate(true)
-	match_started = has_started
-	_persist_runtime_state()
-	_refresh_lobby_ui()
-
-func _refresh_lobby_ui() -> void:
-	if not _is_lobby_scene():
-		return
-	var scene := get_tree().current_scene
-	if scene == null or not scene.has_method("sync_lobby"):
-		return
-	scene.call("sync_lobby", get_lobby_sync_payload())
-
-func get_lobby_sync_payload() -> Dictionary:
-	return {
-		"player_names": player_names.duplicate(true),
-		"player_avatar_ids": player_avatar_ids.duplicate(true),
-		"match_started": match_started,
-		"map_scene_path": map_scene_path,
-		"is_connected": multiplayer.multiplayer_peer != null,
-		"is_server": multiplayer.multiplayer_peer != null and multiplayer.is_server(),
-		"local_peer_id": multiplayer.get_unique_id() if multiplayer.multiplayer_peer != null else -1,
-	}
-
-func _open_lobby_scene() -> void:
-	_persist_runtime_state()
-	call_deferred("_change_scene_to_lobby")
-
-func _change_scene_to_lobby() -> void:
-	if _is_lobby_scene():
-		return
-	get_tree().change_scene_to_file(LOBBY_SCENE_PATH)
 
 func _persist_runtime_state() -> void:
 	_set_profile_username(local_player_name)
@@ -432,23 +438,6 @@ func _set_profile_username(name: String) -> void:
 	if profile != null and profile.has_method("set_username"):
 		profile.call("set_username", name)
 
-func _request_lobby_sync_from_server() -> void:
-	if multiplayer.multiplayer_peer == null:
-		return
-	if multiplayer.is_server():
-		return
-	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
-	request_lobby_sync.rpc_id(1)
-
-@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
-func request_lobby_sync() -> void:
-	if not multiplayer.is_server():
-		return
-	var peer_id := multiplayer.get_remote_sender_id()
-	if peer_id <= 0:
-		return
-	_sync_lobby_data_to_all.rpc_id(peer_id, player_names, player_avatar_ids, match_started)
-
 func _reset_network_session() -> void:
 	var existing_peer := multiplayer.multiplayer_peer
 	if existing_peer != null:
@@ -456,32 +445,8 @@ func _reset_network_session() -> void:
 			existing_peer.close()
 		multiplayer.multiplayer_peer = null
 
-func _is_main_menu_scene() -> bool:
-	var current_scene := get_tree().current_scene
-	if current_scene == null:
-		return false
-	return current_scene.scene_file_path == MAIN_MENU_SCENE_PATH
-
-func _is_lobby_scene() -> bool:
-	var current_scene := get_tree().current_scene
-	if current_scene == null:
-		return false
-	return current_scene.scene_file_path == LOBBY_SCENE_PATH
-
-func _set_manual_join_visible(visible: bool) -> void:
-	if hostname_input:
-		hostname_input.visible = visible
-
-func _set_discovery_status(text: String) -> void:
-	if discovery_status_label:
-		discovery_status_label.text = text
-
 func _release_mouse_capture() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-
-func _is_loopback_address(value: String) -> bool:
-	var trimmed := value.strip_edges()
-	return trimmed == "" or trimmed == "127.0.0.1" or trimmed == "localhost"
 
 func _start_lan_discovery_listener() -> void:
 	if not enable_lan_discovery:
