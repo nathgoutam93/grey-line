@@ -6,11 +6,11 @@
 [ext_resource type="Script" uid="uid://jno3qb7s58nq" path="res://components/sound_pool/sound_pool.gd" id="3_3advh"]
 [ext_resource type="PackedScene" uid="uid://bxy3omwv7b65v" path="res://components/vision_resposive/VisionResponsive.tscn" id="5_se5ie"]
 
-[node name="BaseWeapon" type="Node2D" unique_id=1718638313 node_paths=PackedStringArray("sound_pool", "reload_sfx_player")]
+[node name="BaseWeapon" type="Node2D" unique_id=1718638313 node_paths=PackedStringArray("sound_pool", "utility_sfx_player")]
 material = ExtResource("2_3advh")
 script = ExtResource("1_se5ie")
 sound_pool = NodePath("SoundPool")
-reload_sfx_player = NodePath("ReloadSfxPlayer")
+utility_sfx_player = NodePath("UtilitySfxPlayer")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=929480544]
 use_parent_material = true
@@ -19,8 +19,10 @@ texture = ExtResource("2_4s0hm")
 [node name="SoundPool" type="Node2D" parent="." unique_id=1135292231]
 script = ExtResource("3_3advh")
 pool_size = 4
+max_distance = 1200.0
 metadata/_custom_type_script = "uid://jno3qb7s58nq"
 
-[node name="ReloadSfxPlayer" type="AudioStreamPlayer2D" parent="." unique_id=1561638232]
+[node name="UtilitySfxPlayer" type="AudioStreamPlayer2D" parent="." unique_id=1561638232]
+max_distance = 250.0
 
 [node name="VisionResponsive" parent="." unique_id=974493997 instance=ExtResource("5_se5ie")]

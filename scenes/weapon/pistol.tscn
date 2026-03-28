@@ -19,5 +19,6 @@ texture = ExtResource("2_gpfw8")
 [node name="SoundPool" parent="." index="2" unique_id=1135292231]
 pool_size = 8
 
-[node name="ReloadSfxPlayer" parent="." index="3" unique_id=1561638232]
+[node name="UtilitySfxPlayer" parent="." index="3" unique_id=1561638232]
 stream = ExtResource("4_yqhu3")
+max_distance = 250.0

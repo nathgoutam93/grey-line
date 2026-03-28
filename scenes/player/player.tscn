@@ -112,7 +112,7 @@ player_input = NodePath("../PlayerInput")
 [node name="Footsteps" type="AudioStreamPlayer2D" parent="." unique_id=1931870781]
 stream = ExtResource("3_m8vw7")
 volume_db = -20.0
-max_distance = 500.0
+max_distance = 800.0
 
 [node name="AudioListener2D" type="AudioListener2D" parent="." unique_id=1130780519]
 rotation = 1.5707964

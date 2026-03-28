@@ -1,10 +1,21 @@
 [gd_scene format=3 uid="uid://cwn14t4l5vjyy"]
 
+[ext_resource type="Material" uid="uid://d0ku8kdctasp8" path="res://materials/fow_material.tres" id="1_o1lb3"]
 [ext_resource type="Script" uid="uid://dph3lausw4ap6" path="res://scenes/utilities/throwable_instance.gd" id="1_rhpee"]
 [ext_resource type="Texture2D" uid="uid://dm4c6txeitfon" path="res://scenes/utilities/smoke/_assets/smoke-nade.png" id="2_6st4a"]
+[ext_resource type="Script" uid="uid://jno3qb7s58nq" path="res://components/sound_pool/sound_pool.gd" id="3_u65sm"]
+[ext_resource type="PackedScene" uid="uid://bxy3omwv7b65v" path="res://components/vision_resposive/VisionResponsive.tscn" id="5_838iy"]
 
 [node name="SmokeInstance" type="Node2D" unique_id=1055906236]
+material = ExtResource("1_o1lb3")
 script = ExtResource("1_rhpee")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=166856]
+use_parent_material = true
 texture = ExtResource("2_6st4a")
+
+[node name="SoundPool" type="Node2D" parent="." unique_id=637208096]
+script = ExtResource("3_u65sm")
+metadata/_custom_type_script = "uid://jno3qb7s58nq"
+
+[node name="VisionResponsive" parent="." unique_id=1031755659 instance=ExtResource("5_838iy")]

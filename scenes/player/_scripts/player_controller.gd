@@ -45,7 +45,7 @@ const TICK_OFFSET_SMOOTHING := 0.1
 const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
 const RPC_CHANNEL_UI := 2
-const FOOTSTEP_SPEED_THRESHOLD := 8.0
+
 
 var _input_buffer: Dictionary = {}
 var _input_queue: Dictionary = {}
@@ -59,9 +59,12 @@ var _tick_offset := 0.0
 var _last_authoritative_input_tick := 0
 var _last_received_snapshot_tick := 0
 var _last_reload_request_tick := -1
+
 var _death_sequence_id := 0
-var _last_footstep_position := Vector2.ZERO
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
+
+var _last_footstep_position := Vector2.ZERO
+const FOOTSTEP_SPEED_THRESHOLD := 40.0;
 
 func _is_server_role() -> bool:
 	return multiplayer.is_server()
@@ -85,7 +88,6 @@ func _ready():
 	if not NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.connect(_on_network_tick)
 	_last_footstep_position = global_position
-	_configure_footstep_player()
 
 func setup_locals():
 	is_local_player = true
@@ -167,13 +169,6 @@ func _update_footstep_audio(delta: float) -> void:
 		return
 	if footstep_player.playing:
 		footstep_player.stop()
-
-func _configure_footstep_player() -> void:
-	if footstep_player == null:
-		return
-	if sound_pool != null:
-		footstep_player.max_distance = sound_pool.max_distance
-		footstep_player.attenuation = sound_pool.attenuation
 
 func _physics_process(_delta: float) -> void:
 	pass

@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://dh2nskt0itnox"]
 
+[ext_resource type="Material" uid="uid://d0ku8kdctasp8" path="res://materials/fow_material.tres" id="1_dlrbe"]
 [ext_resource type="Script" uid="uid://u6cqywfodesb" path="res://scenes/utilities/frag/frag_projectile.gd" id="1_gf7rp"]
 [ext_resource type="Texture2D" uid="uid://da6a78c3qh4a0" path="res://scenes/utilities/frag/_assets/frag.png" id="2_v3r2b"]
+[ext_resource type="PackedScene" uid="uid://bxy3omwv7b65v" path="res://components/vision_resposive/VisionResponsive.tscn" id="4_rxjtx"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_frag"]
 friction = 0.2
@@ -25,6 +27,7 @@ properties/3/spawn = true
 properties/3/replication_mode = 1
 
 [node name="FragProjectile" type="RigidBody2D" unique_id=771101971]
+material = ExtResource("1_dlrbe")
 physics_material_override = SubResource("PhysicsMaterial_frag")
 gravity_scale = 0.0
 continuous_cd = 1
@@ -35,7 +38,10 @@ detonate_sfx_max_distance = 2000.0
 shape = SubResource("CircleShape2D_frag")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=129373371]
+use_parent_material = true
 texture = ExtResource("2_v3r2b")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=722818305]
 replication_config = SubResource("SceneReplicationConfig_frag")
+
+[node name="VisionResponsive" parent="." unique_id=1052035688 instance=ExtResource("4_rxjtx")]

@@ -11,9 +11,7 @@ var _burst_shots_remaining := 0
 var _cooldown_ticks_remaining := 0
 
 @export var sound_pool: SoundPool = null
-@export var reload_sfx_player: AudioStreamPlayer2D = null
-@export var default_sfx_max_distance := 260.0
-@export var default_sfx_attenuation := 2.2
+@export var utility_sfx_player: AudioStreamPlayer2D = null
 
 var BulletTrailScene = preload("res://scenes/bullet_trail/bullet_trail.tscn")
 
@@ -31,10 +29,8 @@ const BODY_HURTBOX_MASK := 1 << 4 # Physics layer 5
 const HEAD_HURTBOX_MASK := 1 << 3 # Physics layer 4
 
 
-
 func _ready() -> void:
 	super._ready()
-	_configure_reload_sfx_player()
 
 func set_weapon_data(w: Weapon) -> void:
 	set_equipment_data(w)
@@ -148,8 +144,8 @@ func force_interrupt() -> void:
 	if is_reloading:
 		is_reloading = false
 		_reload_ticks_remaining = 0
-		if reload_sfx_player.playing:
-			reload_sfx_player.stop()
+		if utility_sfx_player.playing:
+			utility_sfx_player.stop()
 
 	is_firing = false
 	_burst_shots_remaining = 0
@@ -166,6 +162,7 @@ func drop() -> void:
 	
 	force_interrupt()
 	unequip()
+	_play_drop_sound()
 	drop_weapon_pickup()
 	queue_free()
 
@@ -352,24 +349,19 @@ func _play_shoot_sound():
 		sound_pool.play_stream(data.sounds.shoot_sound)
 
 func _play_reload_sound():
-	if reload_sfx_player:
-		reload_sfx_player.stream = data.sounds.reload_sound
-		reload_sfx_player.play()
+	if utility_sfx_player:
+		utility_sfx_player.stream = data.sounds.reload_sound
+		utility_sfx_player.play()
 
 func _play_equip_sound():
-	if sound_pool:
-		sound_pool.play_stream(data.sounds.equip_sound)
+	if utility_sfx_player:
+		utility_sfx_player.stream = data.sounds.equip_sound
+		utility_sfx_player.play()
 
-func _configure_reload_sfx_player() -> void:
-	if reload_sfx_player == null:
-		return
-	if sound_pool != null:
-		reload_sfx_player.max_distance = sound_pool.max_distance
-		reload_sfx_player.attenuation = sound_pool.attenuation
-		reload_sfx_player.volume_db = sound_pool.default_volume_db
-		return
-	reload_sfx_player.max_distance = default_sfx_max_distance
-	reload_sfx_player.attenuation = default_sfx_max_distance
+func _play_drop_sound():
+	if utility_sfx_player:
+		utility_sfx_player.stream = data.sounds.drop_sound
+		utility_sfx_player.play()
 
 func _resolve_surface_type(result: Dictionary) -> String:
 	if result.is_empty():
