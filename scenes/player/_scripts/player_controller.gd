@@ -45,6 +45,7 @@ const TICK_OFFSET_SMOOTHING := 0.1
 const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
 const RPC_CHANNEL_UI := 2
+const FOOTSTEP_SPEED_THRESHOLD := 8.0
 
 var _input_buffer: Dictionary = {}
 var _input_queue: Dictionary = {}
@@ -59,6 +60,7 @@ var _last_authoritative_input_tick := 0
 var _last_received_snapshot_tick := 0
 var _last_reload_request_tick := -1
 var _death_sequence_id := 0
+var _last_footstep_position := Vector2.ZERO
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 
 func _is_server_role() -> bool:
@@ -82,6 +84,8 @@ func _ready():
 	_state_history.configure(int(NetworkTick.get("tick_rate") * HISTORY_SECONDS))
 	if not NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.connect(_on_network_tick)
+	_last_footstep_position = global_position
+	_configure_footstep_player()
 
 func setup_locals():
 	is_local_player = true
@@ -128,9 +132,7 @@ func _process(_delta: float) -> void:
 		crosshair.player_velocity = spread_velocity
 	if camera and audio_listner:
 		audio_listner.rotation = -camera.rotation
-	
-	if footstep_player and footstep_player.playing:
-		footstep_player.stop()
+	_update_footstep_audio(_delta)
 
 	var current_item = _get_current_equipment()
 	if current_item and current_item is WeaponInstance:
@@ -142,6 +144,36 @@ func _process(_delta: float) -> void:
 		if idle_animation != "" and skeletal_character.anim_player.has_animation(idle_animation):
 			if skeletal_character.anim_player.current_animation != idle_animation:
 				skeletal_character.anim_player.play(idle_animation)
+
+func _update_footstep_audio(delta: float) -> void:
+	if footstep_player == null:
+		return
+	if delta <= 0.0:
+		return
+
+	var distance_moved := global_position.distance_to(_last_footstep_position)
+	_last_footstep_position = global_position
+	var estimated_speed := distance_moved / delta
+	var is_moving_now := estimated_speed > FOOTSTEP_SPEED_THRESHOLD
+
+	if movement_component != null and movement_component.is_moving:
+		is_moving_now = true
+	if is_dead:
+		is_moving_now = false
+
+	if is_moving_now:
+		if not footstep_player.playing:
+			footstep_player.play()
+		return
+	if footstep_player.playing:
+		footstep_player.stop()
+
+func _configure_footstep_player() -> void:
+	if footstep_player == null:
+		return
+	if sound_pool != null:
+		footstep_player.max_distance = sound_pool.max_distance
+		footstep_player.attenuation = sound_pool.attenuation
 
 func _physics_process(_delta: float) -> void:
 	pass
@@ -486,6 +518,9 @@ func reset_for_respawn() -> void:
 		movement_component.set_physics_process(true)
 		movement_component.is_moving = false
 		movement_component.external_velocity = Vector2.ZERO
+	_last_footstep_position = global_position
+	if footstep_player and footstep_player.playing:
+		footstep_player.stop()
 	if health_component:
 		health_component.is_dead = false
 		health_component.current_health = health_component.max_health

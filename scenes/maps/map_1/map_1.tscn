@@ -335,9 +335,6 @@ size = Vector2(25, 145)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_crem8"]
 size = Vector2(23, 70)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ef0tw"]
-size = Vector2(23, 23)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_37pbp"]
 size = Vector2(21.500061, 67.50001)
 
@@ -1024,10 +1021,6 @@ polygon = PackedVector2Array(-747, -202, -747, 70, -803, 70, -804, 214, -203, 21
 position = Vector2(498.5, 33)
 shape = SubResource("RectangleShape2D_crem8")
 
-[node name="CollisionShape2D5" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=1903976519]
-position = Vector2(-500, 224.5)
-shape = SubResource("RectangleShape2D_ef0tw")
-
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="Map/Level/building_4" unique_id=1245249694]
 position = Vector2(544, -273.25)
 rotation = 1.5708
@@ -1476,5 +1469,5 @@ _spawnable_scenes = PackedStringArray("uid://cy2enpfy31fdt", "uid://djd5057n31he
 spawn_path = NodePath("../Map")
 
 [node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1643962526]
-_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "res://scenes/utilities/frag/frag_projectile.tscn", "res://scenes/utilities/smoke/smoke_projectile.tscn")
+_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "uid://dh2nskt0itnox", "uid://cpo2ct5tbyue3")
 spawn_path = NodePath("../Map")
