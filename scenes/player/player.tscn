@@ -75,6 +75,9 @@ collision_mask = 0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BodyHurtBox" unique_id=522946355]
 shape = SubResource("CapsuleShape2D_5i508")
 
+[node name="PlayerMesh" parent="." unique_id=1121639645 instance=ExtResource("13_u5how")]
+scale = Vector2(0.35, 0.35)
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2034022886]
 rotation = 1.5707964
 ignore_rotation = false
@@ -92,10 +95,6 @@ max_spread_angle = 6.0
 max_speed = 250.0
 line_length = 1000.0
 cone_segments = 12
-
-[node name="PlayerMesh" parent="." unique_id=2018813737 instance=ExtResource("13_u5how")]
-position = Vector2(-5, 0)
-scale = Vector2(0.35, 0.35)
 
 [node name="EquipmentManager" type="Node" parent="." unique_id=604136733 node_paths=PackedStringArray("player", "skeletal_character", "camera_shake")]
 script = ExtResource("11_kvlxm")
@@ -124,5 +123,4 @@ pool_size = 3
 
 [node name="PlayerInput" type="Node" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
 script = ExtResource("13_gx1jg")
-input_mode = 1
 player = NodePath("..")

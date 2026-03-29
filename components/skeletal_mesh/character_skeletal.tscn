@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bvk3d81x52p7d" path="res://assets/sprites/pistol.png" id="2_y6eb8"]
 [ext_resource type="Texture2D" uid="uid://554s6org07e2" path="res://assets/sprites/character/backpack.png" id="3_pi4c2"]
 [ext_resource type="Texture2D" uid="uid://dtnb53hrgb10y" path="res://assets/sprites/character/arm.png" id="4_nb1eh"]
+[ext_resource type="Texture2D" uid="uid://uxttcbopbrhg" path="res://assets/sprites/character/foot.png" id="4_rhg0w"]
 [ext_resource type="Texture2D" uid="uid://bh8owf7shtd67" path="res://assets/sprites/character/hand_fist.png" id="5_jtl51"]
 [ext_resource type="Texture2D" uid="uid://d1j1kwvf7i5qg" path="res://assets/sprites/character/forearm.png" id="6_868g8"]
 [ext_resource type="Texture2D" uid="uid://dco7ljqi5iu8y" path="res://assets/sprites/character/hand_hold_knife.png" id="8_4x8ko"]
@@ -31,7 +32,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(0, 7)]
+"values": [Vector2(0, -1)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -284,6 +285,54 @@ tracks/21/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Vector2(19.5678, 16.1525)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-30, -32)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-30, 28)]
+}
+tracks/24/type = "value"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/25/type = "value"
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
 }
 
 [sub_resource type="Animation" id="Animation_jtl51"]
@@ -1229,9 +1278,58 @@ tracks/19/keys = {
 "update": 0,
 "values": [Vector2(19.5678, 16.1525)]
 }
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-30, -32), Vector2(-30, -32)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-30, 28), Vector2(-30, 28)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 0.0]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 0.0]
+}
 
 [sub_resource type="Animation" id="Animation_pi4c2"]
 resource_name = "knife_move"
+length = 1.1333333
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -1484,6 +1582,54 @@ tracks/20/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Vector2(19.5678, 16.1525)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0, 0.43, 0.49, 1, 1.01),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-9.210861, -30.547668), Vector2(-49.276844, -32.26011), Vector2(-51.525795, -33.917587), Vector2(-14.030957, -31.87683), Vector2(-9.21086, -30.547667)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0, 0.43, 0.49, 1, 1.01),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-46.567833, 29.689003), Vector2(-2.1010647, 33.6523), Vector2(2.132287, 34.819668), Vector2(-45.07215, 28.026796), Vector2(-43.884792, 28.182238)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0, 0.43, 0.49, 1, 1.01),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.0, 0.0, 0.0, 0.0]
+}
+tracks/24/type = "value"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"times": PackedFloat32Array(0, 0.43, 0.49, 1, 1.01),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.0, 0.0, 0.0, 0.0]
 }
 
 [sub_resource type="Animation" id="Animation_4x8ko"]
@@ -1990,6 +2136,7 @@ tracks/19/keys = {
 
 [sub_resource type="Animation" id="Animation_ocduy"]
 resource_name = "pistol_move"
+length = 1.0666667
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -2230,6 +2377,54 @@ tracks/19/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [-0.0987566]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0, 0.46, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-26.405893, 25.937014), Vector2(-0.38905525, 24.17662), Vector2(-26.405893, 25.937014)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0, 0.46, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(-9.45517, -32.180733), Vector2(-52.26309, -28.635168), Vector2(-9.45517, -32.180733)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0, 0.46, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, 0.0, 0.0]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0, 0.46, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.0, 0.0, 0.0]
 }
 
 [sub_resource type="Animation" id="Animation_q5eky"]
@@ -2736,19 +2931,181 @@ _data = {
 &"pistol_shoot": SubResource("Animation_rhg0w")
 }
 
-[node name="PlayerMesh" type="Node2D" unique_id=1121639645 node_paths=PackedStringArray("hand_socket", "anim_player")]
+[sub_resource type="Animation" id="Animation_okmrr"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-45.50451, 25.832932)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-8.246847, -30.281841)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.12]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [-0.12]
+}
+
+[sub_resource type="Animation" id="Animation_leg_idle"]
+length = 0.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-30, -32)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-30, 28)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_leg_move"]
+length = 0.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Skeleton2D/torso/foot_left:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.25983682, 0.26666668, 0.56666666),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-8.246847, -30.281841), Vector2(-28, -30), Vector2(-43.848343, -32.837826), Vector2(-8.246847, -30.281841)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Skeleton2D/torso/foot_left:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.25983682, 0.26666668, 0.56666666),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [-0.12, 0.12, 0.11180415, -0.12]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Skeleton2D/torso/foot_right:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.25983682, 0.26666668, 0.56666666),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-45.50451, 25.832932), Vector2(-28, 26), Vector2(5.787136, 31.678205), Vector2(-45.50451, 25.832932)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Skeleton2D/torso/foot_right:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.25983682, 0.26666668, 0.56666666),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [0.12, -0.12, -0.11180415, 0.12]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_leg"]
+_data = {
+&"RESET": SubResource("Animation_okmrr"),
+&"leg_idle": SubResource("Animation_leg_idle"),
+&"leg_move": SubResource("Animation_leg_move")
+}
+
+[node name="PlayerMesh" type="Node2D" unique_id=1121639645 node_paths=PackedStringArray("hand_socket", "anim_player", "leg_anim_player")]
 material = SubResource("ShaderMaterial_rhg0w")
 script = ExtResource("1_jtl51")
 hand_socket = NodePath("Skeleton2D/torso/arm_right/forearm_right/fist_right/hand_socket")
 anim_player = NodePath("AnimationPlayer")
+leg_anim_player = NodePath("LegAnimationPlayer")
 
 [node name="Skeleton2D" type="Skeleton2D" parent="." unique_id=1901747054]
 
 [node name="torso" type="Bone2D" parent="Skeleton2D" unique_id=22875114]
-position = Vector2(0, 7)
+position = Vector2(0, -1)
 rotation = -0.269067
-scale = Vector2(0.999999, 0.999999)
-rest = Transform2D(1, 0, 0, 1, 122, 210)
+rest = Transform2D(1, 0, 0, 1, 0, -1)
 
 [node name="head" type="Bone2D" parent="Skeleton2D/torso" unique_id=507333425]
 position = Vector2(16.0553, -1.79664)
@@ -2758,37 +3115,31 @@ rest = Transform2D(1, 0, 0, 1, 25, 0)
 [node name="arm_left" type="Bone2D" parent="Skeleton2D/torso" unique_id=764856452]
 position = Vector2(-6.78629, -50.6256)
 rotation = 0.0301888
-scale = Vector2(0.999995, 0.999995)
 rest = Transform2D(1, 0, 0, 1, -1, -56)
 
 [node name="forearm_left" type="Bone2D" parent="Skeleton2D/torso/arm_left" unique_id=96970761]
 position = Vector2(58.3316, -19.7591)
 rotation = 0.964395
-scale = Vector2(0.99999684, 0.99999684)
 rest = Transform2D(1, 0, 0, 1, 66, -15)
 
 [node name="fist_left" type="Bone2D" parent="Skeleton2D/torso/arm_left/forearm_left" unique_id=1615428521]
 position = Vector2(38.6534, 14.4441)
 rotation = 0.274696
-scale = Vector2(0.9999949, 0.9999949)
 rest = Transform2D(1, 0, 0, 1, 52, 12)
 
 [node name="arm_right" type="Bone2D" parent="Skeleton2D/torso" unique_id=78460221]
 position = Vector2(4.50971, 52.694)
 rotation = 0.0667697
-scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 0, 52)
 
 [node name="forearm_right" type="Bone2D" parent="Skeleton2D/torso/arm_right" unique_id=887229596]
 position = Vector2(63.9411, 21.5298)
 rotation = -0.736883
-scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 74, 20)
 
 [node name="fist_right" type="Bone2D" parent="Skeleton2D/torso/arm_right/forearm_right" unique_id=730953089]
 position = Vector2(43.5607, -6.24307)
 rotation = -0.460999
-scale = Vector2(0.999999, 0.999999)
 rest = Transform2D(1, 0, 0, 1, 46, -8)
 
 [node name="hand_socket" type="Node2D" parent="Skeleton2D/torso/arm_right/forearm_right/fist_right" unique_id=462497711]
@@ -2803,15 +3154,43 @@ texture = ExtResource("2_y6eb8")
 [node name="backpack" type="Bone2D" parent="Skeleton2D/torso" unique_id=1112695709]
 position = Vector2(-59, 0)
 rotation = 0.0393244
-scale = Vector2(0.9999808, 0.9999808)
+scale = Vector2(0.9999995, 0.9999995)
 rest = Transform2D(1, 0, 0, 1, -59, 0)
 
+[node name="foot_left" type="Bone2D" parent="Skeleton2D/torso" unique_id=647021494]
+position = Vector2(-8.246847, -30.281841)
+rotation = -0.12
+rest = Transform2D(1, 0, 0, 1, -30, -32)
+
+[node name="foot_right" type="Bone2D" parent="Skeleton2D/torso" unique_id=5972434]
+position = Vector2(-45.50451, 25.832932)
+rotation = 0.12
+rest = Transform2D(1, 0, 0, 1, -30, 28)
+
 [node name="polygons" type="Node2D" parent="." unique_id=2047498411]
+
+[node name="foot_l" type="Polygon2D" parent="polygons" unique_id=780007532]
 use_parent_material = true
+position = Vector2(-45, -63)
+texture = ExtResource("4_rhg0w")
+skeleton = NodePath("../../Skeleton2D")
+polygon = PackedVector2Array(18.142159, 21.288263, 48.13379, 15.530941, 74.91203, 16.46818, 84.95387, 32.401234, 82.27605, 48.200397, 59.246758, 53.15437, 40.50199, 48.066505, 16.937141, 45.656464, 11.715378, 32.26734)
+uv = PackedVector2Array(18.142159, 21.288263, 48.13379, 15.530941, 74.91203, 16.46818, 84.95387, 32.401234, 82.27605, 48.200397, 59.246758, 53.15437, 40.50199, 48.066505, 16.937141, 45.656464, 11.715378, 32.26734)
+bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/foot_left", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1), "torso/foot_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0)]
+
+[node name="foot_r" type="Polygon2D" parent="polygons" unique_id=1411326033]
+use_parent_material = true
+position = Vector2(-51, 58)
+texture = ExtResource("4_rhg0w")
+texture_scale = Vector2(1, -1)
+skeleton = NodePath("../../Skeleton2D")
+polygon = PackedVector2Array(15.092072, -38.69456, 27.410065, -49.405857, 48.69876, -48.736404, 76.68203, -51.94979, 85.51885, -39.631798, 77.2176, -19.146446, 46.422615, -15.799164, 32.096252, -16.602512, 15.895416, -22.092052)
+uv = PackedVector2Array(15.092072, -38.69456, 27.410065, -49.405857, 48.69876, -48.736404, 76.68203, -51.94979, 85.51885, -39.631798, 77.2176, -19.146446, 46.422615, -15.799164, 32.096252, -16.602512, 15.895416, -22.092052)
+bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/head", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_left/forearm_left/fist_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/arm_right/forearm_right/fist_right", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/backpack", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/foot_left", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0), "torso/foot_right", PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1)]
 
 [node name="torso" type="Polygon2D" parent="polygons" unique_id=1349814358]
 use_parent_material = true
-position = Vector2(129, 210)
+position = Vector2(-0.08413696, -0.7029877)
 offset = Vector2(-47, -100)
 texture = ExtResource("1_1u1ua")
 skeleton = NodePath("../../Skeleton2D")
@@ -2832,7 +3211,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), "torso
 
 [node name="arm_l" type="Polygon2D" parent="polygons" unique_id=1330971372]
 use_parent_material = true
-position = Vector2(158, 142)
+position = Vector2(28.915863, -68.70299)
 offset = Vector2(-42, -36)
 texture = ExtResource("4_nb1eh")
 skeleton = NodePath("../../Skeleton2D")
@@ -2842,7 +3221,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/head", PackedFloa
 
 [node name="hand_fist_l" type="Polygon2D" parent="polygons" unique_id=1579161584]
 use_parent_material = true
-position = Vector2(248, 141)
+position = Vector2(118.91586, -69.70299)
 offset = Vector2(-18, -33)
 texture = ExtResource("5_jtl51")
 skeleton = NodePath("../../Skeleton2D")
@@ -2852,7 +3231,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/head", PackedFloa
 
 [node name="forearm_l" type="Polygon2D" parent="polygons" unique_id=546548725]
 use_parent_material = true
-position = Vector2(201, 141)
+position = Vector2(71.91586, -69.70299)
 offset = Vector2(-14, -31)
 texture = ExtResource("6_868g8")
 skeleton = NodePath("../../Skeleton2D")
@@ -2862,7 +3241,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0), "torso/head", PackedFloat32
 
 [node name="arm_r" type="Polygon2D" parent="polygons" unique_id=1195647508]
 use_parent_material = true
-position = Vector2(150, 271)
+position = Vector2(20.915863, 60.297012)
 offset = Vector2(-33, 39)
 texture = ExtResource("4_nb1eh")
 texture_scale = Vector2(1, -1)
@@ -2874,7 +3253,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0), "torso/head", PackedFloa
 [node name="hand_r_hold_knife" type="Polygon2D" parent="polygons" unique_id=885000823]
 z_index = 2
 use_parent_material = true
-position = Vector2(251, 278)
+position = Vector2(121.91586, 67.29701)
 offset = Vector2(-19, 31)
 texture = ExtResource("8_4x8ko")
 texture_scale = Vector2(1, -1)
@@ -2885,7 +3264,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/head", PackedF
 
 [node name="hand_r_hold_gun" type="Polygon2D" parent="polygons" unique_id=2017191427]
 use_parent_material = true
-position = Vector2(250, 277)
+position = Vector2(120.91586, 66.29701)
 offset = Vector2(-19, 31)
 texture = ExtResource("8_nb1eh")
 texture_scale = Vector2(1, -1)
@@ -2897,7 +3276,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0), "torso/head", PackedF
 [node name="forearm_r" type="Polygon2D" parent="polygons" unique_id=389483756]
 z_index = 2
 use_parent_material = true
-position = Vector2(209, 281)
+position = Vector2(79.91586, 70.29701)
 offset = Vector2(-16, 30)
 texture = ExtResource("6_868g8")
 texture_scale = Vector2(1, -1)
@@ -2909,7 +3288,7 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0), "torso/head", PackedFloat32
 [node name="head" type="Polygon2D" parent="polygons" unique_id=1598254580]
 z_index = 6
 use_parent_material = true
-position = Vector2(131, 206)
+position = Vector2(1.9158478, -4.703018)
 rotation = 0.044336
 offset = Vector2(-33, -47)
 texture = ExtResource("2_0yg6b")
@@ -2920,5 +3299,9 @@ bones = ["torso", PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0), "torso/head", Pack
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=442184521]
 libraries/ = SubResource("AnimationLibrary_jtl51")
+
+[node name="LegAnimationPlayer" type="AnimationPlayer" parent="." unique_id=1780583692]
+process_priority = 1
+libraries/ = SubResource("AnimationLibrary_leg")
 
 [node name="VisionResponsive" parent="." unique_id=1122948380 instance=ExtResource("11_q5eky")]

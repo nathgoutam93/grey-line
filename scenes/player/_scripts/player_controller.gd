@@ -136,16 +136,37 @@ func _process(_delta: float) -> void:
 		audio_listner.rotation = -camera.rotation
 	_update_footstep_audio(_delta)
 
+	var is_moving_now := false
+	if movement_component != null:
+		is_moving_now = movement_component.is_moving
+	else:
+		is_moving_now = velocity.length_squared() > 0.01
+	_update_item_animation(is_moving_now)
+
+func _update_item_animation(is_moving_now: bool) -> void:
+	if skeletal_character == null or skeletal_character.anim_player == null:
+		return
+	skeletal_character.update_leg_animation(is_moving_now)
 	var current_item = _get_current_equipment()
 	if current_item and current_item is WeaponInstance:
 		var weapon = current_item as WeaponInstance
 		if weapon.can_play_idle_animation():
-			skeletal_character.anim_player.play(weapon.data.animations.get("idle", ""))
+			var anim_key := "move" if is_moving_now else "idle"
+			var anim_name := String(weapon.data.animations.get(anim_key, ""))
+			_play_equipment_animation(anim_name)
 	elif current_item and current_item.equipment_data != null and not current_item.is_locked:
-		var idle_animation := String(current_item.equipment_data.animations.get("idle", ""))
-		if idle_animation != "" and skeletal_character.anim_player.has_animation(idle_animation):
-			if skeletal_character.anim_player.current_animation != idle_animation:
-				skeletal_character.anim_player.play(idle_animation)
+		var anim_key := "move" if is_moving_now else "idle"
+		var anim_name := String(current_item.equipment_data.animations.get(anim_key, ""))
+		_play_equipment_animation(anim_name)
+
+func _play_equipment_animation(anim_name: String) -> void:
+	if anim_name == "":
+		return
+	if not skeletal_character.anim_player.has_animation(anim_name):
+		return
+	if skeletal_character.anim_player.current_animation == anim_name:
+		return
+	skeletal_character.anim_player.play(anim_name)
 
 func _update_footstep_audio(delta: float) -> void:
 	if footstep_player == null:
