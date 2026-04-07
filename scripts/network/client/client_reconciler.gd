@@ -1,7 +1,7 @@
 extends RefCounted
 class_name ClientReconciler
 
-const POSITION_DEADZONE := 6.0
+const POSITION_DEADZONE := 2.0
 
 func reconcile(player: PlayerController, authoritative_position: Vector2, authoritative_velocity: Vector2, ack_tick: int, input_buffer: Dictionary, movement_component: MovementCompoent) -> void:
 	if player == null or movement_component == null:
@@ -20,10 +20,12 @@ func reconcile(player: PlayerController, authoritative_position: Vector2, author
 			pending_frames.append(frame)
 
 	var error := authoritative_position - player.global_position
+	# Keep velocity authoritative even when positional error is tiny.
+	# This prevents subtle divergence after impulses/knockback.
+	player.velocity = authoritative_velocity
 	if error.length() <= POSITION_DEADZONE:
 		return
 
 	player.global_position = authoritative_position
-	player.velocity = authoritative_velocity
 	for frame in pending_frames:
 		movement_component.simulate(frame)

@@ -40,7 +40,8 @@ var is_dead := false
 var is_local_player := false
 
 const HISTORY_SECONDS := 1.0
-const INTERP_DELAY_TICKS := 2
+const DEFAULT_INTERP_DELAY_TICKS := 2
+const MAX_LAG_COMP_REWIND_TICKS := 8
 const TICK_OFFSET_SMOOTHING := 0.1
 const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
@@ -57,6 +58,7 @@ var _interpolator := RemoteInterpolator.new()
 var _is_firing_net := false
 var _tick_offset := 0.0
 var _last_authoritative_input_tick := 0
+var _lag_compensation_tick := 0
 var _last_received_snapshot_tick := 0
 var _last_reload_request_tick := -1
 
@@ -85,6 +87,7 @@ func _ready():
 		camera.position = Vector2(camera_boom_distance, 0.0)
 
 	_state_history.configure(int(NetworkTick.get("tick_rate") * HISTORY_SECONDS))
+	_interpolator.interpolation_delay_ticks = DEFAULT_INTERP_DELAY_TICKS
 	if not NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.connect(_on_network_tick)
 	_last_footstep_position = global_position
@@ -239,6 +242,8 @@ func _server_tick(tick: int) -> void:
 	_last_input = frame
 	_input_queue.erase(tick)
 	_last_authoritative_input_tick = frame.tick
+	var min_allowed_lag_comp_tick := maxi(tick - MAX_LAG_COMP_REWIND_TICKS, 0)
+	_lag_compensation_tick = clampi(frame.tick, min_allowed_lag_comp_tick, tick)
 	_apply_input_actions(frame)
 	PlayerSimulation.simulate(self , movement_component, frame)
 	_last_processed_tick = tick
@@ -246,9 +251,9 @@ func _server_tick(tick: int) -> void:
 	_send_snapshot(tick)
 
 func _proxy_tick(server_tick: int) -> void:
-	var render_tick := server_tick - INTERP_DELAY_TICKS
+	var render_tick := server_tick - _interpolator.interpolation_delay_ticks
 	if _interpolator.snapshot_buffer.size() < 2:
-		_interpolator.apply_latest(self )
+		_interpolator.apply_latest(self, render_tick)
 		return
 	_interpolator.interpolate(self , render_tick)
 
@@ -344,8 +349,8 @@ func get_history_transform(tick: int) -> Variant:
 	return _state_history.get_transform_for_tick(tick)
 
 func get_lag_compensation_tick() -> int:
-	if _last_authoritative_input_tick > 0:
-		return _last_authoritative_input_tick
+	if _lag_compensation_tick > 0:
+		return _lag_compensation_tick
 	return _last_processed_tick
 
 func sync_server_tick(server_tick: int) -> void:
@@ -524,6 +529,7 @@ func reset_for_respawn() -> void:
 	_last_input = null
 	_last_processed_tick = 0
 	_last_authoritative_input_tick = 0
+	_lag_compensation_tick = 0
 	_last_received_snapshot_tick = 0
 	_last_reload_request_tick = -1
 	_interpolator.snapshot_buffer.clear()

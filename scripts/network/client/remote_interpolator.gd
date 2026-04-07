@@ -4,6 +4,9 @@ class_name RemoteInterpolator
 var snapshot_buffer: Array = []
 var interpolation_delay_ticks := 2
 var max_buffer_size := 32
+const MAX_EXTRAPOLATION_TICKS := 2
+const FALLBACK_POSITION_SMOOTHING := 0.55
+const FALLBACK_ROTATION_SMOOTHING := 0.6
 
 func push_snapshot(snapshot: Dictionary) -> void:
 	var snapshot_tick := int(snapshot.get("tick", 0))
@@ -26,12 +29,21 @@ func push_snapshot(snapshot: Dictionary) -> void:
 	while snapshot_buffer.size() > max_buffer_size:
 		snapshot_buffer.pop_front()
 
-func apply_latest(player: PlayerController) -> void:
+func apply_latest(player: PlayerController, render_tick: int = -1) -> void:
 	if snapshot_buffer.is_empty():
 		return
 	var latest: Dictionary = snapshot_buffer[snapshot_buffer.size() - 1]
-	player.global_position = latest.get("position", player.global_position)
-	player.rotation = float(latest.get("rotation", player.rotation))
+	var latest_tick := int(latest.get("tick", 0))
+	var latest_pos: Vector2 = latest.get("position", player.global_position)
+	var latest_rot := float(latest.get("rotation", player.rotation))
+	var target_pos := latest_pos
+	if render_tick >= 0 and latest_tick > 0:
+		var extra_ticks := clampi(render_tick - latest_tick, 0, MAX_EXTRAPOLATION_TICKS)
+		if extra_ticks > 0:
+			var latest_vel: Vector2 = latest.get("velocity", Vector2.ZERO)
+			target_pos += latest_vel * (float(extra_ticks) / float(NetworkTick.tick_rate))
+	player.global_position = player.global_position.lerp(target_pos, FALLBACK_POSITION_SMOOTHING)
+	player.rotation = lerp_angle(player.rotation, latest_rot, FALLBACK_ROTATION_SMOOTHING)
 
 func interpolate(player: PlayerController, render_tick: int) -> void:
 	if snapshot_buffer.size() < 2:
