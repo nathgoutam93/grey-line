@@ -163,15 +163,21 @@ func test_free_for_all_fallback_keeps_individual_winner() -> void:
 	attacker.queue_free()
 	victim.queue_free()
 
-func test_frag_protects_teammates_but_keeps_self_damage_and_knockback() -> void:
+func test_frag_damages_both_teams_and_keeps_self_damage_and_knockback() -> void:
 	var thrower := await _spawn_player(Vector2(-2400, -2400))
 	var teammate := await _spawn_player(Vector2(-2300, -2400))
+	var enemy := await _spawn_player(Vector2(-2350, -2500))
+	var outside := await _spawn_player(Vector2(-1500, -2400))
 	thrower.owner_peer_id = 1
 	teammate.owner_peer_id = 2
+	enemy.owner_peer_id = 3
+	outside.owner_peer_id = 4
 	thrower.team = Teams.ALPHA
 	teammate.team = Teams.ALPHA
+	enemy.team = Teams.BRAVO
+	outside.team = Teams.ALPHA
 	var saved_teams := MultiplayerSession.player_teams.duplicate()
-	MultiplayerSession.player_teams = {1: Teams.ALPHA, 2: Teams.ALPHA}
+	MultiplayerSession.player_teams = {1: Teams.ALPHA, 2: Teams.ALPHA, 3: Teams.BRAVO, 4: Teams.ALPHA}
 	var frag := FragProjectile.new()
 	frag.instigator_peer_id = 1
 	frag.position = Vector2(-2350, -2400)
@@ -179,11 +185,16 @@ func test_frag_protects_teammates_but_keeps_self_damage_and_knockback() -> void:
 	add_child(frag)
 	frag._detonate()
 	check(thrower.health_component.current_health < 100, "own grenade did not cause self damage")
-	check(teammate.health_component.current_health == 100, "grenade damaged a teammate")
+	check(teammate.health_component.current_health < 100, "grenade did not damage a teammate")
+	check(teammate.health_component.current_health == thrower.health_component.current_health, "same-distance teammate/self damage differs")
+	check(enemy.health_component.current_health < 100, "grenade did not damage an enemy")
+	check(outside.health_component.current_health == 100, "grenade damaged a player outside its radius")
 	check(teammate.movement_component.external_velocity.length() > 0.0, "friendly grenade lost its knockback")
 	MultiplayerSession.player_teams = saved_teams
 	thrower.queue_free()
 	teammate.queue_free()
+	enemy.queue_free()
+	outside.queue_free()
 
 func test_team_visuals_restore_enemy_fog_mask() -> void:
 	var player := await _spawn_player(Vector2(-2400, -2400))

@@ -5,7 +5,7 @@
 Players belong to one of two teams, **Alpha** or **Bravo**:
 - Teams are picked in the lobby; the server auto-balances.
 - Teammates are always visible to each other.
-- Friendly fire is off by default.
+- Weapon friendly fire is off by default. Frag explosions damage both teams and the thrower.
 - Players spawn at their team's spawns.
 - Deathmatch becomes **team deathmatch**: the team score is the sum of member kills, and the score limit applies to the team. This is the stepping stone to step 5 (rounds).
 
@@ -28,7 +28,8 @@ Server-side visibility per team is the League of Legends / VALORANT model (see R
 MultiplayerSession.player_teams {peer_id: team}       authoritative on the server, synced in lobby data
   -> MatchPlayerSpawner._setup_player(..., team)      sets PlayerController.team on every peer
   -> WorldSnapshots._packet_for_peer: teammate => FLAG_VISIBLE always
-  -> WeaponInstance / FragProjectile: Teams.can_damage(attacker, victim) before take_damage
+  -> WeaponInstance: Teams.can_damage(attacker, victim) before take_damage
+  -> FragProjectile: server applies blast damage to all nearby players, regardless of team
   -> MatchScoreboard: per-team score; Deathmatch: team score limit
   -> client: PlayerController.apply_team_visuals() (tint, no FOW mask for teammates)
 ```
@@ -92,10 +93,10 @@ The `WorldSnapshots` packet is unchanged in layout. Teammates are simply always 
 6. **Team vision on the server.**
    - In `WorldSnapshotService._packet_for_peer`: `if Teams.is_teammate(viewer, target): flag = FLAG_VISIBLE`, checked before the `can_see` branch.
    - Keep the viewer itself handled first, as now.
-7. **No friendly fire.**
+7. **No weapon friendly fire; explosive friendly fire stays on.**
    - Add `@export var friendly_fire := false` on the game mode (`deathmatch.gd`), readable through a small static accessor (for example, the game mode registers itself in a group `game_mode`; use `get_tree().get_first_node_in_group("game_mode")`).
-   - Gate damage in `WeaponInstance._shoot_raycast` (before `take_damage`) and in `FragProjectile` (the damage loop, using `instigator_peer_id` → `MultiplayerSession.get_team`).
-   - Explosion *knockback* still applies to teammates. Only damage is gated.
+   - Gate damage in `WeaponInstance._shoot_raycast` before `take_damage`.
+   - Frag explosions always damage teammates, enemies and the thrower within their blast radius, regardless of `friendly_fire`. Explosion knockback also applies to both teams. Damage and knockback remain server-authoritative.
 8. **Team scoring.** `MatchScoreboard`:
    - store `"team"` in each player's stats;
    - add `team_scores := {Teams.ALPHA: 0, Teams.BRAVO: 0}`, incremented on an enemy kill and broadcast with stats (add a `team_scores` arg to `_update_stats`). In step 5 the round mode uses the same dict for round wins;
@@ -129,7 +130,7 @@ Host plus two clients (or one client and a bot):
 - the lobby shows teams, and switching works;
 - in the match, the teammate is visible through walls with a tint;
 - the enemy is only visible in line of sight;
-- you can't damage your teammate;
+- bullets cannot damage your teammate with `friendly_fire = false`, but frags can;
 - team score is on the leaderboard;
 - the match ends at the team score limit with VICTORY/DEFEAT per team.
 

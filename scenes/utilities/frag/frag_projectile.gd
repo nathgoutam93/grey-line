@@ -86,7 +86,7 @@ func _stop_motion_on_impact(impact_pos: Vector2) -> void:
 
 
 func _detonate() -> void:
-	if _detonated:
+	if not multiplayer.is_server() or _detonated:
 		return
 	_detonated = true
 	_is_server_simulating = false
@@ -123,9 +123,8 @@ func _detonate() -> void:
 
 		var damage_falloff := lerpf(float(min_damage), float(max_damage), factor)
 		var final_damage := maxi(0, int(round(damage_falloff)))
-		if final_damage > 0 and player.health_component and Teams.can_damage(
-			MultiplayerSession.get_team(instigator_peer_id), player.team, instigator_peer_id,
-			player.owner_peer_id, DeathmatchGameMode.is_friendly_fire_enabled(get_tree())):
+		# Explosives can hurt teammates even when weapon friendly fire is off.
+		if final_damage > 0 and player.health_component:
 			player.health_component.take_damage(final_damage, instigator_peer_id, false)
 
 	queue_free()

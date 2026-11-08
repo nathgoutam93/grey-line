@@ -77,6 +77,7 @@ func on_message(key: String, value: Variant) -> void:
 				"tint": target.skeletal_character.modulate,
 				"scores": (game_mode().get_node("Scoreboard") as MatchScoreboard).team_scores.duplicate(),
 				"result": (game_mode() as DeathmatchGameMode).match_result_label.text,
+				"health": target.health_component.current_health,
 			}
 		send("result:" + key.trim_prefix("sample:"), sample)
 
@@ -173,6 +174,27 @@ func run_host() -> void:
 	brain.stop()
 	mode.friendly_fire = false
 	check("friendly_fire_toggle_allows_damage", friendly_hurt, "enabling friendly fire lets the teammate's rifle hurt")
+
+	await hold(0.2) # let the bot's stop-fire input apply before measuring the frag
+	var health_before_frag := viewer.health_component.current_health
+	var frag := (load("res://scenes/utilities/frag/frag_projectile.tscn") as PackedScene).instantiate() as FragProjectile
+	frag.instigator_peer_id = _bot_id
+	frag.detonate_after_seconds = 0.1
+	frag.explosion_radius = 100.0
+	frag.min_damage = 20
+	frag.max_damage = 20
+	frag.max_force = 0.0 # knockback is covered separately in the unit suite
+	frag.position = mode.map.to_local(viewer.global_position + facing.orthogonal() * 50.0)
+	mode.map.add_child(frag, true)
+	frag.freeze = true
+	var detonated := await wait_until(func(): return not is_instance_valid(frag), 2.0)
+	check("frag_hurts_teammates_with_weapon_friendly_fire_off", detonated and not mode.friendly_fire
+		and viewer.health_component.current_health == health_before_frag - 20,
+		"teammate frag reduced health from %d to %d" % [health_before_frag, viewer.health_component.current_health])
+	await hold(0.2)
+	var frag_report := await _sample("frag_damage", client_id)
+	check("friendly_frag_damage_replicates", int(frag_report.get("health", -1)) == health_before_frag - 20,
+		"client received authoritative teammate frag damage")
 
 	puppet.health_component.take_damage(500, 1)
 	var scoreboard := game_mode().get_node("Scoreboard") as MatchScoreboard
