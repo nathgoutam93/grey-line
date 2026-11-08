@@ -188,11 +188,7 @@ func _resolve_avatar_texture(avatar_id: String) -> Texture2D:
 func _load_avatar_catalog() -> void:
 	_avatar_catalog.clear()
 	_avatar_texture_cache.clear()
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile != null and profile.has_method("get_avatar_catalog"):
-		var catalog_variant: Variant = profile.call("get_avatar_catalog")
-		if catalog_variant is Dictionary:
-			_avatar_catalog = (catalog_variant as Dictionary).duplicate(true)
+	_avatar_catalog = PlayerProfile.get_avatar_catalog().duplicate(true)
 
 func _connect_start_button() -> void:
 	if _start_match_button == null:

@@ -172,6 +172,7 @@ func _play_equip_sound() -> void:
 		var stream := (data.sounds as WeaponSoundData).equip_sound
 		if stream != null:
 			sfx_pool.play_stream(stream)
+			_report_noise(sfx_pool.max_distance, stream)
 
 
 func _play_use_sound() -> void:
@@ -182,6 +183,12 @@ func _play_use_sound() -> void:
 		var stream := (data.sounds as WeaponSoundData).shoot_sound
 		if stream != null:
 			sfx_pool.play_stream(stream)
+			_report_noise(sfx_pool.max_distance, stream)
+
+
+func get_use_noise_radius() -> float:
+	var sfx_pool := _resolve_sound_pool()
+	return sfx_pool.max_distance if sfx_pool else 0.0
 
 
 func _get_detonate_sound() -> AudioStream:

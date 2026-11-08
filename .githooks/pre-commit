@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# GreyLine pre-commit: runs tests/run_tests.sh against the *staged* snapshot,
+# so partial commits are tested exactly as committed.
+#
+# Enable once per clone:   git config core.hooksPath .githooks
+# Skip for one commit:     SKIP_TESTS=1 git commit ...   (or git commit --no-verify)
+# Run fewer suites:        GREYLINE_PRECOMMIT_SUITES="unit sync" git commit ...
+# Godot binary:            $GODOT, else godot4 / godot on PATH, else the macOS app
+#
+# The staged files are mirrored into .git/precommit-tree (outside the working
+# tree, kept between runs so Godot only reimports what changed).
+set -u
+
+if [ "${SKIP_TESTS:-0}" = "1" ]; then
+	echo "pre-commit: SKIP_TESTS=1, not running tests"
+	exit 0
+fi
+
+staged="$(git diff --cached --name-only --diff-filter=ACMRD)"
+if ! printf '%s\n' "$staged" | grep -qE '\.(gd|tscn|tres|gdshader|cfg)$|^project\.godot$'; then
+	echo "pre-commit: no game files staged, not running tests"
+	exit 0
+fi
+
+git_dir="$(cd "$(git rev-parse --git-dir)" && pwd)"
+tree="$git_dir/precommit-tree"
+snapshot="$(mktemp -d "${TMPDIR:-/tmp}/greyline-staged.XXXXXX")"
+trap 'rm -rf "$snapshot"' EXIT
+
+# Export the index (what will be committed), then mirror it into the cached
+# tree while keeping its .godot import cache.
+git checkout-index -a --prefix="$snapshot/"
+mkdir -p "$tree"
+find "$tree" -mindepth 1 -maxdepth 1 ! -name .godot -exec rm -rf {} +
+cp -R "$snapshot/." "$tree/"
+
+if [ ! -x "$tree/tests/run_tests.sh" ]; then
+	echo "pre-commit: tests/run_tests.sh is not in the staged snapshot" >&2
+	exit 1
+fi
+
+echo "pre-commit: testing the staged snapshot (SKIP_TESTS=1 to skip)"
+# shellcheck disable=SC2086 # suites are a space-separated list on purpose
+(cd "$tree" && tests/run_tests.sh ${GREYLINE_PRECOMMIT_SUITES:-})
+code=$?
+if [ "$code" -ne 0 ]; then
+	echo "pre-commit: tests failed - commit aborted (SKIP_TESTS=1 git commit ... to override)" >&2
+fi
+exit "$code"

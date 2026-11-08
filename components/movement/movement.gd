@@ -34,9 +34,27 @@ func simulate(input_frame: PlayerInputFrame) -> void:
 		move_direction = move_direction.normalized()
 
 	player.velocity = (move_direction * player.get_speed()) + external_velocity
-	player.move_and_slide()
+	_move_one_tick()
 	_decay_external_velocity()
 	is_moving = player.position.distance_to(previous_position) > POSITION_EPSILON
+
+
+## move_and_slide() integrates over the physics delta inside a physics frame
+## but over the *render* frame delta anywhere else - and reconciliation
+## replays run while handling snapshot packets, outside the physics frame.
+## Scale velocity so every simulated step covers exactly one network tick
+## regardless of where it is called from, the frame rate, or the physics
+## tick rate.
+func _move_one_tick() -> void:
+	var engine_delta := player.get_physics_process_delta_time() if Engine.is_in_physics_frame() else player.get_process_delta_time()
+	var tick_delta := NetworkTick.get_tick_delta()
+	if engine_delta <= 0.0 or is_equal_approx(engine_delta, tick_delta):
+		player.move_and_slide()
+		return
+	var scale := tick_delta / engine_delta
+	player.velocity *= scale
+	player.move_and_slide()
+	player.velocity /= scale
 
 
 func add_external_velocity(added_velocity: Vector2) -> void:

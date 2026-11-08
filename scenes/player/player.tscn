@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://b0debsmljmu54" path="res://components/crosshair/crosshair.tscn" id="15_fcs02"]
 [ext_resource type="PackedScene" uid="uid://bdyn3d05wtfee" path="res://components/camera_shake/camera_shake.tscn" id="181_ooe3s"]
 [ext_resource type="PackedScene" uid="uid://dt3c830kdvwu6" path="res://components/sound_pool/sound_pool.tscn" id="187_ooe3s"]
+[ext_resource type="Script" uid="uid://cf1stbixq1yos" path="res://scenes/player/_scripts/player_net_sync.gd" id="190_netsync"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_gx1jg"]
 light_mode = 2
@@ -33,7 +34,7 @@ radius = 8.0
 radius = 16.0
 height = 50.0
 
-[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("crosshair", "headHurtBox", "bodyHurtBox", "skeletal_character", "player_input", "movement_component", "health_component", "equipment_manager", "sound_pool", "footstep_player", "camera_shake", "hud", "camera", "audio_listner") groups=["Player"]]
+[node name="Player" type="CharacterBody2D" unique_id=580551366 node_paths=PackedStringArray("crosshair", "headHurtBox", "bodyHurtBox", "skeletal_character", "player_input", "movement_component", "health_component", "equipment_manager", "sound_pool", "footstep_player", "camera_shake", "net_sync", "hud", "camera", "audio_listner") groups=["Player"]]
 z_index = 1
 material = SubResource("CanvasItemMaterial_gx1jg")
 collision_layer = 2
@@ -52,6 +53,7 @@ equipment_manager = NodePath("EquipmentManager")
 sound_pool = NodePath("SoundPool")
 footstep_player = NodePath("Footsteps")
 camera_shake = NodePath("Camera2D/CameraShake")
+net_sync = NodePath("NetSync")
 hud = NodePath("HUD")
 camera = NodePath("Camera2D")
 audio_listner = NodePath("AudioListener2D")
@@ -123,4 +125,8 @@ pool_size = 3
 
 [node name="PlayerInput" type="Node" parent="." unique_id=287852089 node_paths=PackedStringArray("player")]
 script = ExtResource("13_gx1jg")
+player = NodePath("..")
+
+[node name="NetSync" type="Node" parent="." unique_id=1318469207 node_paths=PackedStringArray("player")]
+script = ExtResource("190_netsync")
 player = NodePath("..")

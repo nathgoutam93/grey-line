@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://ca4sffa83rp24" path="res://scenes/player/player.tscn" id="2_cvc4k"]
 [ext_resource type="Texture2D" uid="uid://dyvurudpwy4vt" path="res://assets/sprites/hud/shape_2.png" id="3_moinr"]
 [ext_resource type="Texture2D" uid="uid://lwnvlq5a0l5j" path="res://assets/sprites/icons/btn_shape.png" id="4_cvc4k"]
+[ext_resource type="Script" uid="uid://bedq0wcis2mja" path="res://components/deathmatch/match_player_spawner.gd" id="5_spawning"]
+[ext_resource type="Script" uid="uid://caece0fs512lh" path="res://components/deathmatch/match_scoreboard.gd" id="6_scoreboard"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_leave_game"]
 size = Vector2(500, 100)
@@ -142,3 +144,9 @@ horizontal_alignment = 1
 position = Vector2(102, 16)
 shape = SubResource("RectangleShape2D_moinr")
 visibility_mode = 1
+
+[node name="Spawning" type="Node" parent="." unique_id=1293847561]
+script = ExtResource("5_spawning")
+
+[node name="Scoreboard" type="Node" parent="." unique_id=1847362915]
+script = ExtResource("6_scoreboard")

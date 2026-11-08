@@ -40,8 +40,6 @@ func _ready():
 	setup_default_equipment()
 
 func setup_default_equipment():
-	print(multiplayer.get_unique_id())
-
 	for equipment_data in default_equipment:
 		# instantiate and configure
 		if equipment_data == null or equipment_data.instance_scene == null:
@@ -66,19 +64,11 @@ func setup_default_equipment():
 		skeletal_character.hand_socket.add_child(item)
 		item.unequip()
 
-		print("default equipment: %s slot=%d" % [equipment_data.name, slot])
 		if equipped_items.has(slot) and equipped_items[slot] != null:
 			push_warning("Default equipment slot %d already occupied, overwriting" % slot)
 		equipped_items[slot] = item
 
 	equip_slot(current_slot)
-
-	# debug: how many were stored?
-	var count := 0
-	for k in equipped_items.keys():
-		if equipped_items[k] != null:
-			count += 1
-	print("equipment_manager: %d default items stored" % count)
 
 
 func get_current_item() -> EquipmentInstance:
@@ -87,6 +77,38 @@ func get_current_item() -> EquipmentInstance:
 
 func get_item_in_slot(slot: int) -> EquipmentInstance:
 	return equipped_items.get(slot)
+
+
+## The slot being switched to, or the current slot when no switch is pending
+## (equip_slot can wait out an unequip delay before current_slot changes).
+func get_target_slot() -> int:
+	return _requested_slot if _requested_slot >= 0 else int(current_slot)
+
+
+## [mag, reserve] for each of WEAPON_SLOTS in order; -1, -1 for an empty slot
+## or one without ammo. Used to sync the owner's predicted ammo to the server.
+func capture_weapon_ammo() -> PackedInt32Array:
+	var state := PackedInt32Array()
+	for slot in WEAPON_SLOTS:
+		var weapon := equipped_items.get(slot) as WeaponInstance
+		if weapon != null and weapon.data != null and weapon.data.uses_ammo:
+			state.append(weapon.ammo_in_mag)
+			state.append(weapon.ammo_reserve)
+		else:
+			state.append(-1)
+			state.append(-1)
+	return state
+
+
+## Owner client: shifts each weapon's ammo by the given per-slot deltas
+## (same layout as capture_weapon_ammo).
+func apply_weapon_ammo_deltas(deltas: PackedInt32Array) -> void:
+	for i in range(WEAPON_SLOTS.size()):
+		var weapon := equipped_items.get(WEAPON_SLOTS[i]) as WeaponInstance
+		if weapon == null or weapon.data == null or not weapon.data.uses_ammo:
+			continue
+		weapon.ammo_in_mag = clampi(weapon.ammo_in_mag + deltas[i * 2], 0, weapon.data.mag_size)
+		weapon.ammo_reserve = maxi(weapon.ammo_reserve + deltas[i * 2 + 1], 0)
 
 
 func equip_slot(slot: int) -> void:

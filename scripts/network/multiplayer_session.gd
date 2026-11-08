@@ -246,7 +246,7 @@ func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
 
 	if match_started:
 		var peer := multiplayer.multiplayer_peer
-		if peer != null and peer.has_method("disconnect_peer"):
+		if peer != null:
 			peer.disconnect_peer(multiplayer.get_remote_sender_id())
 		return
 
@@ -320,8 +320,25 @@ func _connect_multiplayer_signals() -> void:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 
 func _on_connected_to_server() -> void:
+	_disable_packet_throttle(1)
 	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
 	_open_lobby_scene()
+
+## ENet's packet throttle drops a share of *unreliable* packets whenever round
+## trip time spikes. Everything time-critical here (input frames, world
+## snapshots) is unreliable, small and sent at a fixed rate, so throttling
+## only throws away state and inputs exactly when the connection is shaky.
+## Deceleration 0 keeps the throttle at its maximum: nothing is dropped on
+## purpose (redundant inputs and fresh snapshots cover real packet loss).
+const ENET_THROTTLE_INTERVAL_MS := 5000 # ENet's default
+
+func _disable_packet_throttle(peer_id: int) -> void:
+	var enet := multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if enet == null:
+		return
+	var packet_peer := enet.get_peer(peer_id)
+	if packet_peer != null:
+		packet_peer.throttle_configure(ENET_THROTTLE_INTERVAL_MS, ENetPacketPeer.PACKET_THROTTLE_SCALE, 0)
 
 func _on_connection_failed() -> void:
 	_set_manual_join_visible(true)
@@ -336,9 +353,10 @@ func _on_server_disconnected() -> void:
 func _on_peer_connected(id: int) -> void:
 	if not multiplayer.is_server():
 		return
+	_disable_packet_throttle(id)
 	if match_started:
 		var peer := multiplayer.multiplayer_peer
-		if peer != null and peer.has_method("disconnect_peer"):
+		if peer != null:
 			peer.disconnect_peer(id)
 		return
 	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
@@ -381,9 +399,9 @@ func _resolve_local_player_name() -> String:
 	return _sanitize_player_name(raw_name, peer_id)
 
 func _resolve_local_avatar_id() -> String:
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile != null and profile.has_method("get_avatar_id"):
-		return _sanitize_avatar_id(String(profile.call("get_avatar_id")))
+	var profile := _profile()
+	if profile != null:
+		return _sanitize_avatar_id(profile.get_avatar_id())
 	return DEFAULT_AVATAR_ID
 
 func _sanitize_player_name(raw_name: String, peer_id: int) -> String:
@@ -396,13 +414,9 @@ func _sanitize_avatar_id(raw_avatar_id: String) -> String:
 	var cleaned := raw_avatar_id.strip_edges()
 	if cleaned == "":
 		return DEFAULT_AVATAR_ID
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile != null and profile.has_method("get_avatar_catalog"):
-		var catalog_variant: Variant = profile.call("get_avatar_catalog")
-		if catalog_variant is Dictionary:
-			var catalog := catalog_variant as Dictionary
-			if catalog.has(cleaned):
-				return cleaned
+	var profile := _profile()
+	if profile != null and profile.get_avatar_catalog().has(cleaned):
+		return cleaned
 	return DEFAULT_AVATAR_ID
 
 func _apply_default_player_name() -> void:
@@ -421,28 +435,28 @@ func _persist_runtime_state() -> void:
 	persisted_match_started = match_started
 	persisted_map_scene_path = map_scene_path.strip_edges()
 
+## The PlayerProfile autoload, or null while it is not in the tree yet (it is
+## registered after this one, so it is missing during our own _ready).
+func _profile() -> PlayerProfileStore:
+	return get_node_or_null("/root/PlayerProfile") as PlayerProfileStore
+
 func _get_profile_username() -> String:
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile != null and profile.has_method("get_username"):
-		return String(profile.call("get_username"))
-	return ""
+	var profile := _profile()
+	return profile.get_username() if profile != null else ""
 
 func _is_profile_ready() -> bool:
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile != null and profile.has_method("is_profile_completed"):
-		return bool(profile.call("is_profile_completed"))
-	return true
+	var profile := _profile()
+	return profile.is_profile_completed() if profile != null else true
 
 func _set_profile_username(name: String) -> void:
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile != null and profile.has_method("set_username"):
-		profile.call("set_username", name)
+	var profile := _profile()
+	if profile != null:
+		profile.set_username(name)
 
 func _reset_network_session() -> void:
 	var existing_peer := multiplayer.multiplayer_peer
 	if existing_peer != null:
-		if existing_peer.has_method("close"):
-			existing_peer.close()
+		existing_peer.close()
 		multiplayer.multiplayer_peer = null
 
 func _release_mouse_capture() -> void:

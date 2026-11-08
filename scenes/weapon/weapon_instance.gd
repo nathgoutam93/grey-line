@@ -51,9 +51,9 @@ func _shoot_raycast() -> void:
 	var saved_transforms := {}
 	if multiplayer.is_server():
 		var shot_tick := NetworkTick.tick
-		if player != null and player.has_method("get_lag_compensation_tick"):
-			shot_tick = int(player.get_lag_compensation_tick())
-		saved_transforms = LagCompensationService.rewind_players_to_tick(get_tree(), shot_tick)
+		if player != null:
+			shot_tick = player.net_sync.get_lag_compensation_tick()
+		saved_transforms = LagCompensationService.rewind_players_to_tick(get_tree(), shot_tick, player)
 
 	var origin = global_position
 	var direction = player.global_transform.x.normalized()
@@ -171,14 +171,11 @@ func drop_weapon_pickup() -> void:
 	if not multiplayer.is_server():
 		return
 
-	var pickup = data.pickup_scene.instantiate() as RigidBody2D
+	var pickup := data.pickup_scene.instantiate() as WeaponPickup
 	pickup.global_position = global_position
-	if pickup.has_method("set_weapon_data"):
-		pickup.set_weapon_data(data)
-	if "ammo_in_mag" in pickup:
-		pickup.ammo_in_mag = ammo_in_mag
-	if "ammo_reserve" in pickup:
-		pickup.ammo_reserve = ammo_reserve
+	pickup.set_weapon_data(data)
+	pickup.ammo_in_mag = ammo_in_mag
+	pickup.ammo_reserve = ammo_reserve
 
 	var map_node = get_tree().current_scene.find_child("Map", true, false)
 	map_node.add_child.call_deferred(pickup, true)
@@ -344,24 +341,28 @@ func can_play_idle_animation() -> bool:
 		return false
 	return _cooldown_ticks_remaining <= 0
 
+func get_use_noise_radius() -> float:
+	return sound_pool.max_distance if sound_pool else 0.0
+
 func _play_shoot_sound():
 	if sound_pool:
 		sound_pool.play_stream(data.sounds.shoot_sound)
+		_report_noise(sound_pool.max_distance, data.sounds.shoot_sound)
+
+func _play_utility_sound(stream: AudioStream) -> void:
+	if utility_sfx_player:
+		utility_sfx_player.stream = stream
+		utility_sfx_player.play()
+		_report_noise(utility_sfx_player.max_distance, stream)
 
 func _play_reload_sound():
-	if utility_sfx_player:
-		utility_sfx_player.stream = data.sounds.reload_sound
-		utility_sfx_player.play()
+	_play_utility_sound(data.sounds.reload_sound)
 
 func _play_equip_sound():
-	if utility_sfx_player:
-		utility_sfx_player.stream = data.sounds.equip_sound
-		utility_sfx_player.play()
+	_play_utility_sound(data.sounds.equip_sound)
 
 func _play_drop_sound():
-	if utility_sfx_player:
-		utility_sfx_player.stream = data.sounds.drop_sound
-		utility_sfx_player.play()
+	_play_utility_sound(data.sounds.drop_sound)
 
 func _resolve_surface_type(result: Dictionary) -> String:
 	if result.is_empty():

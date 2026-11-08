@@ -1,4 +1,4 @@
-class_name VirtualJoystick
+class_name GreyLineVirtualJoystick
 
 extends Control
 

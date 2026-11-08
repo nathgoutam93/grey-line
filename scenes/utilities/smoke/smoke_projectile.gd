@@ -159,12 +159,11 @@ func _remote_spawn_smoke(smoke_position: Vector2, duration: float, smoke_scene_p
 	if world_smoke_scene == null and not smoke_scene_path.is_empty():
 		world_smoke_scene = load(smoke_scene_path) as PackedScene
 	if world_smoke_scene != null:
-		var smoke := world_smoke_scene.instantiate()
-		if smoke is Node2D:
-			(smoke as Node2D).global_position = smoke_position
+		var smoke := world_smoke_scene.instantiate() as SmokeCloud
 		if smoke != null:
-			smoke.set("duration", duration_value)
-			smoke.set("motion_seed", motion_seed)
+			smoke.global_position = smoke_position
+			smoke.duration = duration_value
+			smoke.motion_seed = motion_seed
 		get_tree().current_scene.add_child(smoke)
 
 	var viewport := MaskViewProvider.viewport
@@ -179,10 +178,10 @@ func _remote_spawn_smoke(smoke_position: Vector2, duration: float, smoke_scene_p
 		view_smoke_scene = load(mask_scene_path) as PackedScene
 	if view_smoke_scene == null:
 		return
-	var mask_smoke := view_smoke_scene.instantiate()
-	if mask_smoke is Node2D:
-		(mask_smoke as Node2D).global_position = smoke_position
-	if mask_smoke != null:
-		mask_smoke.set("duration", duration_value)
-		mask_smoke.set("motion_seed", motion_seed)
+	var mask_smoke := view_smoke_scene.instantiate() as SmokeCloud
+	if mask_smoke == null:
+		return
+	mask_smoke.global_position = smoke_position
+	mask_smoke.duration = duration_value
+	mask_smoke.motion_seed = motion_seed
 	level.add_child(mask_smoke)
