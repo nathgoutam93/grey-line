@@ -221,6 +221,9 @@ func get_player_name(peer_id: int) -> String:
 	return String(player_names.get(peer_id, "Player %d" % peer_id))
 
 func get_team(peer_id: int) -> int:
+	var mode := DeathmatchGameMode.current(get_tree())
+	if mode != null and not mode.teams_enabled:
+		return Teams.NONE
 	return int(player_teams.get(peer_id, Teams.NONE))
 
 ## Authoritative assignment; test scenarios may also use this during a match.
@@ -308,6 +311,11 @@ func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, teams: Dict
 	player_avatar_ids = avatars.duplicate(true)
 	player_teams = teams.duplicate(true)
 	match_started = has_started
+	for node in get_tree().get_nodes_in_group("Player"):
+		var player := node as PlayerController
+		if player != null:
+			player.team = get_team(player.owner_peer_id)
+			player.apply_team_visuals(get_team(multiplayer.get_unique_id()))
 	_persist_runtime_state()
 	_emit_lobby_sync()
 

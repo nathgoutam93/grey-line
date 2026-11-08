@@ -43,6 +43,7 @@ var is_dead := false
 var is_local_player := false
 
 var _death_sequence_id := 0
+var _fog_material: Material
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 const RPC_CHANNEL_UI := 2
 
@@ -54,6 +55,8 @@ var _footstep_moving := false
 const FOOTSTEP_SPEED_THRESHOLD := 40.0
 
 func _ready():
+	if skeletal_character != null:
+		_fog_material = skeletal_character.material
 	if health_component and not health_component.is_connected("die", _on_die):
 		health_component.connect("die", _on_die)
 
@@ -85,6 +88,15 @@ func get_current_equipment() -> EquipmentInstance:
 	if equipment_manager == null:
 		return null
 	return equipment_manager.get_current_item()
+
+func apply_team_visuals(local_team: int) -> void:
+	if skeletal_character == null:
+		return
+	var local := owner_peer_id == multiplayer.get_unique_id()
+	var teammate := not local and team != Teams.NONE and team == local_team
+	skeletal_character.material = null if local or teammate else _fog_material
+	var tint: Color = Teams.COLORS.get(team, Color.WHITE)
+	skeletal_character.modulate = tint.lerp(Color.WHITE, 0.6) if teammate else Color.WHITE
 
 
 func get_speed() -> float:

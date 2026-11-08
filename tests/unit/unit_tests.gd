@@ -132,6 +132,60 @@ func test_teams_assignment_and_switching() -> void:
 
 # --- BotBrain ---------------------------------------------------------------
 
+func test_team_visuals_restore_enemy_fog_mask() -> void:
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	player.owner_peer_id = -1
+	player.team = Teams.ALPHA
+	var fog_material := player.skeletal_character.material
+	player.apply_team_visuals(Teams.ALPHA)
+	check(player.skeletal_character.material == null, "teammate still masked by fog")
+	var tint: Color = Teams.COLORS[Teams.ALPHA]
+	check(player.skeletal_character.modulate == tint.lerp(Color.WHITE, 0.6), "teammate tint wrong")
+	player.apply_team_visuals(Teams.BRAVO)
+	check(player.skeletal_character.material == fog_material and fog_material != null, "enemy fog mask not restored")
+	check(player.skeletal_character.modulate == Color.WHITE, "enemy kept teammate tint")
+	player.queue_free()
+
+func test_team_spawns_avoid_players_and_prefer_distance() -> void:
+	var occupant := await _spawn_player(Vector2(-2400, -2400))
+	occupant.team = Teams.ALPHA
+	var enemy := await _spawn_player(Vector2(-2000, -2400))
+	enemy.team = Teams.BRAVO
+	var map := Node2D.new()
+	add_child(map)
+	var points := Node2D.new()
+	map.add_child(points)
+	var attackers := Node2D.new()
+	attackers.name = "AttackerSpawns"
+	points.add_child(attackers)
+	var defenders := Node2D.new()
+	defenders.name = "DefenderSpawns"
+	points.add_child(defenders)
+	for position in [Vector2(-2400, -2400), Vector2(-2200, -2400), Vector2(-2800, -2400)]:
+		var point := Node2D.new()
+		point.position = position
+		attackers.add_child(point)
+	var defender := Node2D.new()
+	defender.position = Vector2(-2400, -3000)
+	defenders.add_child(defender)
+	var fallback := Node2D.new()
+	fallback.position = Vector2(-3000, -3000)
+	points.add_child(fallback)
+	var spawner := MatchPlayerSpawner.new()
+	map.add_child(spawner)
+	spawner.setup(map, points, PLAYER_SCENE)
+	for _i in range(10):
+		check(spawner.choose_spawn_point(Teams.ALPHA) == attackers.get_child(2), "chose occupied/closer attacker spawn")
+	check(spawner.choose_spawn_point(Teams.BRAVO) == defender, "wrong role spawn")
+	check(spawner.choose_spawn_point(Teams.NONE) == fallback, "FFA did not use flat spawns")
+	points.remove_child(defenders)
+	defenders.queue_free()
+	spawner.setup(map, points, PLAYER_SCENE)
+	check(spawner.choose_spawn_point(Teams.BRAVO) == fallback, "missing role did not use flat fallback")
+	map.queue_free()
+	occupant.queue_free()
+	enemy.queue_free()
+
 func test_bot_brain_frame_fields() -> void:
 	var brain := BotBrain.new()
 	brain.move = Vector2(3, -4)

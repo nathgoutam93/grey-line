@@ -100,6 +100,8 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 				input_lead = owner_fields[2]
 				weapon_slot = owner_fields[3]
 				weapon_ammo = owner_fields[4]
+			elif Teams.is_teammate(viewer, target):
+				flag = FLAG_VISIBLE
 			elif VisibilityQuery.can_see(viewer, target, smoke):
 				seen[target.owner_peer_id] = tick
 				flag = FLAG_VISIBLE

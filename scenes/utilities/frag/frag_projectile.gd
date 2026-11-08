@@ -123,7 +123,9 @@ func _detonate() -> void:
 
 		var damage_falloff := lerpf(float(min_damage), float(max_damage), factor)
 		var final_damage := maxi(0, int(round(damage_falloff)))
-		if final_damage > 0 and player.health_component:
+		if final_damage > 0 and player.health_component and Teams.can_damage(
+			MultiplayerSession.get_team(instigator_peer_id), player.team, instigator_peer_id,
+			player.owner_peer_id, DeathmatchGameMode.is_friendly_fire_enabled(get_tree())):
 			player.health_component.take_damage(final_damage, instigator_peer_id, false)
 
 	queue_free()
