@@ -1,4 +1,5 @@
 extends CanvasLayer
+class_name PlayerHud
 
 @onready var _player: PlayerController = get_parent()
 @onready var controls_root: Control = get_node_or_null("Controls")
