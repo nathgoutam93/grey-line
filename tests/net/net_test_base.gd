@@ -57,6 +57,7 @@ func _start_host() -> void:
 	MultiplayerSession.host_game()
 	await multiplayer.peer_connected
 	await get_tree().create_timer(1.5).timeout
+	await run_host_lobby()
 	MultiplayerSession.start_match()
 	if not await wait_until(func(): return player(client_peer()) != null and player(1) != null, 15.0):
 		finish_with_failure("setup", "players did not spawn on the host")
@@ -79,6 +80,10 @@ func _start_client() -> void:
 	# Stay connected until the host has checked everything we reported.
 	await wait_for("done", 60.0)
 	_quit()
+
+## Override: host-side lobby checks before the map starts.
+func run_host_lobby() -> void:
+	pass
 
 ## Override: host-side scenario and checks.
 func run_host() -> void:
@@ -214,3 +219,24 @@ func find_open_spot(facing: Vector2, clearance: float) -> Vector2:
 			if spot_free(p) and ray_clear(p, p + facing * clearance) and ray_clear(p, p - facing * clearance) and ray_clear(p, p + facing.orthogonal() * 120.0):
 				return p
 	return Vector2.INF
+
+## [viewer_pos, target_pos]: the viewer faces a building 220-400 px ahead and
+## the target stands right behind it with all three sight rays blocked.
+func find_wall_setup(facing: Vector2) -> Array:
+	var space := get_viewport().world_2d.direct_space_state
+	for gx in range(-30, 31):
+		for gy in range(-30, 31):
+			var p := Vector2(gx * 80.0, gy * 80.0)
+			if not spot_free(p):
+				continue
+			var hit := space.intersect_ray(PhysicsRayQueryParameters2D.create(p, p + facing * 500.0, 1))
+			if hit.is_empty():
+				continue
+			var d := p.distance_to(hit.position)
+			if d < 220.0 or d > 400.0:
+				continue
+			var t: Vector2 = hit.position + facing * 160.0
+			var side := facing.orthogonal() * 40.0
+			if spot_free(t) and not ray_clear(p, t) and not ray_clear(p, t + side) and not ray_clear(p, t - side):
+				return [p, t]
+	return []

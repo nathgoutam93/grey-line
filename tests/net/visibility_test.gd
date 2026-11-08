@@ -130,7 +130,7 @@ func run_host() -> void:
 		check("hidden_shot_heard_from_true_position", int(shot["presence"]) != PlayerNetSync.NetPresence.CULLED and off < 1.0,
 			"presence=%s, %.2f px from the shooter" % [PlayerNetSync.NetPresence.keys()[int(shot["presence"])], off])
 
-	var wall_setup := _find_wall_setup(facing)
+	var wall_setup := find_wall_setup(facing)
 	if wall_setup.is_empty():
 		results.fail("behind_wall_is_culled", "no wall setup found on the map")
 	else:
@@ -156,24 +156,3 @@ func run_host() -> void:
 	smoke.queue_free()
 	await hold(1.2)
 	_expect("back_in_view_is_visible", await _sample("back"), PlayerNetSync.NetPresence.VISIBLE, true)
-
-## [viewer_pos, target_pos]: the viewer faces a building 220-400 px ahead and
-## the target stands right behind it with all three sight rays blocked.
-func _find_wall_setup(facing: Vector2) -> Array:
-	var space := get_viewport().world_2d.direct_space_state
-	for gx in range(-30, 31):
-		for gy in range(-30, 31):
-			var p := Vector2(gx * 80.0, gy * 80.0)
-			if not spot_free(p):
-				continue
-			var hit := space.intersect_ray(PhysicsRayQueryParameters2D.create(p, p + facing * 500.0, 1))
-			if hit.is_empty():
-				continue
-			var d := p.distance_to(hit.position)
-			if d < 220.0 or d > 400.0:
-				continue
-			var t: Vector2 = hit.position + facing * 160.0
-			var side := facing.orthogonal() * 40.0
-			if spot_free(t) and not ray_clear(p, t) and not ray_clear(p, t + side) and not ray_clear(p, t - side):
-				return [p, t]
-	return []
