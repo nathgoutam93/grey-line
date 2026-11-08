@@ -45,7 +45,10 @@ func run_host() -> void:
 		var kills := int(stats.get(1, {}).get("kills", -1))
 		var deaths := int(stats.get(victim_id, {}).get("deaths", -1))
 		check("kill_%d_counted" % (i + 1), kills == i + 1 and deaths == i + 1, "host %d kills, client %d deaths" % [kills, deaths])
-	check("score_limit_ends_match", gm.match_ended and gm.winning_peer_id == 1, "match_ended=%s winner=%d" % [gm.match_ended, gm.winning_peer_id])
+	var host_team := MultiplayerSession.get_team(1)
+	check("score_limit_ends_match", gm.match_ended and gm.winning_team == host_team, "match_ended=%s winning_team=%d" % [gm.match_ended, gm.winning_team])
+	check("team_score_reaches_limit", int(gm.scoreboard.team_scores[host_team]) == KILLS, "team score=%d" % int(gm.scoreboard.team_scores[host_team]))
+	check("winning_team_shows_victory", gm.match_result_label.text == "VICTORY", "host result '%s'" % gm.match_result_label.text)
 	var report: Variant = await wait_for("report", 10.0)
 	if report == null:
 		results.fail("client_report", "no report from the client")

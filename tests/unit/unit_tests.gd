@@ -130,6 +130,35 @@ func test_teams_assignment_and_switching() -> void:
 	check(teams[1] == Teams.ALPHA, "validation mutated teams")
 	check(Teams.other(Teams.ALPHA) == Teams.BRAVO and Teams.other(Teams.BRAVO) == Teams.ALPHA, "opposite teams wrong")
 
+func test_free_for_all_fallback_keeps_individual_winner() -> void:
+	var mode := DeathmatchGameMode.new()
+	mode.teams_enabled = false
+	mode.score_limit = 1
+	var spawning := MatchPlayerSpawner.new()
+	spawning.name = "Spawning"
+	spawning.spawning_enabled = false
+	mode.add_child(spawning)
+	var scoreboard := MatchScoreboard.new()
+	scoreboard.name = "Scoreboard"
+	mode.add_child(scoreboard)
+	add_child(mode)
+	var saved_teams := MultiplayerSession.player_teams.duplicate()
+	MultiplayerSession.player_teams = {1: Teams.ALPHA, 2: Teams.ALPHA}
+	check(MultiplayerSession.get_team(1) == Teams.NONE and MultiplayerSession.get_team(2) == Teams.NONE, "FFA kept lobby teams active")
+	var attacker := await _spawn_player(Vector2(-2400, -2400))
+	var victim := await _spawn_player(Vector2(-2100, -2400))
+	victim.owner_peer_id = 2
+	scoreboard.track_player(1, attacker)
+	scoreboard.track_player(2, victim)
+	victim.health_component.take_damage(500, 1)
+	check(mode.match_ended and mode.winning_peer_id == 1 and mode.winning_team == Teams.NONE, "FFA did not end at the individual limit")
+	check(int(scoreboard.player_stats[1]["kills"]) == 1 and int(scoreboard.team_scores[Teams.ALPHA]) == 0, "FFA scoring wrong")
+	check(mode._local_match_result_text(1) == "VICTORY", "FFA winner result wrong")
+	MultiplayerSession.player_teams = saved_teams
+	mode.queue_free()
+	attacker.queue_free()
+	victim.queue_free()
+
 # --- BotBrain ---------------------------------------------------------------
 
 func test_team_visuals_restore_enemy_fog_mask() -> void:
