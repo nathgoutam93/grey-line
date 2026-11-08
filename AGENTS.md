@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+## Roadmap
+- GreyLine is becoming a real-time PvP close-quarters tactical shooter: teams, attack/defend rounds, destructible walls and doors, and sound as information. There is no planning phase and there are no AI opponents.
+- The step-by-step build plan is in `docs/plan/`. Read `docs/plan/README.md` first (architecture, rules for implementing agents, definition of done), then only the step you are working on. Do the steps in order and follow each step's tasks, tests and commit plan rather than re-designing.
+
 ## Project Structure & Module Organization
 - `project.godot` is the Godot 4.7 project entry; main scene is wired from there.
 - `scenes/` contains playable scenes and feature flows (`main_menu`, `lobby`, `player`, `maps`, `ui`, `weapon`, `utilities`).
