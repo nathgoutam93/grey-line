@@ -47,10 +47,37 @@ const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
 const RPC_CHANNEL_UI := 2
 
+# Every input packet carries the last N frames so a single lost packet does not
+# drop movement or one-shot actions (drop/switch/interact).
+const INPUT_REDUNDANCY := 4
+# How many ticks early we want owner inputs to reach the server. The server
+# reports the measured lead back in snapshots and the client steers toward it.
+const TARGET_INPUT_LEAD_TICKS := 2
+const INITIAL_INPUT_LEAD_TICKS := 4
+const INPUT_OFFSET_SMOOTHING := 0.1
+const INPUT_OFFSET_SNAP_TICKS := 6.0
+const MAX_INPUT_GAP_FILL_TICKS := 3
+# Server rejects frames stamped further than this ahead of its own tick.
+const MAX_INPUT_LEAD_TICKS := 30
+const MAX_INPUT_BUFFER_SIZE := 120
 
+
+# Owner client state
 var _input_buffer: Dictionary = {}
+var _predicted_positions: Dictionary = {}
+var _send_history: Array = []
+var _input_tick_offset := 0.0
+var _has_input_lead_sample := false
+var _last_lead_sample_tick := 0
+var _last_stamped_tick := 0
+var _carry_actions: PlayerInputFrame = null
+
+# Server state
 var _input_queue: Dictionary = {}
 var _last_input: PlayerInputFrame
+var _last_applied_input_tick := 0
+var _lead_sample_tick := 0
+var _lead_sample_value := 0
 var _last_processed_tick := 0
 var _state_history := StateHistoryBuffer.new()
 var _reconciler := ClientReconciler.new()
@@ -203,47 +230,100 @@ func _on_network_tick(tick: int) -> void:
 	if _is_server_role():
 		_server_tick(tick)
 	elif _is_owner_role():
-		# Owner clients must stamp inputs using estimated server tick, otherwise
-		# server-side dequeue/comparison can treat fresh inputs as stale when
-		# local and server tick counters are offset.
-		_owner_tick(_estimated_server_tick(tick))
+		_owner_tick(tick)
 	else:
 		_proxy_tick(_estimated_server_tick(tick))
 
-func _owner_tick(server_tick: int) -> void:
+func _owner_tick(local_tick: int) -> void:
 	if not is_instance_valid(player_input) or not is_instance_valid(movement_component):
 		return
-	var frame := player_input.build_input_frame(server_tick)
-	_input_buffer[server_tick] = frame
+	# Stamp with the server tick at which this input should *arrive*, i.e.
+	# ahead of the server by one-way latency + TARGET_INPUT_LEAD_TICKS. The
+	# offset is steered by lead feedback from the server (see snapshots).
+	var stamp := int(round(float(local_tick) + _input_tick_offset))
+	var frame := player_input.build_input_frame(stamp)
+	frame.stamp_offset = _input_tick_offset
+	# What we are rendering remote players at; used by server lag compensation.
+	frame.view_tick = maxi(_estimated_server_tick(local_tick) - DEFAULT_INTERP_DELAY_TICKS, 0)
+	if _carry_actions != null:
+		frame.merge_actions_from(_carry_actions)
+		_carry_actions = null
+
+	if _last_stamped_tick > 0 and stamp <= _last_stamped_tick:
+		# Clock is being pulled back: skip this tick (no prediction, nothing
+		# sent) but keep any presses for the next frame.
+		if frame.has_one_shot_actions():
+			_carry_actions = frame
+		return
+
+	if _last_stamped_tick > 0:
+		var gap := stamp - _last_stamped_tick
+		if gap > 1 and gap <= MAX_INPUT_GAP_FILL_TICKS:
+			# Clock moved forward: fill skipped ticks so client and server
+			# simulate the same number of steps.
+			for fill_tick in range(_last_stamped_tick + 1, stamp):
+				_predict_owner_frame(frame.copy_continuous(fill_tick))
+	_predict_owner_frame(frame)
+	rpc_id(1, "server_receive_input", _send_history.duplicate())
+
+func _predict_owner_frame(frame: PlayerInputFrame) -> void:
+	_input_buffer[frame.tick] = frame
 	_apply_input_actions(frame)
 	PlayerSimulation.simulate(self , movement_component, frame)
-	rpc_id(1, "server_receive_input", frame.to_dict())
+	_predicted_positions[frame.tick] = global_position
+	_last_stamped_tick = frame.tick
+	_send_history.append(frame.to_packed())
+	while _send_history.size() > INPUT_REDUNDANCY:
+		_send_history.pop_front()
+	if _input_buffer.size() > MAX_INPUT_BUFFER_SIZE:
+		# No acks arriving; drop the oldest entries so memory stays bounded.
+		var cutoff := frame.tick - MAX_INPUT_BUFFER_SIZE
+		for key in _input_buffer.keys():
+			if int(key) < cutoff:
+				_input_buffer.erase(key)
+		for key in _predicted_positions.keys():
+			if int(key) < cutoff:
+				_predicted_positions.erase(key)
 
 func _server_tick(tick: int) -> void:
 	if not is_instance_valid(movement_component):
 		return
-	var frame: PlayerInputFrame = _input_queue.get(tick, null)
-	if frame == null:
-		var candidate_ticks := _input_queue.keys()
-		candidate_ticks.sort()
-		for key in candidate_ticks:
-			var queued_tick := int(key)
-			if queued_tick <= tick:
-				frame = _input_queue[queued_tick] as PlayerInputFrame
-				_input_queue.erase(queued_tick)
-			else:
-				break
-	if frame == null and _is_owner_role() and is_instance_valid(player_input):
+	# Consume every queued frame that is due. Normally that is exactly the
+	# frame for this tick; if frames arrived late, use the newest for movement
+	# and fold the older ones' one-shot actions into it so none are lost.
+	var due_ticks: Array[int] = []
+	for key in _input_queue.keys():
+		if int(key) <= tick:
+			due_ticks.append(int(key))
+	due_ticks.sort()
+	var frame: PlayerInputFrame = null
+	for due_tick in due_ticks:
+		var queued := _input_queue[due_tick] as PlayerInputFrame
+		_input_queue.erase(due_tick)
+		if frame != null:
+			queued.merge_actions_from(frame)
+		frame = queued
+
+	if frame != null:
+		_last_applied_input_tick = frame.tick
+		_last_input = frame
+	elif _is_owner_role() and is_instance_valid(player_input):
+		# Host's own player: sample input directly.
 		frame = player_input.build_input_frame(tick)
-	if frame == null:
-		frame = _last_input
-	if frame == null:
+		frame.view_tick = tick
+		_last_applied_input_tick = tick
+		_last_input = frame
+	elif _last_input != null:
+		# Input for this tick is missing: keep moving with the last known
+		# input, but never repeat one-shot actions (drop/switch/interact).
+		frame = _last_input.copy_continuous(_last_input.tick)
+	else:
 		return
-	_last_input = frame
-	_input_queue.erase(tick)
-	_last_authoritative_input_tick = frame.tick
+
+	_last_authoritative_input_tick = _last_applied_input_tick
+	var view_tick := frame.view_tick if frame.view_tick >= 0 else tick
 	var min_allowed_lag_comp_tick := maxi(tick - MAX_LAG_COMP_REWIND_TICKS, 0)
-	_lag_compensation_tick = clampi(frame.tick, min_allowed_lag_comp_tick, tick)
+	_lag_compensation_tick = clampi(view_tick, min_allowed_lag_comp_tick, tick)
 	_apply_input_actions(frame)
 	PlayerSimulation.simulate(self , movement_component, frame)
 	_last_processed_tick = tick
@@ -306,25 +386,43 @@ func _send_snapshot(tick: int) -> void:
 		"position": global_position,
 		"velocity": velocity,
 		"rotation": rotation,
-		"ack_tick": _last_authoritative_input_tick
+		"ack_tick": _last_authoritative_input_tick,
+		# Lead feedback for the owner: frame `lead_tick` arrived `input_lead`
+		# ticks before the server needed it.
+		"lead_tick": _lead_sample_tick,
+		"input_lead": _lead_sample_value
 	}
 	rpc("client_receive_snapshot", snapshot)
 
 @rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
-func server_receive_input(frame_data: Dictionary) -> void:
+func server_receive_input(packed_frames: Array) -> void:
 	if not _is_server_role():
 		return
 	var sender_id := multiplayer.get_remote_sender_id()
 	if sender_id != owner_peer_id:
 		return
-	var frame := PlayerInputFrame.from_dict(frame_data)
-	if frame.tick <= _last_processed_tick:
-		# Late packet: apply as latest known intent for subsequent ticks.
-		_last_input = frame
-		return
-	_input_queue[frame.tick] = frame
+	var server_tick := NetworkTick.tick
+	var newest_tick := -1
+	for i in range(mini(packed_frames.size(), INPUT_REDUNDANCY)):
+		var frame := PlayerInputFrame.from_packed(packed_frames[i])
+		if frame == null:
+			continue
+		newest_tick = maxi(newest_tick, frame.tick)
+		if frame.tick <= _last_applied_input_tick:
+			continue # already applied (redundant copy) or superseded
+		if frame.tick > server_tick + MAX_INPUT_LEAD_TICKS:
+			continue # absurdly far ahead; lead feedback will pull the client back
+		if _input_queue.has(frame.tick):
+			continue
+		_input_queue[frame.tick] = frame
+	if newest_tick > _lead_sample_tick:
+		_lead_sample_tick = newest_tick
+		# Frames for `server_tick` itself have already missed this tick, so a
+		# lead of 0 or less means the input arrived late.
+		_lead_sample_value = clampi(newest_tick - server_tick, -1000, 1000)
 
-@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_WORLD)
+# Only the server (multiplayer authority of every player node) may send snapshots.
+@rpc("authority", "call_remote", "unreliable", RPC_CHANNEL_WORLD)
 func client_receive_snapshot(snapshot: Dictionary) -> void:
 	var server_tick := int(snapshot.get("tick", 0))
 	if server_tick <= 0:
@@ -334,16 +432,34 @@ func client_receive_snapshot(snapshot: Dictionary) -> void:
 	_last_received_snapshot_tick = server_tick
 	_update_tick_offset(server_tick)
 	if _is_owner_role():
+		_apply_input_lead_feedback(int(snapshot.get("lead_tick", 0)), int(snapshot.get("input_lead", 0)))
 		_reconciler.reconcile(
 			self ,
 			snapshot.get("position", global_position),
 			snapshot.get("velocity", velocity),
 			int(snapshot.get("ack_tick", 0)),
 			_input_buffer,
+			_predicted_positions,
 			movement_component
 		)
 		return
 	_interpolator.push_snapshot(snapshot)
+
+func _apply_input_lead_feedback(lead_tick: int, lead: int) -> void:
+	if lead_tick <= 0 or lead_tick <= _last_lead_sample_tick:
+		return
+	var sampled := _input_buffer.get(lead_tick, null) as PlayerInputFrame
+	if sampled == null:
+		return
+	_last_lead_sample_tick = lead_tick
+	# Absolute target derived from the offset that frame was stamped with, so
+	# feedback that is still in flight after a correction does not overshoot.
+	var target := sampled.stamp_offset + float(TARGET_INPUT_LEAD_TICKS - lead)
+	if not _has_input_lead_sample or absf(target - _input_tick_offset) > INPUT_OFFSET_SNAP_TICKS:
+		_input_tick_offset = target
+		_has_input_lead_sample = true
+	else:
+		_input_tick_offset = lerpf(_input_tick_offset, target, INPUT_OFFSET_SMOOTHING)
 
 func get_history_transform(tick: int) -> Variant:
 	return _state_history.get_transform_for_tick(tick)
@@ -357,6 +473,9 @@ func sync_server_tick(server_tick: int) -> void:
 	if server_tick <= 0:
 		return
 	_tick_offset = float(server_tick - NetworkTick.tick)
+	# Rough starting guess; the first lead sample from the server replaces it.
+	_input_tick_offset = _tick_offset + float(INITIAL_INPUT_LEAD_TICKS)
+	_has_input_lead_sample = false
 
 func _estimated_server_tick(local_tick: int) -> int:
 	return int(round(float(local_tick) + _tick_offset))
@@ -525,8 +644,17 @@ func reset_for_respawn() -> void:
 	_enable_hurtbox(headHurtBox)
 	_enable_hurtbox(bodyHurtBox)
 	_input_buffer.clear()
+	_predicted_positions.clear()
+	_send_history.clear()
+	_has_input_lead_sample = false
+	_last_lead_sample_tick = 0
+	_last_stamped_tick = 0
+	_carry_actions = null
 	_input_queue.clear()
 	_last_input = null
+	_last_applied_input_tick = 0
+	_lead_sample_tick = 0
+	_lead_sample_value = 0
 	_last_processed_tick = 0
 	_last_authoritative_input_tick = 0
 	_lag_compensation_tick = 0

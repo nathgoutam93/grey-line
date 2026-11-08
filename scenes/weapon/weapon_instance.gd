@@ -53,7 +53,7 @@ func _shoot_raycast() -> void:
 		var shot_tick := NetworkTick.tick
 		if player != null and player.has_method("get_lag_compensation_tick"):
 			shot_tick = int(player.get_lag_compensation_tick())
-		saved_transforms = LagCompensationService.rewind_players_to_tick(get_tree(), shot_tick)
+		saved_transforms = LagCompensationService.rewind_players_to_tick(get_tree(), shot_tick, player)
 
 	var origin = global_position
 	var direction = player.global_transform.x.normalized()

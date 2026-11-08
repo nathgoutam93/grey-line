@@ -1,13 +1,18 @@
 extends RefCounted
 class_name LagCompensationService
 
-static func rewind_players_to_tick(tree: SceneTree, tick: int) -> Dictionary:
+## Moves every player except `shooter` back to where they were at `tick`.
+## The shooter stays put: the shot originates from their current
+## authoritative position, only the targets are rewound.
+static func rewind_players_to_tick(tree: SceneTree, tick: int, shooter: Node = null) -> Dictionary:
 	var saved_transforms := {}
 	if tree == null:
 		return saved_transforms
 	for node in tree.get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player == null:
+			continue
+		if player == shooter:
 			continue
 		if player.is_dead:
 			continue
