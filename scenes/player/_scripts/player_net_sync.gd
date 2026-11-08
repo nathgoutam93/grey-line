@@ -43,6 +43,11 @@ const TARGET_INPUT_LEAD_TICKS := 2
 const INITIAL_INPUT_LEAD_TICKS := 4
 const INPUT_OFFSET_SMOOTHING := 0.1
 const INPUT_OFFSET_SNAP_TICKS := 6.0
+# The whole-tick offset used for stamping only moves once the smoothed offset
+# is this far from it. Without it, a smoothed value hovering around x.5 flips
+# the rounding every few ticks: each flip skips (delaying that tick's input,
+# e.g. a shot) or fills a tick.
+const INPUT_OFFSET_HYSTERESIS := 0.75
 const MAX_INPUT_GAP_FILL_TICKS := 3
 # Server rejects frames stamped further than this ahead of its own tick.
 const MAX_INPUT_LEAD_TICKS := 30
@@ -58,7 +63,8 @@ var _input_buffer: Dictionary = {}
 var _predicted_positions: Dictionary = {}
 var _predicted_weapon_states: Dictionary = {}
 var _send_history: Array = []
-var _input_tick_offset := 0.0
+var _input_tick_offset := 0.0 # smoothed target
+var _stamp_offset := 0 # whole ticks actually used for stamping
 var _has_input_lead_sample := false
 var _last_lead_sample_tick := 0
 var _last_stamped_tick := 0
@@ -83,6 +89,8 @@ var _reconciler := ClientReconciler.new()
 var _interpolator := RemoteInterpolator.new()
 var _tick_offset := 0.0
 var _last_received_snapshot_tick := 0
+## Client: snapshots accepted for this player (diagnostics and tests).
+var snapshots_received := 0
 var _is_firing_net := false
 var _last_reload_request_tick := -1
 var _net_presence := NetPresence.VISIBLE
@@ -158,9 +166,11 @@ func _owner_tick(local_tick: int) -> void:
 	# Stamp with the server tick at which this input should *arrive*, i.e.
 	# ahead of the server by one-way latency + TARGET_INPUT_LEAD_TICKS. The
 	# offset is steered by lead feedback from the server (see snapshots).
-	var stamp := int(round(float(local_tick) + _input_tick_offset))
+	if absf(_input_tick_offset - float(_stamp_offset)) >= INPUT_OFFSET_HYSTERESIS:
+		_stamp_offset = roundi(_input_tick_offset)
+	var stamp := local_tick + _stamp_offset
 	var frame := player.player_input.build_input_frame(stamp)
-	frame.stamp_offset = _input_tick_offset
+	frame.stamp_offset = float(_stamp_offset)
 	# What we are rendering remote players at; used by server lag compensation.
 	frame.view_tick = maxi(_estimated_server_tick(local_tick) - DEFAULT_INTERP_DELAY_TICKS, 0)
 	if _carry_actions != null:
@@ -372,6 +382,7 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	if server_tick <= _last_received_snapshot_tick:
 		return
 	_last_received_snapshot_tick = server_tick
+	snapshots_received += 1
 	_update_tick_offset(server_tick)
 	if is_owner_role():
 		var ack_tick := int(snapshot.get("ack_tick", 0))
@@ -414,6 +425,7 @@ func _apply_input_lead_feedback(lead_tick: int, lead: int) -> void:
 	var target := sampled.stamp_offset + float(TARGET_INPUT_LEAD_TICKS - lead)
 	if not _has_input_lead_sample or absf(target - _input_tick_offset) > INPUT_OFFSET_SNAP_TICKS:
 		_input_tick_offset = target
+		_stamp_offset = roundi(target)
 		_has_input_lead_sample = true
 	else:
 		_input_tick_offset = lerpf(_input_tick_offset, target, INPUT_OFFSET_SMOOTHING)
@@ -568,6 +580,7 @@ func sync_server_tick(server_tick: int) -> void:
 	_tick_offset = float(server_tick - NetworkTick.tick)
 	# Rough starting guess; the first lead sample from the server replaces it.
 	_input_tick_offset = _tick_offset + float(INITIAL_INPUT_LEAD_TICKS)
+	_stamp_offset = roundi(_input_tick_offset)
 	_has_input_lead_sample = false
 
 func _estimated_server_tick(local_tick: int) -> int:
