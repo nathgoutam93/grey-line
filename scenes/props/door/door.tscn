@@ -1,0 +1,28 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/props/door/door.gd" id="1_door"]
+[ext_resource type="PackedScene" path="res://components/interactable/interactable.tscn" id="2_interactable"]
+
+[sub_resource type="RectangleShape2D" id="DoorShape"]
+size = Vector2(64, 8)
+
+[sub_resource type="Gradient" id="DoorColor"]
+colors = PackedColorArray(0.66, 0.52, 0.33, 1, 0.66, 0.52, 0.33, 1)
+
+[sub_resource type="GradientTexture2D" id="DoorTexture"]
+gradient = SubResource("DoorColor")
+width = 64
+height = 8
+
+[node name="Door" type="StaticBody2D" unique_id=1940827536]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_door")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1724500381]
+shape = SubResource("DoorShape")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1302975648]
+texture = SubResource("DoorTexture")
+
+[node name="Interactable" parent="." unique_id=1562840379 instance=ExtResource("2_interactable")]

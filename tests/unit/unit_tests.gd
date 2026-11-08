@@ -185,6 +185,139 @@ func test_frag_respects_cover_and_breaches_reinforced() -> void:
 	service.queue_free()
 	await get_tree().process_frame
 
+func test_door_states() -> void:
+	var old_viewport := MaskViewProvider.viewport
+	var viewport := FowViewportController.new()
+	var level := Node2D.new()
+	level.name = "Level"
+	viewport.add_child(level)
+	add_child(viewport)
+	var door := (load("res://scenes/props/door/door.tscn") as PackedScene).instantiate() as Door
+	door.position = Vector2(-2200, -2400)
+	add_child(door)
+	var source := await _spawn_player(door.global_position + Vector2(0, 50))
+	source.net_sync._noise_until_tick = NetworkTick.tick
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var space := get_viewport().world_2d.direct_space_state
+	var ray := PhysicsRayQueryParameters2D.create(door.global_position + Vector2(0, 60), door.global_position - Vector2(0, 60), 1)
+	check(not space.intersect_ray(ray).is_empty() and door.occluder.visible, "closed door missing collision or fog occlusion")
+	door.on_interact(source)
+	check(door.state == Door.State.OPEN and space.intersect_ray(ray).is_empty() and not door.occluder.visible, "open door still blocks ray or fog")
+	check_near(source.net_sync.get_noise_radius(), 250.0, 0.01, "quiet interaction noise wrong")
+	door.on_interact(source)
+	check(door.state == Door.State.CLOSED and not space.intersect_ray(ray).is_empty(), "interaction did not close door immediately")
+	door.apply_damage(59, DestructionMaterial.KIND_BULLET, source)
+	check(door.state == Door.State.CLOSED, "door broke before HP depleted")
+	door.apply_damage(1, DestructionMaterial.KIND_BULLET, source)
+	check(door.state == Door.State.BROKEN and space.intersect_ray(ray).is_empty() and not door.occluder.visible, "broken door still blocks")
+	check_near(source.net_sync.get_noise_radius(), 900.0, 0.01, "break noise wrong")
+	door.on_interact(source)
+	check(door.state == Door.State.BROKEN, "broken door accepted interaction")
+	door.restore_all()
+	door.apply_damage(59, DestructionMaterial.KIND_BULLET, source)
+	check(door.state == Door.State.CLOSED, "restore did not reset door HP")
+	door.queue_free()
+	source.queue_free()
+	await get_tree().process_frame
+	check(level.get_child_count() == 0, "door fog occluder leaked")
+	MaskViewProvider.set_viewport(old_viewport)
+	viewport.queue_free()
+
+func test_door_combat_and_full_state() -> void:
+	var source := await _spawn_player(Vector2(-2400, -2400))
+	source.rotation = 0.0
+	var knife := source.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.MELEE) as WeaponInstance
+	var door := (load("res://scenes/props/door/door.tscn") as PackedScene).instantiate() as Door
+	door.position = knife.global_position + Vector2(20, 0)
+	door.rotation = PI * 0.5
+	add_child(door)
+	var service := DestructionService.new()
+	add_child(service)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	knife._shoot_raycast()
+	check(door.state == Door.State.BROKEN, "one knife hit failed to kick door open")
+	service.reset_all()
+	check(door.state == Door.State.CLOSED and door._hp == 60, "service reset failed to restore door")
+	var shield := _wall(door.global_position - Vector2(20, 0), Vector2(8, 120))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	service.apply_explosion(door.global_position - Vector2(40, 0), 320, 200, source)
+	check(door._hp == 60, "hard cover failed to shield door from blast")
+	shield.queue_free()
+	await get_tree().process_frame
+	service.apply_explosion(door.global_position - Vector2(40, 0), 320, 200, source)
+	check(door.state == Door.State.BROKEN, "exposed door did not break in blast")
+	var path := get_path_to(door)
+	service._full_state({}, {path: Door.State.OPEN})
+	service._full_state({}, {path: Door.State.OPEN})
+	check(door.state == Door.State.OPEN and door.collision_layer == 0, "door full state was not applied idempotently")
+	service.reset_all()
+	# Step back after the kick so the animated hand socket cannot start the bullet ray inside the door.
+	source.global_position -= Vector2(100, 0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var rifle := source.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance
+	for hit in range(5):
+		rifle._shoot_raycast()
+	check(door.state == Door.State.CLOSED, "door broke before six 10-damage bullets")
+	rifle._shoot_raycast()
+	check(door.state == Door.State.BROKEN, "bullets failed to break door: hp=%d, origin=%s, door=%s, aim=%s" % [door._hp, rifle.global_position, door.global_position, source.global_transform.x])
+	door.queue_free()
+	service.queue_free()
+	source.queue_free()
+	await get_tree().process_frame
+
+func test_server_interaction_keeps_pickups_working() -> void:
+	var map := Node2D.new()
+	map.name = "Map"
+	add_child(map)
+	var source := await _spawn_player(Vector2(-2400, -2400))
+	var pickup := (load("res://scenes/weapon_pickup/base_pickup.tscn") as PackedScene).instantiate() as WeaponPickup
+	pickup.name = "InteractTestPickup"
+	pickup.position = source.global_position + Vector2(40, 0)
+	pickup.freeze = true
+	var data := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon
+	data.wall_damage = 17
+	pickup.set_weapon_data(data)
+	pickup.ammo_in_mag = 5
+	pickup.ammo_reserve = 10
+	map.add_child(pickup)
+	await get_tree().create_timer(0.3).timeout
+	check(source.interactables.has(pickup.interactable_component), "pickup did not register nearby player")
+	source.net_sync._remote_interact(pickup.interactable_component.get_path())
+	var rifle := source.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance
+	check(rifle.data.wall_damage == 17 and rifle.ammo_in_mag == 5 and rifle.ammo_reserve == 10, "server interaction failed to pick up weapon and ammo")
+	await get_tree().process_frame
+	check(not is_instance_valid(pickup), "picked-up weapon remained in the world")
+	map.queue_free()
+	source.queue_free()
+	await get_tree().process_frame
+
+func test_interactable_tracks_multiple_players() -> void:
+	var first := await _spawn_player(Vector2(-2400, -2400))
+	var second := await _spawn_player(Vector2(-2400, -2360))
+	var door := (load("res://scenes/props/door/door.tscn") as PackedScene).instantiate() as Door
+	door.position = Vector2(-2400, -2370)
+	add_child(door)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var interactable := door.get_node("Interactable") as Interactable
+	check(first.interactables.has(interactable) and second.interactables.has(interactable), "door did not register both players")
+	first.global_position += Vector2(-300, 0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(not first.interactables.has(interactable) and second.interactables.has(interactable), "departing player left stale or removed another player's interaction")
+	first.net_sync._remote_interact(interactable.get_path())
+	check(door.state == Door.State.CLOSED, "out-of-range player interacted with door")
+	second.net_sync._remote_interact(interactable.get_path())
+	check(door.state == Door.State.OPEN, "nearby player could not interact with door")
+	door.queue_free()
+	first.queue_free()
+	second.queue_free()
+	await get_tree().process_frame
+
 func test_destructible_walls_destroy_and_restore() -> void:
 	var old_viewport := MaskViewProvider.viewport
 	var viewport := FowViewportController.new()

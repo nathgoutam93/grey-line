@@ -37,11 +37,12 @@ func apply_cell_damage(walls: DestructibleWalls, cell: Vector2i, amount: int, ki
 	_pending[path] = pending
 	cells_destroyed.emit(cells)
 
-func apply_explosion(center: Vector2, radius: float, max_damage: int) -> void:
+func apply_explosion(center: Vector2, radius: float, max_damage: int, source: PlayerController = null) -> void:
 	if not multiplayer.is_server() or radius <= 0.0 or max_damage <= 0:
 		return
 	var space := get_viewport().world_2d.direct_space_state
 	var damage_events: Array[Dictionary] = []
+	var door_events: Array[Dictionary] = []
 	for walls in _walls_nodes():
 		var low := walls.cell_at_world(center)
 		var high := low
@@ -58,9 +59,17 @@ func apply_explosion(center: Vector2, radius: float, max_damage: int) -> void:
 				var amount := roundi(max_damage * maxf(1.0 - center.distance_to(target) / radius, 0.0))
 				if amount > 0 and blast_line_clear(space, center, target, walls, cell):
 					damage_events.append({"walls": walls, "cell": cell, "amount": amount})
+	for door in _door_nodes():
+		if door.state == Door.State.BROKEN:
+			continue
+		var amount := roundi(max_damage * maxf(1.0 - center.distance_to(door.global_position) / radius, 0.0))
+		if amount > 0 and blast_line_clear(space, center, door.global_position, null, Vector2i.ZERO, door):
+			door_events.append({"door": door, "amount": amount})
 	# Resolve against the intact geometry first, so iteration order cannot send a blast through extra layers.
 	for event in damage_events:
 		apply_cell_damage(event.walls, event.cell, event.amount, DestructionMaterial.KIND_EXPLOSIVE)
+	for event in door_events:
+		(event.door as Door).apply_damage(event.amount, DestructionMaterial.KIND_EXPLOSIVE, source)
 
 static func blast_line_clear(space: PhysicsDirectSpaceState2D, from: Vector2, to: Vector2, walls: DestructibleWalls = null, cell: Vector2i = Vector2i.ZERO, target_body: CollisionObject2D = null) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(from, to, 1)
@@ -104,15 +113,22 @@ func request_state() -> void:
 		for cell in walls.destroyed_cells():
 			cells.append(Vector2(cell))
 		walls_state[get_parent().get_path_to(walls)] = cells
-	_full_state.rpc_id(sender, walls_state, {})
+	var door_states: Dictionary = {}
+	for door in _door_nodes():
+		door_states[get_parent().get_path_to(door)] = door.state
+	_full_state.rpc_id(sender, walls_state, door_states)
 
 @rpc("authority", "call_remote", "reliable", RPC_CHANNEL_DESTRUCTION)
-func _full_state(walls_state: Dictionary, _door_states: Dictionary) -> void:
+func _full_state(walls_state: Dictionary, door_states: Dictionary) -> void:
 	for path: NodePath in walls_state:
 		var walls := get_parent().get_node_or_null(path) as DestructibleWalls
 		if walls != null:
 			walls.restore_all()
 			walls.destroy_cells(_unpack_cells(walls_state[path]))
+	for path: NodePath in door_states:
+		var door := get_parent().get_node_or_null(path) as Door
+		if door != null:
+			door.set_state_local(int(door_states[path]) as Door.State)
 
 func reset_all() -> void:
 	if not multiplayer.is_server():
@@ -127,6 +143,16 @@ func _reset_event() -> void:
 	_pending.clear()
 	for walls in _walls_nodes():
 		walls.restore_all()
+	for door in _door_nodes():
+		door.restore_all()
+
+func _door_nodes() -> Array[Door]:
+	var doors: Array[Door] = []
+	for node in get_tree().get_nodes_in_group(Door.GROUP):
+		var door := node as Door
+		if door != null and get_parent().is_ancestor_of(door):
+			doors.append(door)
+	return doors
 
 func _walls_nodes() -> Array[DestructibleWalls]:
 	var walls_nodes: Array[DestructibleWalls] = []

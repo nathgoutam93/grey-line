@@ -109,7 +109,13 @@ func _detonate() -> void:
 	var effective_radius := maxf(explosion_radius, 1.0)
 	var service := DestructionService.current(get_tree())
 	if service != null:
-		service.apply_explosion(global_position, effective_radius, wall_damage)
+		var source: PlayerController
+		for node in get_tree().get_nodes_in_group("Player"):
+			var candidate := node as PlayerController
+			if candidate != null and candidate.owner_peer_id == instigator_peer_id and not candidate.is_dead:
+				source = candidate
+				break
+		service.apply_explosion(global_position, effective_radius, wall_damage, source)
 	var space := get_world_2d().direct_space_state
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController

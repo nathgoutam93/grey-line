@@ -615,11 +615,11 @@ func request_pickup(pickup_path: NodePath) -> void:
 
 @rpc("authority", "call_local", "unreliable", RPC_CHANNEL_UI)
 func _remote_interact(target_path: NodePath):
-	if target_path == NodePath(""):
+	if not multiplayer.is_server() or target_path == NodePath(""):
 		return
-	var interactable = get_node_or_null(target_path)
-	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
-		interactable.owner_ref.on_interact(player)
+	var interactable := get_node_or_null(target_path) as Interactable
+	if interactable != null:
+		interactable.on_interact(player)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_start_fire(shot_intent: int = PlayerController.ShotIntent.BODY):
