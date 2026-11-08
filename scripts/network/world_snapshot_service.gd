@@ -41,6 +41,9 @@ const VISIBLE_GRACE_TICKS := 15
 var _last_visible_tick := {}
 
 var _last_sent_tick := 0
+## Server: packets sent per peer id (diagnostics and tests). At most one per
+## physics frame, so under load it can be fewer than one per send interval.
+var packets_sent := {}
 
 func _physics_process(_delta: float) -> void:
 	if not _is_server():
@@ -61,6 +64,7 @@ func _physics_process(_delta: float) -> void:
 			_last_visible_tick.erase(key)
 	for peer_id in peers:
 		_receive_world_snapshot.rpc_id(peer_id, _packet_for_peer(tick, players, peer_id, smoke))
+		packets_sent[peer_id] = int(packets_sent.get(peer_id, 0)) + 1
 
 ## Builds the packet a given peer would receive right now (also used by tooling).
 func build_packet(peer_id: int) -> Array:

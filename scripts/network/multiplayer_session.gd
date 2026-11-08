@@ -320,8 +320,25 @@ func _connect_multiplayer_signals() -> void:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 
 func _on_connected_to_server() -> void:
+	_disable_packet_throttle(1)
 	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
 	_open_lobby_scene()
+
+## ENet's packet throttle drops a share of *unreliable* packets whenever round
+## trip time spikes. Everything time-critical here (input frames, world
+## snapshots) is unreliable, small and sent at a fixed rate, so throttling
+## only throws away state and inputs exactly when the connection is shaky.
+## Deceleration 0 keeps the throttle at its maximum: nothing is dropped on
+## purpose (redundant inputs and fresh snapshots cover real packet loss).
+const ENET_THROTTLE_INTERVAL_MS := 5000 # ENet's default
+
+func _disable_packet_throttle(peer_id: int) -> void:
+	var enet := multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if enet == null:
+		return
+	var packet_peer := enet.get_peer(peer_id)
+	if packet_peer != null:
+		packet_peer.throttle_configure(ENET_THROTTLE_INTERVAL_MS, ENetPacketPeer.PACKET_THROTTLE_SCALE, 0)
 
 func _on_connection_failed() -> void:
 	_set_manual_join_visible(true)
@@ -336,6 +353,7 @@ func _on_server_disconnected() -> void:
 func _on_peer_connected(id: int) -> void:
 	if not multiplayer.is_server():
 		return
+	_disable_packet_throttle(id)
 	if match_started:
 		var peer := multiplayer.multiplayer_peer
 		if peer != null:
