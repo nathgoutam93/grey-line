@@ -107,6 +107,35 @@ func test_input_frame_copy_and_merge() -> void:
 	later.merge_actions_from(f)
 	check(later.drop_pressed and later.slot_select == 2, "merge lost earlier presses")
 
+# --- BotBrain ---------------------------------------------------------------
+
+func test_bot_brain_frame_fields() -> void:
+	var brain := BotBrain.new()
+	brain.move = Vector2(3, -4)
+	brain.aim_dir = Vector2(0, 5)
+	brain.fire_held = true
+	brain.slow_walk_held = true
+	brain.slot_select = 2
+	brain.reload = true
+	var first := brain.build_input_frame(100)
+	check(first.tick == 100 and first.view_tick == 100, "bot ticks wrong")
+	check(first.move.is_equal_approx(Vector2(0.6, -0.8)), "movement not limited")
+	check(first.aim_dir.is_equal_approx(Vector2.DOWN), "aim not normalized")
+	check(first.fire_held and first.fire_pressed and first.slow_walk_held, "held/press fields wrong")
+	check(first.slot_select == 2 and first.reload_pressed, "one-shots missing")
+	var held := brain.build_input_frame(101)
+	check(held.fire_held and not held.fire_pressed, "fire press repeated while held")
+	check(held.slot_select == -1 and not held.reload_pressed, "one-shots repeated")
+	brain.stop()
+	var stopped := brain.build_input_frame(102)
+	check(stopped.move == Vector2.ZERO and not stopped.fire_held and not stopped.fire_pressed, "stop did not clear movement/fire")
+	brain.fire_held = true
+	brain.face_point(Vector2(10, 20), Vector2(10, 10))
+	var restarted := brain.build_input_frame(103)
+	check(restarted.fire_pressed and restarted.aim_dir == Vector2.UP, "new press or face_point wrong")
+	brain.aim_dir = Vector2.ZERO
+	check(brain.build_input_frame(104).aim_dir == Vector2.RIGHT, "zero aim has no fallback")
+
 # --- StateHistoryBuffer / RemoteInterpolator --------------------------------
 
 func test_state_history_returns_latest_at_or_before_tick() -> void:

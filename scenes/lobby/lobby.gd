@@ -24,6 +24,8 @@ const DEFAULT_AVATAR_PATH := "res://assets/sprites/character/head.png"
 
 var _avatar_catalog: Dictionary = {}
 var _avatar_texture_cache: Dictionary = {}
+var _add_bot_button: Button
+var _remove_bot_button: Button
 
 func _ready() -> void:
 	_load_avatar_catalog()
@@ -34,6 +36,7 @@ func _ready() -> void:
 	if not MultiplayerSession.server_map_load_requested.is_connected(_on_server_map_load_requested):
 		MultiplayerSession.server_map_load_requested.connect(_on_server_map_load_requested)
 	_connect_start_button()
+	_create_bot_buttons()
 	MultiplayerSession.enter_lobby()
 	sync_lobby(MultiplayerSession.get_lobby_sync_payload())
 
@@ -87,7 +90,29 @@ func sync_lobby(payload: Dictionary) -> void:
 	_render_map_name(map_scene_path)
 	_render_slots(names, avatars, local_peer_id)
 	_render_start_button(is_connected, is_server, has_started)
+	if _add_bot_button != null:
+		_add_bot_button.visible = OS.is_debug_build() and is_connected and is_server and not has_started
+		_remove_bot_button.visible = _add_bot_button.visible
+		_remove_bot_button.disabled = MultiplayerSession.bot_ids.is_empty()
 	_render_debug_player_list(names)
+
+func _create_bot_buttons() -> void:
+	if not OS.is_debug_build() or _start_match_button == null:
+		return
+	_add_bot_button = Button.new()
+	_add_bot_button.name = "AddBot"
+	_add_bot_button.text = "Add bot"
+	_add_bot_button.pressed.connect(func(): MultiplayerSession.add_bot())
+	_start_match_button.get_parent().add_child(_add_bot_button)
+	_remove_bot_button = Button.new()
+	_remove_bot_button.name = "RemoveBot"
+	_remove_bot_button.text = "Remove bot"
+	_remove_bot_button.pressed.connect(_on_remove_bot_pressed)
+	_start_match_button.get_parent().add_child(_remove_bot_button)
+
+func _on_remove_bot_pressed() -> void:
+	if not MultiplayerSession.bot_ids.is_empty():
+		MultiplayerSession.remove_bot(MultiplayerSession.bot_ids.back())
 
 func _render_start_button(is_connected: bool, is_server: bool, has_started: bool) -> void:
 	if _start_match_button != null:

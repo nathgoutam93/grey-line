@@ -71,6 +71,7 @@ var _last_stamped_tick := 0
 var _carry_actions: PlayerInputFrame = null
 
 # Server state
+var bot_brain: BotBrain = null
 var _input_queue: Dictionary = {}
 var _last_input: PlayerInputFrame
 var _last_applied_input_tick := 0
@@ -232,7 +233,11 @@ func _server_tick(tick: int) -> void:
 			queued.merge_actions_from(frame)
 		frame = queued
 
-	if frame != null:
+	if bot_brain != null:
+		frame = bot_brain.build_input_frame(tick)
+		_last_applied_input_tick = tick
+		_last_input = frame
+	elif frame != null:
 		_last_applied_input_tick = frame.tick
 		_last_input = frame
 	elif is_owner_role() and is_instance_valid(player.player_input):

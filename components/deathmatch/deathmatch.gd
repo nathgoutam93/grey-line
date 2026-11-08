@@ -69,6 +69,8 @@ func _ready():
 
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	MultiplayerSession.bot_added.connect(spawning.spawn_player_if_missing)
+	MultiplayerSession.bot_removed.connect(scoreboard.remove_peer)
 	_update_match_timer_ui.rpc(_format_match_time(match_time_remaining))
 	spawning.call_deferred("spawn_initial_connected_players")
 

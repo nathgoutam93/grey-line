@@ -71,14 +71,15 @@ func register_death(victim_id: int, killer_id: int, is_headshot: bool = false) -
 	if not multiplayer.is_server() or not active:
 		return
 
-	var killer_name := player_identifier(killer_id) if killer_id > 0 else "Unknown"
+	var killer_name := player_identifier(killer_id) if player_stats.has(killer_id) else "Unknown"
 	var victim_name := player_identifier(victim_id)
 
 	if player_stats.has(victim_id):
 		player_stats[victim_id]["deaths"] += 1
 	if player_stats.has(killer_id) and killer_id != victim_id:
 		player_stats[killer_id]["kills"] += 1
-		_notify_local_kill_feedback.rpc_id(killer_id, is_headshot)
+		if not MultiplayerSession.is_bot(killer_id):
+			_notify_local_kill_feedback.rpc_id(killer_id, is_headshot)
 		if int(player_stats[killer_id].get("kills", 0)) >= _score_limit:
 			score_limit_reached.emit(killer_id)
 

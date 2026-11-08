@@ -4,6 +4,8 @@ signal main_menu_state_changed(status_text: String, manual_join_visible: bool)
 signal lobby_sync_updated(payload: Dictionary)
 signal lobby_ui_visibility_requested(visible: bool)
 signal server_map_load_requested(map_scene_path: String)
+signal bot_added(bot_id: int)
+signal bot_removed(bot_id: int)
 
 @export var port: int = 3000
 @export var max_players: int = 8
@@ -19,6 +21,8 @@ var local_player_name := ""
 var player_names := {}
 var player_avatar_ids := {}
 var match_started := false
+var bot_ids: Array[int] = []
+var _next_bot_id := -1
 
 var discovery_listener: PacketPeerUDP
 var discovery_listener_active := false
@@ -209,9 +213,42 @@ func get_player_name(peer_id: int) -> String:
 func is_peer_connected(peer_id: int) -> bool:
 	if multiplayer.multiplayer_peer == null:
 		return false
+	if peer_id in bot_ids:
+		return true
 	if peer_id == multiplayer.get_unique_id():
 		return true
 	return multiplayer.get_peers().has(peer_id)
+
+## Server only: register a puppet in the lobby and spawn it if a match is live.
+func add_bot() -> int:
+	if not NetUtil.has_active_peer(multiplayer) or not multiplayer.is_server():
+		return 0
+	var bot_id := _next_bot_id
+	_next_bot_id -= 1
+	bot_ids.append(bot_id)
+	player_names[bot_id] = "Bot %d" % -bot_id
+	player_avatar_ids[bot_id] = DEFAULT_AVATAR_ID
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	if match_started:
+		bot_added.emit(bot_id)
+	return bot_id
+
+func remove_bot(bot_id: int) -> void:
+	if not NetUtil.has_active_peer(multiplayer) or not multiplayer.is_server() or bot_id not in bot_ids:
+		return
+	# Unregister before freeing so the spawner cannot respawn this player.
+	bot_ids.erase(bot_id)
+	player_names.erase(bot_id)
+	player_avatar_ids.erase(bot_id)
+	for node in get_tree().get_nodes_in_group("Player"):
+		var player := node as PlayerController
+		if player != null and player.owner_peer_id == bot_id:
+			player.queue_free()
+	bot_removed.emit(bot_id)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+
+func is_bot(peer_id: int) -> bool:
+	return peer_id < 0
 
 func get_discovery_status_text() -> String:
 	return discovery_status_text
@@ -454,6 +491,8 @@ func _set_profile_username(name: String) -> void:
 		profile.set_username(name)
 
 func _reset_network_session() -> void:
+	bot_ids.clear()
+	_next_bot_id = -1
 	var existing_peer := multiplayer.multiplayer_peer
 	if existing_peer != null:
 		existing_peer.close()

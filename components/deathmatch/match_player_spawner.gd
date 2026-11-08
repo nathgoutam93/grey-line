@@ -38,6 +38,17 @@ func spawn_initial_connected_players() -> void:
 		spawn_player(1)
 	for peer_id in multiplayer.get_peers():
 		spawn_player(peer_id)
+	spawn_bots()
+
+func spawn_bots() -> void:
+	for bot_id in MultiplayerSession.bot_ids:
+		spawn_player_if_missing(bot_id)
+
+func spawn_player_if_missing(peer_id: int) -> void:
+	if not NetUtil.has_active_peer(multiplayer) or not multiplayer.is_server() or not is_instance_valid(_map):
+		return
+	if _map.get_node_or_null(str(peer_id)) == null and MultiplayerSession.is_peer_connected(peer_id):
+		spawn_player(peer_id)
 
 ## Server only: spawn a player; the map's MultiplayerSpawner replicates it.
 func spawn_player(peer_id: int) -> void:
@@ -120,6 +131,8 @@ func _setup_player(peer_id, player_path: NodePath, spawn_position: Vector2, serv
 	player.player_input.set_authority(peer_id)
 
 	if NetUtil.has_active_peer(multiplayer) and multiplayer.is_server():
+		if MultiplayerSession.is_bot(peer_id):
+			player.net_sync.bot_brain = BotBrain.new()
 		player.tree_exited.connect(_on_player_tree_exited.bind(peer_id))
 		player_setup.emit(peer_id, player)
 
