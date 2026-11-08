@@ -10,7 +10,7 @@ extends "res://tests/net/net_test_base.gd"
 ##   in view, slow-walk -> VISIBLE, drawn, no footsteps
 ##   in view, running   -> VISIBLE, drawn, footsteps playing
 ##   behind, shooting   -> the shot plays from the true position
-##   behind a wall      -> CULLED; walking there -> AUDIBLE with footsteps
+##   behind a wall      -> CULLED; distant walking stays CULLED, nearby walking is AUDIBLE
 ##   smoke in between   -> CULLED
 ##   back in view       -> VISIBLE
 
@@ -164,8 +164,33 @@ func run_host() -> void:
 		_expect("behind_wall_is_culled", await _sample("wall"), PlayerNetSync.NetPresence.CULLED, false)
 		Input.action_press("move_up")
 		await hold(0.6)
-		_expect("walking_behind_wall_is_audible", await _sample("wall_walk"), PlayerNetSync.NetPresence.AUDIBLE, false, true)
+		_expect("distant_walking_behind_wall_is_culled", await _sample("wall_walk"), PlayerNetSync.NetPresence.CULLED, false, false)
 		Input.action_release("move_up")
+		viewer.global_position = open
+		await hold(1.0)
+
+	# Keep the audible-through-cover check inside the attenuated 800 * 0.35 = 280 px radius.
+	var close_open := find_open_spot(Vector2.RIGHT, 300.0)
+	if close_open == Vector2.INF:
+		results.fail("walking_behind_wall_is_audible", "no nearby wall setup found")
+	else:
+		var close_wall := StaticBody2D.new()
+		close_wall.collision_layer = 1
+		var shape := CollisionShape2D.new()
+		var rectangle := RectangleShape2D.new()
+		rectangle.size = Vector2(8, 400)
+		shape.shape = rectangle
+		close_wall.add_child(shape)
+		close_wall.position = close_open + Vector2(50, 0)
+		game_mode().map.add_child(close_wall)
+		viewer.global_position = close_open
+		me.global_position = close_open + Vector2(100, 0)
+		await hold(0.5)
+		Input.action_press("move_up")
+		await hold(0.4)
+		_expect("walking_behind_wall_is_audible", await _sample("close_wall_walk"), PlayerNetSync.NetPresence.AUDIBLE, false, true)
+		Input.action_release("move_up")
+		close_wall.queue_free()
 		viewer.global_position = open
 		await hold(1.0)
 

@@ -190,7 +190,7 @@ func set_state_local(state: State) -> void               # applies collision, oc
 17. **Attenuation.**
     - Add `static func occlusion_factor(from: Vector2, to: Vector2, space) -> float` to `VisibilityQuery`. Walk the segment with repeated raycasts (mask 1). For each hit, multiply by the material factor: `DestructibleWalls` cell → `DestructionMaterial.sound_factor`; a closed `Door` → 0.7; any other static body → 0.35. Continue from just past the hit (`hit.position + dir * 17.0`); stop after 4 hits or at `to`.
     - `can_hear` uses `radius * occlusion_factor(...)`.
-    - **Check:** unit test that one SOFT wall between listener and source turns a 500 px footstep (800 px radius) inaudible only when stacked: 0.6 × 800 = 480 < 500.
+    - **Check:** unit tests: one SOFT wall makes an 800 px footstep inaudible at 500 px (0.6 × 800 = 480 < 500). At 450 px one SOFT wall remains audible, but two stacked walls do not (0.6² × 800 = 288 < 450). Removing the cells restores hearing immediately.
 18. **(Optional) Client muffling.**
     - Create an audio bus `Occluded` with a low-pass filter.
     - `PlayerController._process` (proxies only, every 0.1 s): compute `occlusion_factor` from the local player to this player, and route this player's `AudioStreamPlayer2D`s to `Occluded` when < 1.0, `Master` otherwise.

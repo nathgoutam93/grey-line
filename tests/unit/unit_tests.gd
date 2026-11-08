@@ -732,6 +732,69 @@ func test_visibility_cone_walls_and_smoke() -> void:
 	viewer.queue_free()
 	target.queue_free()
 
+func test_hearing_attenuates_soft_walls_and_holes() -> void:
+	var listener := await _spawn_player(Vector2(-2400, -2400))
+	var source := await _spawn_player(Vector2(-1900, -2400))
+	source.net_sync.report_noise(800, 2.0)
+	var walls := _destructible_wall(Vector2(-2150, -2408), [Vector2i.ZERO])
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var space := get_viewport().world_2d.direct_space_state
+	check_near(VisibilityQuery.occlusion_factor(listener.global_position, source.global_position, space), 0.6, 0.001, "soft wall factor wrong")
+	check(not VisibilityQuery.can_hear(listener, source), "single soft wall should reduce 800 px to 480, below 500 px")
+	source.global_position = listener.global_position + Vector2(450, 0)
+	check(VisibilityQuery.can_hear(listener, source), "one soft wall should still carry sound to 450 px")
+	walls.set_cell(Vector2i(2, 0), 0, Vector2i.ZERO)
+	walls.update_internals()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check_near(VisibilityQuery.occlusion_factor(listener.global_position, source.global_position, space), 0.36, 0.001, "stacked soft wall factors do not multiply")
+	check(not VisibilityQuery.can_hear(listener, source), "stacked walls should block footsteps at 450 px")
+	walls.destroy_cells([Vector2i.ZERO, Vector2i(2, 0)])
+	check(VisibilityQuery.can_hear(listener, source), "holes did not restore hearing immediately")
+	walls.queue_free()
+	listener.queue_free()
+	source.queue_free()
+	await get_tree().process_frame
+
+func test_hearing_materials_doors_and_hit_limit() -> void:
+	var from := Vector2(-2400, -2400)
+	var to := Vector2(-1900, -2400)
+	var space := get_viewport().world_2d.direct_space_state
+	for material in [DestructionMaterial.REINFORCED, DestructionMaterial.HARD]:
+		var walls := _destructible_wall(Vector2(-2150, -2408), [Vector2i.ZERO], material)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		check_near(VisibilityQuery.occlusion_factor(from, to, space), DestructionMaterial.sound_factor(material), 0.001, "wall material factor wrong")
+		walls.queue_free()
+		await get_tree().process_frame
+	var wall := _wall(Vector2(-2150, -2400), Vector2(8, 100))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check_near(VisibilityQuery.occlusion_factor(from, to, space), 0.35, 0.001, "static wall factor wrong")
+	wall.queue_free()
+	await get_tree().process_frame
+	var door := (load("res://scenes/props/door/door.tscn") as PackedScene).instantiate() as Door
+	door.position = Vector2(-2150, -2400)
+	door.rotation = PI * 0.5
+	add_child(door)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check_near(VisibilityQuery.occlusion_factor(from, to, space), 0.7, 0.001, "closed door factor wrong")
+	door.set_state_local(Door.State.OPEN)
+	check_near(VisibilityQuery.occlusion_factor(from, to, space), 1.0, 0.001, "open door still attenuates sound")
+	door.queue_free()
+	await get_tree().process_frame
+	var cells: Array[Vector2i] = []
+	for x in range(5):
+		cells.append(Vector2i(x * 2, 0))
+	var stacked := _destructible_wall(Vector2(-2250, -2408), cells)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check_near(VisibilityQuery.occlusion_factor(from, to, space), pow(0.6, 4), 0.001, "hearing ray did not stop at four hits")
+	stacked.queue_free()
+	await get_tree().process_frame
+
 func test_hearing_follows_noise_radius() -> void:
 	var listener := await _spawn_player(Vector2(-2400, -2400))
 	var source := await _spawn_player(Vector2(-1900, -2400)) # 500 px away
