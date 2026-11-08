@@ -6,6 +6,9 @@ extends "res://tests/net/net_test_base.gd"
 ##   in view            -> VISIBLE, drawn
 ##   behind, silent     -> CULLED, not drawn
 ##   behind, walking    -> AUDIBLE, not drawn, footsteps playing, true position
+##   behind, slow-walk  -> CULLED, not drawn, no footsteps
+##   in view, slow-walk -> VISIBLE, drawn, no footsteps
+##   in view, running   -> VISIBLE, drawn, footsteps playing
 ##   behind, shooting   -> the shot plays from the true position
 ##   behind a wall      -> CULLED; walking there -> AUDIBLE with footsteps
 ##   smoke in between   -> CULLED
@@ -50,6 +53,7 @@ func on_message(key: String, value: Variant) -> void:
 				"drawn": host_player.visible,
 				"position": host_player.global_position,
 				"footsteps": host_player.footstep_player.playing,
+				"footstep_flag": host_player.net_sync.net_footsteps,
 				"sounds": sounds,
 			}
 		send("result:" + key.trim_prefix("sample:"), reply)
@@ -74,8 +78,8 @@ func _expect(scenario: String, reply: Dictionary, presence: PlayerNetSync.NetPre
 	var ok: bool = got == presence and bool(reply["drawn"]) == drawn
 	var detail := "presence=%s drawn=%s" % [PlayerNetSync.NetPresence.keys()[got], reply["drawn"]]
 	if footsteps != null:
-		ok = ok and bool(reply["footsteps"]) == footsteps
-		detail += " footsteps=%s" % reply["footsteps"]
+		ok = ok and bool(reply["footsteps"]) == footsteps and bool(reply["footstep_flag"]) == footsteps
+		detail += " footsteps=%s flag=%s" % [reply["footsteps"], reply["footstep_flag"]]
 	if true_pos != null:
 		var off: float = (reply["position"] as Vector2).distance_to(true_pos)
 		ok = ok and off <= AUDIBLE_POSITION_TOLERANCE
@@ -111,6 +115,24 @@ func run_host() -> void:
 	Input.action_release("move_left")
 	await hold(0.3)
 
+	me.global_position = behind
+	Input.action_press("slow_walk")
+	Input.action_press("move_left")
+	await hold(0.7)
+	_expect("behind_and_slow_walking_is_culled", await _sample("slow_behind"), PlayerNetSync.NetPresence.CULLED, false, false)
+	Input.action_release("move_left")
+
+	me.global_position = front
+	Input.action_press("move_left")
+	await hold(0.7)
+	_expect("visible_slow_walker_is_silent", await _sample("slow_front"), PlayerNetSync.NetPresence.VISIBLE, true, false, me.global_position)
+	Input.action_release("slow_walk")
+	me.global_position = front
+	await hold(0.7)
+	_expect("visible_runner_has_footsteps", await _sample("run_front"), PlayerNetSync.NetPresence.VISIBLE, true, true, me.global_position)
+	Input.action_release("move_left")
+	await hold(0.3)
+
 	# Switch to the pistol (shots carry 1200 px), go quiet, then shoot.
 	await tap("secondary")
 	var shoot_from := open - facing * 450.0
@@ -118,6 +140,7 @@ func run_host() -> void:
 	await hold(1.2)
 	var quiet := await _sample("quiet")
 	check("hidden_shooter_is_culled_before_shooting", not quiet.is_empty() and int(quiet["presence"]) == PlayerNetSync.NetPresence.CULLED, "presence=%s" % [PlayerNetSync.NetPresence.keys()[int(quiet.get("presence", 0))]])
+	Input.action_press("slow_walk") # equipment noise must remain audible in walk mode
 	await tap("shoot", 0.25)
 	await hold(0.8)
 	_inbox.erase("result:shot")
@@ -129,6 +152,7 @@ func run_host() -> void:
 		var off: float = (shot["position"] as Vector2).distance_to(shoot_from)
 		check("hidden_shot_heard_from_true_position", int(shot["presence"]) != PlayerNetSync.NetPresence.CULLED and off < 1.0,
 			"presence=%s, %.2f px from the shooter" % [PlayerNetSync.NetPresence.keys()[int(shot["presence"])], off])
+	Input.action_release("slow_walk")
 
 	var wall_setup := find_wall_setup(facing)
 	if wall_setup.is_empty():
