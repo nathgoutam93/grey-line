@@ -104,7 +104,7 @@ func _play_equip_sound() -> void:
 
 ## Server only: tells the owning player it is making a sound audible up to
 ## `max_distance`, so hidden players in range still get its position and hear
-## it (see PlayerController.report_noise / WorldSnapshotService).
+## it (see PlayerNetSync.report_noise / WorldSnapshotService).
 func _report_noise(max_distance: float, stream: AudioStream) -> void:
 	if player == null or not is_instance_valid(player):
 		return
@@ -113,7 +113,7 @@ func _report_noise(max_distance: float, stream: AudioStream) -> void:
 	var seconds := 0.5
 	if stream != null:
 		seconds = stream.get_length()
-	player.report_noise(max_distance, clampf(seconds, 0.25, 3.0))
+	player.net_sync.report_noise(max_distance, clampf(seconds, 0.25, 3.0))
 
 
 ## How far this item's "use" sound (gunshot, throw) carries. Lets the server

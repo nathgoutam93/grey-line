@@ -51,8 +51,8 @@ func _shoot_raycast() -> void:
 	var saved_transforms := {}
 	if multiplayer.is_server():
 		var shot_tick := NetworkTick.tick
-		if player != null and player.has_method("get_lag_compensation_tick"):
-			shot_tick = int(player.get_lag_compensation_tick())
+		if player != null:
+			shot_tick = player.net_sync.get_lag_compensation_tick()
 		saved_transforms = LagCompensationService.rewind_players_to_tick(get_tree(), shot_tick, player)
 
 	var origin = global_position

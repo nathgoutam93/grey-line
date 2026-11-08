@@ -26,6 +26,8 @@ enum ShotIntent {
 @export var footstep_player: AudioStreamPlayer2D
 @export var camera_shake: CameraShake
 
+@export var net_sync: PlayerNetSync
+
 @export var hud: CanvasLayer
 @export var camera: Camera2D
 @export var audio_listner: AudioListener2D
@@ -39,98 +41,16 @@ var interactables: Array[Interactable]
 var is_dead := false
 var is_local_player := false
 
-const HISTORY_SECONDS := 1.0
-# Snapshots arrive every WorldSnapshotService.SEND_INTERVAL_TICKS (2), so render
-# remote players one send interval plus 2 ticks of jitter buffer behind.
-const DEFAULT_INTERP_DELAY_TICKS := 4
-# Max rewind = one-way latency + interpolation delay; 12 ticks = 200 ms.
-const MAX_LAG_COMP_REWIND_TICKS := 12
-const TICK_OFFSET_SMOOTHING := 0.1
-const RPC_CHANNEL_INPUT := 0
-const RPC_CHANNEL_WORLD := 1
-const RPC_CHANNEL_UI := 2
-
-# Every input packet carries the last N frames so a single lost packet does not
-# drop movement or one-shot actions (drop/switch/interact).
-const INPUT_REDUNDANCY := 4
-# How many ticks early we want owner inputs to reach the server. The server
-# reports the measured lead back in snapshots and the client steers toward it.
-const TARGET_INPUT_LEAD_TICKS := 2
-const INITIAL_INPUT_LEAD_TICKS := 4
-const INPUT_OFFSET_SMOOTHING := 0.1
-const INPUT_OFFSET_SNAP_TICKS := 6.0
-const MAX_INPUT_GAP_FILL_TICKS := 3
-# Server rejects frames stamped further than this ahead of its own tick.
-const MAX_INPUT_LEAD_TICKS := 30
-const MAX_INPUT_BUFFER_SIZE := 120
-
-
-# Owner client state
-var _input_buffer: Dictionary = {}
-var _predicted_positions: Dictionary = {}
-var _send_history: Array = []
-var _input_tick_offset := 0.0
-var _has_input_lead_sample := false
-var _last_lead_sample_tick := 0
-var _last_stamped_tick := 0
-var _carry_actions: PlayerInputFrame = null
-var _predicted_weapon_states: Dictionary = {}
-
-# Server state
-var _input_queue: Dictionary = {}
-var _last_input: PlayerInputFrame
-var _last_applied_input_tick := 0
-var _lead_sample_tick := 0
-var _lead_sample_value := 0
-var _last_processed_tick := 0
-var _state_history := StateHistoryBuffer.new()
-var _reconciler := ClientReconciler.new()
-var _interpolator := RemoteInterpolator.new()
-var _is_firing_net := false
-var _tick_offset := 0.0
-var _last_authoritative_input_tick := 0
-var _lag_compensation_tick := 0
-var _last_received_snapshot_tick := 0
-var _last_reload_request_tick := -1
-
-## What this client knows about a remote player (set by WorldSnapshots):
-## VISIBLE - in view, drawn normally.
-## AUDIBLE - hidden, but making noise in hearing range: position is still
-##           updated so footsteps/shots play from the right place, not drawn.
-## CULLED  - not sent at all: not drawn, position is stale.
-enum NetPresence { VISIBLE, AUDIBLE, CULLED }
-## Remote actions (fire, reload, switch...) that reach a CULLED proxy are held
-## until its position arrives, so their sounds don't play from a stale spot.
-const DEFERRED_ACTION_TIMEOUT_TICKS := 6
-
-var _net_presence := NetPresence.VISIBLE
-var _snap_next_snapshot := false
-var _deferred_actions: Array[Callable] = []
-var _deferred_wait_ticks := 0
-var _flushing_deferred := false
-
-# Server: timed noise from equipment sounds (see report_noise).
-var _noise_radius := 0.0
-var _noise_until_tick := 0
-
 var _death_sequence_id := 0
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
+const RPC_CHANNEL_UI := 2
 
 var _last_footstep_position := Vector2.ZERO
 # Decided once per network tick: positions only change on ticks, so measuring
 # per rendered frame (faster than 60 Hz) saw zero movement most frames and
 # kept stopping/restarting remote players' footsteps.
 var _footstep_moving := false
-const FOOTSTEP_SPEED_THRESHOLD := 40.0;
-
-func _is_server_role() -> bool:
-	return multiplayer.is_server()
-
-func _is_owner_role() -> bool:
-	return owner_peer_id == multiplayer.get_unique_id()
-
-func has_authority(id):
-	return id == get_multiplayer_authority() or id == owner_peer_id
+const FOOTSTEP_SPEED_THRESHOLD := 40.0
 
 func _ready():
 	if health_component and not health_component.is_connected("die", _on_die):
@@ -141,12 +61,11 @@ func _ready():
 		camera.offset = Vector2.ZERO
 		camera.position = Vector2(camera_boom_distance, 0.0)
 
-	_state_history.configure(int(NetworkTick.get("tick_rate") * HISTORY_SECONDS))
-	_interpolator.interpolation_delay_ticks = DEFAULT_INTERP_DELAY_TICKS
+	# NetSync (a child) connected first, so this runs after the tick's
+	# movement has been applied.
 	if not NetworkTick.tick_started.is_connected(_on_network_tick):
 		NetworkTick.tick_started.connect(_on_network_tick)
 	_last_footstep_position = global_position
-
 func setup_locals():
 	is_local_player = true
 	Input.emulate_mouse_from_touch = false
@@ -161,7 +80,7 @@ func setup_locals():
 		equipment_manager.apply_local_view()
 
 
-func _get_current_equipment() -> EquipmentInstance:
+func get_current_equipment() -> EquipmentInstance:
 	if equipment_manager == null:
 		return null
 	return equipment_manager.get_current_item()
@@ -173,7 +92,7 @@ func get_speed():
 	if is_slow_walking:
 		speed_multiplier *= slow_walk_multiplier
 	
-	var current_item = _get_current_equipment()
+	var current_item = get_current_equipment()
 	if current_item is WeaponInstance:
 		speed_multiplier *= (current_item as WeaponInstance).data.speed_multiplier
 
@@ -205,7 +124,7 @@ func _update_item_animation(is_moving_now: bool) -> void:
 	if skeletal_character == null or skeletal_character.anim_player == null:
 		return
 	skeletal_character.update_leg_animation(is_moving_now)
-	var current_item = _get_current_equipment()
+	var current_item = get_current_equipment()
 	if current_item and current_item is WeaponInstance:
 		var weapon = current_item as WeaponInstance
 		if weapon.can_play_idle_animation():
@@ -246,581 +165,30 @@ func _update_footstep_audio(delta: float) -> void:
 	if footstep_player.playing:
 		footstep_player.stop()
 
-func _physics_process(_delta: float) -> void:
-	pass
-
-func _on_network_tick(tick: int) -> void:
+func _on_network_tick(_tick: int) -> void:
 	if is_dead:
 		return
-	if _is_server_role():
-		_server_tick(tick)
-	elif _is_owner_role():
-		_record_predicted_weapon_state()
-		_owner_tick(tick)
-	else:
-		_proxy_tick(_estimated_server_tick(tick))
 	_update_footstep_motion()
 
 func _update_footstep_motion() -> void:
-	var speed := global_position.distance_to(_last_footstep_position) * float(NetworkTick.tick_rate)
+	var moved_speed := global_position.distance_to(_last_footstep_position) * float(NetworkTick.tick_rate)
 	_last_footstep_position = global_position
-	_footstep_moving = speed > FOOTSTEP_SPEED_THRESHOLD
+	_footstep_moving = moved_speed > FOOTSTEP_SPEED_THRESHOLD
 
-func _owner_tick(local_tick: int) -> void:
-	if not is_instance_valid(player_input) or not is_instance_valid(movement_component):
-		return
-	# Stamp with the server tick at which this input should *arrive*, i.e.
-	# ahead of the server by one-way latency + TARGET_INPUT_LEAD_TICKS. The
-	# offset is steered by lead feedback from the server (see snapshots).
-	var stamp := int(round(float(local_tick) + _input_tick_offset))
-	var frame := player_input.build_input_frame(stamp)
-	frame.stamp_offset = _input_tick_offset
-	# What we are rendering remote players at; used by server lag compensation.
-	frame.view_tick = maxi(_estimated_server_tick(local_tick) - DEFAULT_INTERP_DELAY_TICKS, 0)
-	if _carry_actions != null:
-		frame.merge_actions_from(_carry_actions)
-		_carry_actions = null
-
-	if _last_stamped_tick > 0 and stamp <= _last_stamped_tick:
-		# Clock is being pulled back: skip this tick (no prediction, nothing
-		# sent) but keep any presses for the next frame.
-		if frame.has_one_shot_actions():
-			_carry_actions = frame
-		return
-
-	if _last_stamped_tick > 0:
-		var gap := stamp - _last_stamped_tick
-		if gap > 1 and gap <= MAX_INPUT_GAP_FILL_TICKS:
-			# Clock moved forward: fill skipped ticks so client and server
-			# simulate the same number of steps.
-			for fill_tick in range(_last_stamped_tick + 1, stamp):
-				_predict_owner_frame(frame.copy_continuous(fill_tick))
-	_predict_owner_frame(frame)
-	rpc_id(1, "server_receive_input", _send_history.duplicate())
-
-func _predict_owner_frame(frame: PlayerInputFrame) -> void:
-	_input_buffer[frame.tick] = frame
-	_apply_input_actions(frame)
-	PlayerSimulation.simulate(self , movement_component, frame)
-	_predicted_positions[frame.tick] = global_position
-	_last_stamped_tick = frame.tick
-	_send_history.append(frame.to_packed())
-	while _send_history.size() > INPUT_REDUNDANCY:
-		_send_history.pop_front()
-	if _input_buffer.size() > MAX_INPUT_BUFFER_SIZE:
-		# No acks arriving; drop the oldest entries so memory stays bounded.
-		var cutoff := frame.tick - MAX_INPUT_BUFFER_SIZE
-		for key in _input_buffer.keys():
-			if int(key) < cutoff:
-				_input_buffer.erase(key)
-		for key in _predicted_positions.keys():
-			if int(key) < cutoff:
-				_predicted_positions.erase(key)
-
-func _server_tick(tick: int) -> void:
-	if not is_instance_valid(movement_component):
-		return
-	# Consume every queued frame that is due. Normally that is exactly the
-	# frame for this tick; if frames arrived late, use the newest for movement
-	# and fold the older ones' one-shot actions into it so none are lost.
-	var due_ticks: Array[int] = []
-	for key in _input_queue.keys():
-		if int(key) <= tick:
-			due_ticks.append(int(key))
-	due_ticks.sort()
-	var frame: PlayerInputFrame = null
-	for due_tick in due_ticks:
-		var queued := _input_queue[due_tick] as PlayerInputFrame
-		_input_queue.erase(due_tick)
-		if frame != null:
-			queued.merge_actions_from(frame)
-		frame = queued
-
-	if frame != null:
-		_last_applied_input_tick = frame.tick
-		_last_input = frame
-	elif _is_owner_role() and is_instance_valid(player_input):
-		# Host's own player: sample input directly.
-		frame = player_input.build_input_frame(tick)
-		frame.view_tick = tick
-		_last_applied_input_tick = tick
-		_last_input = frame
-	elif _last_input != null:
-		# Input for this tick is missing: keep moving with the last known
-		# input, but never repeat one-shot actions (drop/switch/interact).
-		frame = _last_input.copy_continuous(_last_input.tick)
-	else:
-		return
-
-	_last_authoritative_input_tick = _last_applied_input_tick
-	var view_tick := frame.view_tick if frame.view_tick >= 0 else tick
-	var min_allowed_lag_comp_tick := maxi(tick - MAX_LAG_COMP_REWIND_TICKS, 0)
-	_lag_compensation_tick = clampi(view_tick, min_allowed_lag_comp_tick, tick)
-	_apply_input_actions(frame)
-	PlayerSimulation.simulate(self , movement_component, frame)
-	_last_processed_tick = tick
-	_state_history.store(tick, global_transform)
-	# State is broadcast in batches by WorldSnapshots (world_snapshot_service.gd).
-
-func _proxy_tick(server_tick: int) -> void:
-	if not _deferred_actions.is_empty():
-		_deferred_wait_ticks += 1
-		if _deferred_wait_ticks >= DEFERRED_ACTION_TIMEOUT_TICKS:
-			# Out of hearing range: the position will not come; run anyway so
-			# weapon state stays in step.
-			_flush_deferred_actions()
-	var render_tick := server_tick - _interpolator.interpolation_delay_ticks
-	if _interpolator.snapshot_buffer.size() < 2:
-		_interpolator.apply_latest(self, render_tick)
-		return
-	_interpolator.interpolate(self , render_tick)
-
-func _apply_input_actions(frame: PlayerInputFrame) -> void:
-	is_slow_walking = frame.slow_walk_held
-	current_shot_intent = frame.shot_intent
-
-	# The owning client predicts fire/reload/switch immediately; the server
-	# (authoritative) executes everything and broadcasts via _remote_* RPCs,
-	# which the predicting owner ignores. Drop/interact stay server-driven.
-	if _is_predicting_owner():
-		_predict_owner_actions(frame)
-		return
-	if not _is_server_role():
-		return
-
-	if frame.reload_pressed and frame.tick > _last_reload_request_tick:
-		_last_reload_request_tick = frame.tick
-		_remote_reload.rpc()
-	if frame.switch_prev_pressed:
-		_remote_switch_weapon_previous.rpc()
-	if frame.switch_next_pressed:
-		_remote_switch_weapon.rpc()
-	if frame.slot_select >= 0:
-		_remote_switch_weapon_slot.rpc(frame.slot_select)
-	if frame.drop_pressed:
-		_remote_drop_weapon.rpc()
-	if frame.interact_pressed:
-		var target_path: NodePath = NodePath("")
-		if interactables.size() > 0 and interactables[0]:
-			target_path = interactables[0].get_path()
-		_remote_interact.rpc(target_path)
-
-	if frame.fire_held and not _is_firing_net:
-		_is_firing_net = true
-		# Become audible before the first shot so listeners get our position
-		# in the next snapshot (their proxies hold the shot until then).
-		var current_item := _get_current_equipment()
-		if current_item:
-			report_noise(current_item.get_use_noise_radius(), 0.5)
-		_remote_start_fire.rpc(frame.shot_intent)
-	elif not frame.fire_held and _is_firing_net:
-		_is_firing_net = false
-		_remote_stop_fire.rpc()
-
-func _is_predicting_owner() -> bool:
-	return _is_owner_role() and not multiplayer.is_server()
-
-func _predict_owner_actions(frame: PlayerInputFrame) -> void:
-	if frame.reload_pressed and frame.tick > _last_reload_request_tick:
-		_last_reload_request_tick = frame.tick
-		_do_reload()
-	if equipment_manager != null:
-		if frame.switch_prev_pressed:
-			equipment_manager.switch_to_previous_item()
-		if frame.switch_next_pressed:
-			equipment_manager.switch_to_next_item()
-		if frame.slot_select >= 0:
-			equipment_manager.switch_to_slot(frame.slot_select)
-	if frame.fire_held and not _is_firing_net:
-		_is_firing_net = true
-		_do_start_fire(frame.shot_intent)
-	elif not frame.fire_held and _is_firing_net:
-		_is_firing_net = false
-		_do_stop_fire()
-
-func _server_or_local_interact() -> void:
-	var target_path: NodePath = NodePath("")
-	if interactables.size() > 0 and interactables[0]:
-		target_path = interactables[0].get_path()
-	if target_path == NodePath(""):
-		return
-	var interactable := get_node_or_null(target_path)
-	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
-		interactable.owner_ref.on_interact(self )
-
-## Server only: fields sent to this player's owner in each world snapshot.
-## [ack_tick, lead_tick, input_lead] — frame `lead_tick` arrived `input_lead`
-## ticks before the server needed it.
-func get_owner_snapshot_fields() -> Array:
-	var slot := -1
-	var ammo := PackedInt32Array()
-	if equipment_manager != null:
-		slot = equipment_manager.get_target_slot()
-		ammo = equipment_manager.capture_weapon_ammo()
-	return [_last_authoritative_input_tick, _lead_sample_tick, _lead_sample_value, slot, ammo]
-
-@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
-func server_receive_input(packed_frames: Array) -> void:
-	if not _is_server_role():
-		return
-	var sender_id := multiplayer.get_remote_sender_id()
-	if sender_id != owner_peer_id:
-		return
-	var server_tick := NetworkTick.tick
-	var newest_tick := -1
-	for i in range(mini(packed_frames.size(), INPUT_REDUNDANCY)):
-		var frame := PlayerInputFrame.from_packed(packed_frames[i])
-		if frame == null:
-			continue
-		newest_tick = maxi(newest_tick, frame.tick)
-		if frame.tick <= _last_applied_input_tick:
-			continue # already applied (redundant copy) or superseded
-		if frame.tick > server_tick + MAX_INPUT_LEAD_TICKS:
-			continue # absurdly far ahead; lead feedback will pull the client back
-		if _input_queue.has(frame.tick):
-			continue
-		_input_queue[frame.tick] = frame
-	if newest_tick > _lead_sample_tick:
-		_lead_sample_tick = newest_tick
-		# Frames for `server_tick` itself have already missed this tick, so a
-		# lead of 0 or less means the input arrived late.
-		_lead_sample_value = clampi(newest_tick - server_tick, -1000, 1000)
-
-## Client only: called by WorldSnapshots for this player's entry in a batched
-## world snapshot (server-authority RPC, see world_snapshot_service.gd).
-func apply_snapshot(snapshot: Dictionary) -> void:
-	var server_tick := int(snapshot.get("tick", 0))
-	if server_tick <= 0:
-		return
-	if server_tick <= _last_received_snapshot_tick:
-		return
-	_last_received_snapshot_tick = server_tick
-	_update_tick_offset(server_tick)
-	if _is_owner_role():
-		_apply_input_lead_feedback(int(snapshot.get("lead_tick", 0)), int(snapshot.get("input_lead", 0)))
-		_reconciler.reconcile(
-			self ,
-			snapshot.get("position", global_position),
-			snapshot.get("velocity", velocity),
-			int(snapshot.get("ack_tick", 0)),
-			_input_buffer,
-			_predicted_positions,
-			movement_component
-		)
-		_reconcile_weapon_state(
-			int(snapshot.get("ack_tick", 0)),
-			int(snapshot.get("weapon_slot", -1)),
-			snapshot.get("weapon_ammo", PackedInt32Array())
-		)
-		return
-	if _snap_next_snapshot:
-		# Back from CULLED: jump to the real position instead of sliding from
-		# the stale one (which would also fake a burst of footsteps).
-		_snap_next_snapshot = false
-		global_position = snapshot.get("position", global_position)
-		rotation = float(snapshot.get("rotation", rotation))
-		_last_footstep_position = global_position
-	_interpolator.push_snapshot(snapshot)
-	if not _deferred_actions.is_empty():
-		_flush_deferred_actions()
-
-## Owner client: weapon state ([mag, reserve] per weapon slot) after the
-## weapons ticked for a stamped input tick. Weapons tick right after this
-## player in each NetworkTick, so the state is captured at the start of the
-## next tick and filed under the last stamped tick.
-func _record_predicted_weapon_state() -> void:
-	if _last_stamped_tick <= 0 or equipment_manager == null:
-		return
-	_predicted_weapon_states[_last_stamped_tick] = equipment_manager.capture_weapon_ammo()
-	if _predicted_weapon_states.size() > MAX_INPUT_BUFFER_SIZE:
-		var cutoff := _last_stamped_tick - MAX_INPUT_BUFFER_SIZE
-		for key in _predicted_weapon_states.keys():
-			if int(key) < cutoff:
-				_predicted_weapon_states.erase(key)
-
-## Owner client: the server's ammo for `ack_tick` is the truth. Shift the
-## current ammo (and the newer predictions) by however far our prediction for
-## that tick was off, the same way position is reconciled. Also follow the
-## server's weapon slot once no switch of ours is still on its way to it.
-func _reconcile_weapon_state(ack_tick: int, server_slot: int, server_ammo: PackedInt32Array) -> void:
-	if equipment_manager == null or ack_tick <= 0:
-		return
-	var predicted: Variant = _predicted_weapon_states.get(ack_tick, null)
-	for key in _predicted_weapon_states.keys():
-		if int(key) < ack_tick:
-			_predicted_weapon_states.erase(key)
-	if predicted != null:
-		var predicted_ammo: PackedInt32Array = predicted
-		if predicted_ammo.size() == server_ammo.size():
-			var deltas := PackedInt32Array()
-			deltas.resize(server_ammo.size())
-			var any_delta := false
-			for i in range(0, server_ammo.size(), 2):
-				# Skip slots that are empty on either side (pickup/drop in flight).
-				if server_ammo[i] < 0 or predicted_ammo[i] < 0:
-					continue
-				deltas[i] = server_ammo[i] - predicted_ammo[i]
-				deltas[i + 1] = server_ammo[i + 1] - predicted_ammo[i + 1]
-				any_delta = any_delta or deltas[i] != 0 or deltas[i + 1] != 0
-			if any_delta:
-				equipment_manager.apply_weapon_ammo_deltas(deltas)
-				for key in _predicted_weapon_states.keys():
-					var entry: PackedInt32Array = _predicted_weapon_states[key]
-					for i in range(mini(entry.size(), deltas.size())):
-						if entry[i] >= 0:
-							entry[i] += deltas[i]
-					_predicted_weapon_states[key] = entry
-
-	if server_slot < 0 or server_slot == equipment_manager.get_target_slot():
-		return
-	for key in _input_buffer.keys():
-		if int(key) <= ack_tick:
-			continue
-		var frame := _input_buffer[key] as PlayerInputFrame
-		if frame != null and (frame.switch_next_pressed or frame.switch_prev_pressed or frame.slot_select >= 0):
-			return # our own switch has not reached the server yet
-	if equipment_manager.get_item_in_slot(server_slot) != null:
-		equipment_manager.equip_slot(server_slot)
-
-## Client only: called by WorldSnapshots for every remote player each packet.
-func set_net_presence(presence: NetPresence) -> void:
-	if presence == _net_presence:
-		return
-	var was_culled := _net_presence == NetPresence.CULLED
-	_net_presence = presence
-	if presence == NetPresence.CULLED:
-		_interpolator.snapshot_buffer.clear()
-	elif was_culled:
-		_snap_next_snapshot = true
-	_refresh_proxy_visibility()
-
-func _refresh_proxy_visibility() -> void:
-	visible = not is_dead and _net_presence == NetPresence.VISIBLE
-
-## Returns true if `action` was queued instead of run now. Only remote proxies
-## that the server is not currently sending (CULLED) queue; the queue keeps
-## order, so later actions wait behind earlier ones.
-func _defer_until_located(action: Callable) -> bool:
-	if _flushing_deferred or multiplayer.is_server() or _is_owner_role():
-		return false
-	if _deferred_actions.is_empty() and _net_presence != NetPresence.CULLED:
-		return false
-	if _deferred_actions.is_empty():
-		_deferred_wait_ticks = 0
-	_deferred_actions.append(action)
-	return true
-
-func _flush_deferred_actions() -> void:
-	_flushing_deferred = true
-	while not _deferred_actions.is_empty():
-		var action: Callable = _deferred_actions.pop_front()
-		action.call()
-		if action.get_method() == &"_remote_start_fire" and not _deferred_actions.is_empty():
-			# Let the weapon tick once before anything else (e.g. stop_fire)
-			# runs, so a quick tap still fires a shot.
-			_flushing_deferred = false
-			NetworkTick.tick_started.connect(_on_deferred_flush_tick, CONNECT_ONE_SHOT)
-			return
-	_flushing_deferred = false
-
-func _on_deferred_flush_tick(_tick: int) -> void:
-	if is_inside_tree():
-		_flush_deferred_actions()
-
-## Server only: this player is making a sound that carries `max_distance` for
-## `seconds`. Players within range keep receiving their position (as AUDIBLE)
-## even when they can't see them.
-func report_noise(max_distance: float, seconds: float) -> void:
-	if max_distance <= 0.0:
-		return
-	var until_tick := NetworkTick.tick + int(ceil(seconds * float(NetworkTick.tick_rate)))
-	if NetworkTick.tick >= _noise_until_tick:
-		_noise_radius = max_distance
-	else:
-		_noise_radius = maxf(_noise_radius, max_distance)
-	_noise_until_tick = maxi(_noise_until_tick, until_tick)
-
-## Server only: how far this player can be heard right now.
-func get_noise_radius() -> float:
-	if is_dead:
-		return 0.0
-	var radius := 0.0
-	if NetworkTick.tick < _noise_until_tick:
-		radius = _noise_radius
-	# Same rule the client uses to play footsteps (_update_footstep_audio).
-	if footstep_player and velocity.length() > FOOTSTEP_SPEED_THRESHOLD:
-		radius = maxf(radius, footstep_player.max_distance)
-	return radius
-
-func _apply_input_lead_feedback(lead_tick: int, lead: int) -> void:
-	if lead_tick <= 0 or lead_tick <= _last_lead_sample_tick:
-		return
-	var sampled := _input_buffer.get(lead_tick, null) as PlayerInputFrame
-	if sampled == null:
-		return
-	_last_lead_sample_tick = lead_tick
-	# Absolute target derived from the offset that frame was stamped with, so
-	# feedback that is still in flight after a correction does not overshoot.
-	var target := sampled.stamp_offset + float(TARGET_INPUT_LEAD_TICKS - lead)
-	if not _has_input_lead_sample or absf(target - _input_tick_offset) > INPUT_OFFSET_SNAP_TICKS:
-		_input_tick_offset = target
-		_has_input_lead_sample = true
-	else:
-		_input_tick_offset = lerpf(_input_tick_offset, target, INPUT_OFFSET_SMOOTHING)
-
-func get_history_transform(tick: int) -> Variant:
-	return _state_history.get_transform_for_tick(tick)
-
-func get_lag_compensation_tick() -> int:
-	if _lag_compensation_tick > 0:
-		return _lag_compensation_tick
-	return _last_processed_tick
-
-func sync_server_tick(server_tick: int) -> void:
-	if server_tick <= 0:
-		return
-	_tick_offset = float(server_tick - NetworkTick.tick)
-	# Rough starting guess; the first lead sample from the server replaces it.
-	_input_tick_offset = _tick_offset + float(INITIAL_INPUT_LEAD_TICKS)
-	_has_input_lead_sample = false
-
-func _estimated_server_tick(local_tick: int) -> int:
-	return int(round(float(local_tick) + _tick_offset))
-
-func _update_tick_offset(authoritative_server_tick: int) -> void:
-	var target_offset := float(authoritative_server_tick - NetworkTick.tick)
-	_tick_offset = lerpf(_tick_offset, target_offset, TICK_OFFSET_SMOOTHING)
-
-
-func add_interactable(item: Interactable):
-	interactables.append(item)
-
-func remove_interactable(item: Interactable):
-	interactables.erase(item)
-
-@rpc("authority", "call_local", "unreliable", RPC_CHANNEL_UI)
-func _remote_interact(target_path: NodePath):
-	if target_path == NodePath(""):
-		return
-	var interactable = get_node_or_null(target_path)
-	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
-		interactable.owner_ref.on_interact(self )
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
-	if _is_predicting_owner():
-		return # already started locally when the input was sampled
-	if _defer_until_located(_remote_start_fire.bind(shot_intent)):
-		return
-	_do_start_fire(shot_intent)
-
-func _do_start_fire(shot_intent: int) -> void:
-	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
-		shot_intent = ShotIntent.BODY
-	current_shot_intent = shot_intent
-	var current_item := _get_current_equipment()
-	if current_item:
-		current_item.start_use()
+## Call after teleporting the player so the jump is not heard as footsteps.
+func reset_footstep_tracking() -> void:
+	_last_footstep_position = global_position
 
 func can_register_hit(is_head_hit: bool) -> bool:
 	if current_shot_intent == ShotIntent.HEAD:
 		return is_head_hit
 	return not is_head_hit
 
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_stop_fire():
-	if _is_predicting_owner():
-		return
-	if _defer_until_located(_remote_stop_fire):
-		return
-	_do_stop_fire()
+func add_interactable(item: Interactable):
+	interactables.append(item)
 
-func _do_stop_fire() -> void:
-	var current_item := _get_current_equipment()
-	if current_item:
-		current_item.stop_use()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_reload():
-	if _is_predicting_owner():
-		return
-	if _defer_until_located(_remote_reload):
-		return
-	_do_reload()
-
-func _do_reload() -> void:
-	var weapon := _get_current_equipment() as WeaponInstance
-	if weapon:
-		weapon.reload()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_switch_weapon():
-	if _is_predicting_owner():
-		return
-	if _defer_until_located(_remote_switch_weapon):
-		return
-	if equipment_manager != null:
-		equipment_manager.switch_to_next_item()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_switch_weapon_previous():
-	if _is_predicting_owner():
-		return
-	if _defer_until_located(_remote_switch_weapon_previous):
-		return
-	if equipment_manager != null:
-		equipment_manager.switch_to_previous_item()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_switch_weapon_slot(slot: int):
-	if _is_predicting_owner():
-		return
-	if _defer_until_located(_remote_switch_weapon_slot.bind(slot)):
-		return
-	if equipment_manager != null:
-		equipment_manager.switch_to_slot(slot)
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_drop_weapon():
-	if _defer_until_located(_remote_drop_weapon):
-		return
-	_predicted_weapon_states.clear()
-	if equipment_manager != null and equipment_manager.has_method("drop_current_item"):
-		equipment_manager.drop_current_item()
-
-@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _remote_pickup(pickup_path: NodePath):
-	_predicted_weapon_states.clear()
-	var weapon_pickup := _resolve_pickup_node(pickup_path)
-	if weapon_pickup == null:
-		push_warning("Pickup node not found for path: %s" % [String(pickup_path)])
-		return
-
-	if equipment_manager != null and equipment_manager.has_method("pickup_weapon"):
-		if equipment_manager.pickup_weapon(weapon_pickup):
-			weapon_pickup.queue_free()
-
-func _resolve_pickup_node(pickup_path: NodePath) -> WeaponPickup:
-	var scene_root := get_tree().current_scene
-	if scene_root:
-		var map_node := scene_root.find_child("Map", true, false)
-		if map_node:
-			var from_map := map_node.get_node_or_null(pickup_path) as WeaponPickup
-			if from_map:
-				return from_map
-
-	var from_root := get_tree().root.get_node_or_null(pickup_path) as WeaponPickup
-	if from_root:
-		return from_root
-
-	var pickup_name := String(pickup_path).get_file()
-	if pickup_name == "":
-		return null
-
-	if scene_root:
-		return scene_root.find_child(pickup_name, true, false) as WeaponPickup
-
-	return null
+func remove_interactable(item: Interactable):
+	interactables.erase(item)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_die(global_pos: Vector2):
@@ -842,14 +210,10 @@ func _remote_die(global_pos: Vector2):
 	velocity = Vector2.ZERO
 	if footstep_player.playing:
 		footstep_player.stop()
-	var current_item = _get_current_equipment()
+	var current_item := get_current_equipment()
 	if current_item:
-		if current_item.has_method("force_interrupt"):
-			current_item.force_interrupt()
-		if current_item.has_method("stop_fire"):
-			current_item.stop_fire()
-		elif current_item.has_method("stop_use"):
-			current_item.stop_use()
+		current_item.force_interrupt()
+		current_item.stop_use()
 	hide()
 
 	var dead_scene = preload("res://scenes/player/player_dead.tscn").instantiate()
@@ -877,35 +241,12 @@ func reset_for_respawn() -> void:
 	_death_sequence_id += 1
 	is_dead = false
 	is_slow_walking = false
-	_net_presence = NetPresence.VISIBLE
-	_snap_next_snapshot = false
-	_deferred_actions.clear()
-	_noise_radius = 0.0
-	_noise_until_tick = 0
-	_is_firing_net = false
+	if net_sync:
+		net_sync.reset_state()
 	velocity = Vector2.ZERO
 	show()
 	_enable_hurtbox(headHurtBox)
 	_enable_hurtbox(bodyHurtBox)
-	_input_buffer.clear()
-	_predicted_positions.clear()
-	_send_history.clear()
-	_has_input_lead_sample = false
-	_last_lead_sample_tick = 0
-	_last_stamped_tick = 0
-	_carry_actions = null
-	_predicted_weapon_states.clear()
-	_input_queue.clear()
-	_last_input = null
-	_last_applied_input_tick = 0
-	_lead_sample_tick = 0
-	_lead_sample_value = 0
-	_last_processed_tick = 0
-	_last_authoritative_input_tick = 0
-	_lag_compensation_tick = 0
-	_last_received_snapshot_tick = 0
-	_last_reload_request_tick = -1
-	_interpolator.snapshot_buffer.clear()
 	set_process(true)
 	set_physics_process(true)
 	if movement_component:
@@ -914,6 +255,7 @@ func reset_for_respawn() -> void:
 		movement_component.is_moving = false
 		movement_component.external_velocity = Vector2.ZERO
 	_last_footstep_position = global_position
+	_footstep_moving = false
 	if footstep_player and footstep_player.playing:
 		footstep_player.stop()
 	if health_component:

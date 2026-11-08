@@ -74,7 +74,7 @@ func pickup_weapon(player):
 		if map_node and map_node.is_ancestor_of(self ):
 			pickup_path = map_node.get_path_to(self )
 
-	player._remote_pickup.rpc(pickup_path)
+	player.net_sync.request_pickup(pickup_path)
 
 func show_message(text):
 	print(text)

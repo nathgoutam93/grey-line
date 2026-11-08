@@ -90,7 +90,7 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 			var flag := -1
 			if target == viewer:
 				flag = FLAG_VISIBLE
-				var owner_fields := target.get_owner_snapshot_fields()
+				var owner_fields := target.net_sync.get_owner_snapshot_fields()
 				ack_tick = owner_fields[0]
 				lead_tick = owner_fields[1]
 				input_lead = owner_fields[2]
@@ -159,7 +159,7 @@ func _receive_world_snapshot(packet: Array) -> void:
 			continue
 		present[player] = true
 		if ids[i] != local_peer_id:
-			player.set_net_presence(PlayerController.NetPresence.VISIBLE if flags[i] == FLAG_VISIBLE else PlayerController.NetPresence.AUDIBLE)
+			player.net_sync.set_net_presence(PlayerNetSync.NetPresence.VISIBLE if flags[i] == FLAG_VISIBLE else PlayerNetSync.NetPresence.AUDIBLE)
 		var snapshot := {
 			"tick": tick,
 			"position": positions[i],
@@ -172,13 +172,13 @@ func _receive_world_snapshot(packet: Array) -> void:
 			snapshot["input_lead"] = int(packet[P_INPUT_LEAD])
 			snapshot["weapon_slot"] = int(packet[P_WEAPON_SLOT])
 			snapshot["weapon_ammo"] = packet[P_WEAPON_AMMO] as PackedInt32Array
-		player.apply_snapshot(snapshot)
+		player.net_sync.apply_snapshot(snapshot)
 
 	# Everyone the server left out is neither seen nor heard.
 	for player in by_name.values():
 		if present.has(player) or player.is_local_player or String(player.name) == str(local_peer_id):
 			continue
-		player.set_net_presence(PlayerController.NetPresence.CULLED)
+		player.net_sync.set_net_presence(PlayerNetSync.NetPresence.CULLED)
 
 func _is_server() -> bool:
 	var peer := multiplayer.multiplayer_peer

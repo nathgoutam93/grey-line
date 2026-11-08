@@ -280,8 +280,7 @@ func _setup_player(peer_id, player_path: NodePath, spawn_position: Vector2, serv
 	player.reset_for_respawn()
 	player.global_position = spawn_position
 	player.set_multiplayer_authority(1)
-	if player.has_method("sync_server_tick"):
-		player.sync_server_tick(server_tick)
+	player.net_sync.sync_server_tick(server_tick)
 
 	if player:
 		player.owner_peer_id = peer_id

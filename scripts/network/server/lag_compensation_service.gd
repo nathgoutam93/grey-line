@@ -17,7 +17,7 @@ static func rewind_players_to_tick(tree: SceneTree, tick: int, shooter: Node = n
 		if player.is_dead:
 			continue
 		saved_transforms[player] = player.global_transform
-		var rewind_transform : Variant = player.get_history_transform(tick)
+		var rewind_transform : Variant = player.net_sync.get_history_transform(tick)
 		if rewind_transform != null:
 			player.global_transform = rewind_transform
 	return saved_transforms

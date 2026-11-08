@@ -45,7 +45,7 @@ static func can_see(viewer: PlayerController, target: PlayerController, smoke_bl
 
 ## True when `source` is currently making a sound that reaches `listener`.
 static func can_hear(listener: PlayerController, source: PlayerController) -> bool:
-	var radius := source.get_noise_radius()
+	var radius := source.net_sync.get_noise_radius()
 	if radius <= 0.0:
 		return false
 	return listener.global_position.distance_squared_to(source.global_position) <= radius * radius
