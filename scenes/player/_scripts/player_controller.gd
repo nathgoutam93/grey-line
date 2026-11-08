@@ -40,8 +40,11 @@ var is_dead := false
 var is_local_player := false
 
 const HISTORY_SECONDS := 1.0
-const DEFAULT_INTERP_DELAY_TICKS := 2
-const MAX_LAG_COMP_REWIND_TICKS := 8
+# Snapshots arrive every WorldSnapshotService.SEND_INTERVAL_TICKS (2), so render
+# remote players one send interval plus 2 ticks of jitter buffer behind.
+const DEFAULT_INTERP_DELAY_TICKS := 4
+# Max rewind = one-way latency + interpolation delay; 12 ticks = 200 ms.
+const MAX_LAG_COMP_REWIND_TICKS := 12
 const TICK_OFFSET_SMOOTHING := 0.1
 const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
@@ -328,7 +331,7 @@ func _server_tick(tick: int) -> void:
 	PlayerSimulation.simulate(self , movement_component, frame)
 	_last_processed_tick = tick
 	_state_history.store(tick, global_transform)
-	_send_snapshot(tick)
+	# State is broadcast in batches by WorldSnapshots (world_snapshot_service.gd).
 
 func _proxy_tick(server_tick: int) -> void:
 	var render_tick := server_tick - _interpolator.interpolation_delay_ticks
@@ -380,19 +383,11 @@ func _server_or_local_interact() -> void:
 	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
 		interactable.owner_ref.on_interact(self )
 
-func _send_snapshot(tick: int) -> void:
-	var snapshot := {
-		"tick": tick,
-		"position": global_position,
-		"velocity": velocity,
-		"rotation": rotation,
-		"ack_tick": _last_authoritative_input_tick,
-		# Lead feedback for the owner: frame `lead_tick` arrived `input_lead`
-		# ticks before the server needed it.
-		"lead_tick": _lead_sample_tick,
-		"input_lead": _lead_sample_value
-	}
-	rpc("client_receive_snapshot", snapshot)
+## Server only: fields sent to this player's owner in each world snapshot.
+## [ack_tick, lead_tick, input_lead] — frame `lead_tick` arrived `input_lead`
+## ticks before the server needed it.
+func get_owner_snapshot_fields() -> Array:
+	return [_last_authoritative_input_tick, _lead_sample_tick, _lead_sample_value]
 
 @rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
 func server_receive_input(packed_frames: Array) -> void:
@@ -421,9 +416,9 @@ func server_receive_input(packed_frames: Array) -> void:
 		# lead of 0 or less means the input arrived late.
 		_lead_sample_value = clampi(newest_tick - server_tick, -1000, 1000)
 
-# Only the server (multiplayer authority of every player node) may send snapshots.
-@rpc("authority", "call_remote", "unreliable", RPC_CHANNEL_WORLD)
-func client_receive_snapshot(snapshot: Dictionary) -> void:
+## Client only: called by WorldSnapshots for this player's entry in a batched
+## world snapshot (server-authority RPC, see world_snapshot_service.gd).
+func apply_snapshot(snapshot: Dictionary) -> void:
 	var server_tick := int(snapshot.get("tick", 0))
 	if server_tick <= 0:
 		return

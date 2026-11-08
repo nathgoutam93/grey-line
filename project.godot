@@ -24,6 +24,7 @@ config/icon="uid://c13svdd1v10yw"
 MaskViewProvider="*res://scripts/MaskViewProvider.gd"
 MultiplayerSession="*res://scripts/network/multiplayer_session.gd"
 NetworkTick="*res://scripts/network/network_tick_clock.gd"
+WorldSnapshots="*res://scripts/network/world_snapshot_service.gd"
 PlayerProfile="*res://scripts/profile/player_profile.gd"
 
 [display]
