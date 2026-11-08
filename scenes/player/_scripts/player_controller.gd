@@ -35,6 +35,7 @@ enum ShotIntent {
 @export var is_slow_walking := false
 
 var owner_peer_id: int = 1
+var team: int = Teams.NONE
 var current_shot_intent: int = ShotIntent.BODY
 
 var interactables: Array[Interactable]

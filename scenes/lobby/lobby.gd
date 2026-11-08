@@ -26,6 +26,7 @@ var _avatar_catalog: Dictionary = {}
 var _avatar_texture_cache: Dictionary = {}
 var _add_bot_button: Button
 var _remove_bot_button: Button
+var _switch_team_button: Button
 
 func _ready() -> void:
 	_load_avatar_catalog()
@@ -37,6 +38,7 @@ func _ready() -> void:
 		MultiplayerSession.server_map_load_requested.connect(_on_server_map_load_requested)
 	_connect_start_button()
 	_create_bot_buttons()
+	_create_team_button()
 	MultiplayerSession.enter_lobby()
 	sync_lobby(MultiplayerSession.get_lobby_sync_payload())
 
@@ -90,11 +92,35 @@ func sync_lobby(payload: Dictionary) -> void:
 	_render_map_name(map_scene_path)
 	_render_slots(names, avatars, local_peer_id)
 	_render_start_button(is_connected, is_server, has_started)
+	if _switch_team_button != null:
+		_switch_team_button.visible = is_connected and not has_started
+		var wanted := Teams.other(MultiplayerSession.get_team(local_peer_id))
+		_switch_team_button.disabled = not Teams.can_switch(MultiplayerSession.player_teams, local_peer_id, wanted, ceili(MultiplayerSession.max_players / 2.0))
 	if _add_bot_button != null:
 		_add_bot_button.visible = OS.is_debug_build() and is_connected and is_server and not has_started
 		_remove_bot_button.visible = _add_bot_button.visible
 		_remove_bot_button.disabled = MultiplayerSession.bot_ids.is_empty()
 	_render_debug_player_list(names)
+
+func _create_team_button() -> void:
+	if _start_match_button == null:
+		return
+	_switch_team_button = Button.new()
+	_switch_team_button.name = "SwitchTeam"
+	_switch_team_button.text = "Switch team"
+	_switch_team_button.pressed.connect(_on_switch_team_pressed)
+	_start_match_button.get_parent().add_child(_switch_team_button)
+
+func _on_switch_team_pressed() -> void:
+	if not NetUtil.has_active_peer(multiplayer) or MultiplayerSession.match_started:
+		return
+	var peer_id := multiplayer.get_unique_id()
+	var wanted := Teams.other(MultiplayerSession.get_team(peer_id))
+	if multiplayer.is_server():
+		if Teams.can_switch(MultiplayerSession.player_teams, peer_id, wanted, ceili(MultiplayerSession.max_players / 2.0)):
+			MultiplayerSession.set_team(peer_id, wanted)
+	else:
+		MultiplayerSession.request_team.rpc_id(1, wanted)
 
 func _create_bot_buttons() -> void:
 	if not OS.is_debug_build() or _start_match_button == null:
@@ -177,12 +203,16 @@ func _render_slots(player_names: Dictionary, player_avatars: Dictionary, local_p
 		if entry_variant is Dictionary:
 			var entry := entry_variant as Dictionary
 			if name_label != null:
-				name_label.text = String(entry.get("name", "+"))
+				var team := MultiplayerSession.get_team(int(entry["peer_id"]))
+				var prefix := "[A] " if team == Teams.ALPHA else "[B] " if team == Teams.BRAVO else ""
+				name_label.text = prefix + String(entry.get("name", "+"))
+				name_label.modulate = Teams.COLORS.get(team, Color.WHITE)
 			if avatar_rect != null:
 				avatar_rect.texture = _resolve_avatar_texture(String(entry.get("avatar_id", DEFAULT_AVATAR_ID)))
 		else:
 			if name_label != null:
 				name_label.text = "+"
+				name_label.modulate = Color.WHITE
 			if avatar_rect != null:
 				avatar_rect.texture = null
 

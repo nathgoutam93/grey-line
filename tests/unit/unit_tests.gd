@@ -107,6 +107,29 @@ func test_input_frame_copy_and_merge() -> void:
 	later.merge_actions_from(f)
 	check(later.drop_pressed and later.slot_select == 2, "merge lost earlier presses")
 
+# --- Teams ------------------------------------------------------------------
+
+func test_teams_damage_rules() -> void:
+	check(not Teams.can_damage(Teams.ALPHA, Teams.ALPHA, 1, 2, false), "friendly fire allowed")
+	check(Teams.can_damage(Teams.ALPHA, Teams.ALPHA, 1, 2, true), "friendly fire toggle ignored")
+	check(Teams.can_damage(Teams.ALPHA, Teams.BRAVO, 1, 2, false), "enemy damage blocked")
+	check(Teams.can_damage(Teams.ALPHA, Teams.ALPHA, 1, 1, false), "self damage blocked")
+	check(Teams.can_damage(Teams.NONE, Teams.ALPHA, 1, 2, false), "FFA attacker blocked")
+	check(Teams.can_damage(Teams.ALPHA, Teams.NONE, 1, 2, false), "FFA victim blocked")
+
+func test_teams_assignment_and_switching() -> void:
+	check(Teams.pick_team_for_new_player({}) == Teams.ALPHA, "empty lobby did not pick Alpha")
+	check(Teams.pick_team_for_new_player({1: Teams.ALPHA}) == Teams.BRAVO, "did not pick smaller team")
+	var teams := {1: Teams.ALPHA, 2: Teams.BRAVO, -1: Teams.ALPHA}
+	check(Teams.pick_team_for_new_player(teams) == Teams.BRAVO, "bots not counted")
+	check(Teams.can_switch(teams, 1, Teams.BRAVO, 4), "balanced switch rejected")
+	check(not Teams.can_switch(teams, 2, Teams.ALPHA, 4), "unbalanced switch accepted")
+	check(not Teams.can_switch(teams, 1, Teams.BRAVO, 1), "full team accepted")
+	check(not Teams.can_switch(teams, 99, Teams.BRAVO, 4), "unregistered peer accepted")
+	check(not Teams.can_switch(teams, 1, Teams.NONE, 4), "invalid team accepted")
+	check(teams[1] == Teams.ALPHA, "validation mutated teams")
+	check(Teams.other(Teams.ALPHA) == Teams.BRAVO and Teams.other(Teams.BRAVO) == Teams.ALPHA, "opposite teams wrong")
+
 # --- BotBrain ---------------------------------------------------------------
 
 func test_bot_brain_frame_fields() -> void:

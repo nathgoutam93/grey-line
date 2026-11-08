@@ -20,6 +20,7 @@ signal bot_removed(bot_id: int)
 var local_player_name := ""
 var player_names := {}
 var player_avatar_ids := {}
+var player_teams := {}
 var match_started := false
 var bot_ids: Array[int] = []
 var _next_bot_id := -1
@@ -37,6 +38,7 @@ const RPC_CHANNEL_UI := 2
 
 static var persisted_player_names := {}
 static var persisted_player_avatar_ids := {}
+static var persisted_player_teams := {}
 static var persisted_match_started := false
 static var persisted_map_scene_path := ""
 
@@ -75,9 +77,11 @@ func enter_main_menu() -> void:
 	_stop_lan_discovery_listener()
 	player_names.clear()
 	player_avatar_ids.clear()
+	player_teams.clear()
 	match_started = false
 	persisted_player_names.clear()
 	persisted_player_avatar_ids.clear()
+	persisted_player_teams.clear()
 	persisted_match_started = false
 	manual_join_visible = false
 	discovery_status_text = "Auto-discover LAN host"
@@ -90,6 +94,7 @@ func enter_lobby() -> void:
 	if multiplayer.multiplayer_peer != null:
 		player_names = persisted_player_names.duplicate(true)
 		player_avatar_ids = persisted_player_avatar_ids.duplicate(true)
+		player_teams = persisted_player_teams.duplicate(true)
 		match_started = persisted_match_started
 
 	if multiplayer.multiplayer_peer != null and multiplayer.is_server():
@@ -116,6 +121,8 @@ func host_game() -> Dictionary:
 	_set_profile_username(local_player_name)
 	_set_player_name_for_peer(multiplayer.get_unique_id(), local_player_name)
 	_set_player_avatar_for_peer(multiplayer.get_unique_id(), _resolve_local_avatar_id())
+	if not OS.has_feature("dedicated_server"):
+		player_teams[multiplayer.get_unique_id()] = Teams.pick_team_for_new_player(player_teams)
 	match_started = false
 	_start_lan_discovery_listener()
 	_persist_runtime_state()
@@ -165,7 +172,7 @@ func start_match() -> void:
 
 	match_started = true
 	_stop_lan_discovery_listener()
-	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 	_persist_runtime_state()
 	_start_match_ui.rpc()
 	_emit_server_map_load_requested()
@@ -177,9 +184,11 @@ func return_to_lobby_after_match() -> void:
 
 	player_names.clear()
 	player_avatar_ids.clear()
+	player_teams.clear()
 	match_started = false
 	persisted_player_names.clear()
 	persisted_player_avatar_ids.clear()
+	persisted_player_teams.clear()
 	persisted_match_started = false
 	manual_join_visible = false
 	discovery_status_text = "Auto-discover LAN host"
@@ -200,6 +209,7 @@ func get_lobby_sync_payload() -> Dictionary:
 	return {
 		"player_names": player_names.duplicate(true),
 		"player_avatar_ids": player_avatar_ids.duplicate(true),
+		"player_teams": player_teams.duplicate(true),
 		"match_started": match_started,
 		"map_scene_path": map_scene_path,
 		"is_connected": multiplayer.multiplayer_peer != null,
@@ -209,6 +219,28 @@ func get_lobby_sync_payload() -> Dictionary:
 
 func get_player_name(peer_id: int) -> String:
 	return String(player_names.get(peer_id, "Player %d" % peer_id))
+
+func get_team(peer_id: int) -> int:
+	return int(player_teams.get(peer_id, Teams.NONE))
+
+## Authoritative assignment; test scenarios may also use this during a match.
+func set_team(peer_id: int, team: int) -> void:
+	if not NetUtil.has_active_peer(multiplayer) or not multiplayer.is_server():
+		return
+	if not player_names.has(peer_id) or team not in [Teams.ALPHA, Teams.BRAVO, Teams.NONE]:
+		return
+	player_teams[peer_id] = team
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
+
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
+func request_team(team: int) -> void:
+	if not multiplayer.is_server() or match_started:
+		return
+	var peer_id := multiplayer.get_remote_sender_id()
+	if peer_id <= 0 or not multiplayer.get_peers().has(peer_id):
+		return
+	if Teams.can_switch(player_teams, peer_id, team, ceili(max_players / 2.0)):
+		set_team(peer_id, team)
 
 func is_peer_connected(peer_id: int) -> bool:
 	if multiplayer.multiplayer_peer == null:
@@ -228,7 +260,8 @@ func add_bot() -> int:
 	bot_ids.append(bot_id)
 	player_names[bot_id] = "Bot %d" % -bot_id
 	player_avatar_ids[bot_id] = DEFAULT_AVATAR_ID
-	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	player_teams[bot_id] = Teams.pick_team_for_new_player(player_teams)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 	if match_started:
 		bot_added.emit(bot_id)
 	return bot_id
@@ -240,12 +273,13 @@ func remove_bot(bot_id: int) -> void:
 	bot_ids.erase(bot_id)
 	player_names.erase(bot_id)
 	player_avatar_ids.erase(bot_id)
+	player_teams.erase(bot_id)
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player != null and player.owner_peer_id == bot_id:
 			player.queue_free()
 	bot_removed.emit(bot_id)
-	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 
 func is_bot(peer_id: int) -> bool:
 	return peer_id < 0
@@ -269,9 +303,10 @@ func _start_match_ui() -> void:
 	lobby_ui_visibility_requested.emit(false)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, has_started: bool) -> void:
+func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, teams: Dictionary, has_started: bool) -> void:
 	player_names = names.duplicate(true)
 	player_avatar_ids = avatars.duplicate(true)
+	player_teams = teams.duplicate(true)
 	match_started = has_started
 	_persist_runtime_state()
 	_emit_lobby_sync()
@@ -288,10 +323,14 @@ func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
 		return
 
 	var peer_id := multiplayer.get_remote_sender_id()
+	if peer_id <= 0 or not multiplayer.get_peers().has(peer_id):
+		return
+	if not player_teams.has(peer_id):
+		player_teams[peer_id] = Teams.pick_team_for_new_player(player_teams)
 	var resolved_name := _sanitize_player_name(raw_name, peer_id)
 	_set_player_name_for_peer(peer_id, resolved_name)
 	_set_player_avatar_for_peer(peer_id, raw_avatar_id)
-	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 	_persist_runtime_state()
 
 @rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
@@ -301,7 +340,7 @@ func request_lobby_sync() -> void:
 	var peer_id := multiplayer.get_remote_sender_id()
 	if peer_id <= 0:
 		return
-	_sync_lobby_data_to_all.rpc_id(peer_id, player_names, player_avatar_ids, match_started)
+	_sync_lobby_data_to_all.rpc_id(peer_id, player_names, player_avatar_ids, player_teams, match_started)
 
 func _open_lobby_scene() -> void:
 	_persist_runtime_state()
@@ -396,7 +435,7 @@ func _on_peer_connected(id: int) -> void:
 		if peer != null:
 			peer.disconnect_peer(id)
 		return
-	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 	_persist_runtime_state()
 	_emit_lobby_sync()
 
@@ -404,7 +443,8 @@ func _on_peer_disconnected(id: int) -> void:
 	if multiplayer.is_server():
 		player_names.erase(id)
 		player_avatar_ids.erase(id)
-		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, match_started)
+		player_teams.erase(id)
+		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 		_persist_runtime_state()
 	_emit_lobby_sync()
 
@@ -469,6 +509,7 @@ func _persist_runtime_state() -> void:
 	_set_profile_username(local_player_name)
 	persisted_player_names = player_names.duplicate(true)
 	persisted_player_avatar_ids = player_avatar_ids.duplicate(true)
+	persisted_player_teams = player_teams.duplicate(true)
 	persisted_match_started = match_started
 	persisted_map_scene_path = map_scene_path.strip_edges()
 
