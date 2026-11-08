@@ -1,4 +1,9 @@
 extends Node2D
+class_name SmokeCloud
+
+## Clouds with a LightOccluder2D (the fog-of-war mask variant) join this group
+## so the server can block line of sight through them (VisibilityQuery).
+const VISION_BLOCKER_GROUP := &"vision_blockers"
 
 @export var duration: float = 5.0
 @export var grow_duration: float = 1.0
@@ -39,7 +44,27 @@ func _ready() -> void:
 	else:
 		_rng.randomize()
 	_setup_layers()
+	_register_vision_blocker()
 	set_process(true)
+
+
+var _occluder_radius := 0.0
+
+func _register_vision_blocker() -> void:
+	for child in get_children():
+		var occluder_node := child as LightOccluder2D
+		if occluder_node == null or occluder_node.occluder == null:
+			continue
+		for point in occluder_node.occluder.polygon:
+			_occluder_radius = maxf(_occluder_radius, (point * occluder_node.scale).length())
+	if _occluder_radius > 0.0:
+		add_to_group(VISION_BLOCKER_GROUP)
+
+## Current radius of the occluder in world units (it grows with the cloud).
+## Slightly smaller than the polygon's outer points, matching where the
+## client's shadow is solid.
+func get_vision_block_radius() -> float:
+	return _occluder_radius * absf(global_scale.x) * 0.9
 
 
 func _process(delta: float) -> void:

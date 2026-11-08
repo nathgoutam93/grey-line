@@ -344,24 +344,28 @@ func can_play_idle_animation() -> bool:
 		return false
 	return _cooldown_ticks_remaining <= 0
 
+func get_use_noise_radius() -> float:
+	return sound_pool.max_distance if sound_pool else 0.0
+
 func _play_shoot_sound():
 	if sound_pool:
 		sound_pool.play_stream(data.sounds.shoot_sound)
+		_report_noise(sound_pool.max_distance, data.sounds.shoot_sound)
+
+func _play_utility_sound(stream: AudioStream) -> void:
+	if utility_sfx_player:
+		utility_sfx_player.stream = stream
+		utility_sfx_player.play()
+		_report_noise(utility_sfx_player.max_distance, stream)
 
 func _play_reload_sound():
-	if utility_sfx_player:
-		utility_sfx_player.stream = data.sounds.reload_sound
-		utility_sfx_player.play()
+	_play_utility_sound(data.sounds.reload_sound)
 
 func _play_equip_sound():
-	if utility_sfx_player:
-		utility_sfx_player.stream = data.sounds.equip_sound
-		utility_sfx_player.play()
+	_play_utility_sound(data.sounds.equip_sound)
 
 func _play_drop_sound():
-	if utility_sfx_player:
-		utility_sfx_player.stream = data.sounds.drop_sound
-		utility_sfx_player.play()
+	_play_utility_sound(data.sounds.drop_sound)
 
 func _resolve_surface_type(result: Dictionary) -> String:
 	if result.is_empty():

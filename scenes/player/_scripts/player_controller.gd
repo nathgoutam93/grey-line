@@ -92,10 +92,34 @@ var _lag_compensation_tick := 0
 var _last_received_snapshot_tick := 0
 var _last_reload_request_tick := -1
 
+## What this client knows about a remote player (set by WorldSnapshots):
+## VISIBLE - in view, drawn normally.
+## AUDIBLE - hidden, but making noise in hearing range: position is still
+##           updated so footsteps/shots play from the right place, not drawn.
+## CULLED  - not sent at all: not drawn, position is stale.
+enum NetPresence { VISIBLE, AUDIBLE, CULLED }
+## Remote actions (fire, reload, switch...) that reach a CULLED proxy are held
+## until its position arrives, so their sounds don't play from a stale spot.
+const DEFERRED_ACTION_TIMEOUT_TICKS := 6
+
+var _net_presence := NetPresence.VISIBLE
+var _snap_next_snapshot := false
+var _deferred_actions: Array[Callable] = []
+var _deferred_wait_ticks := 0
+var _flushing_deferred := false
+
+# Server: timed noise from equipment sounds (see report_noise).
+var _noise_radius := 0.0
+var _noise_until_tick := 0
+
 var _death_sequence_id := 0
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 
 var _last_footstep_position := Vector2.ZERO
+# Decided once per network tick: positions only change on ticks, so measuring
+# per rendered frame (faster than 60 Hz) saw zero movement most frames and
+# kept stopping/restarting remote players' footsteps.
+var _footstep_moving := false
 const FOOTSTEP_SPEED_THRESHOLD := 40.0;
 
 func _is_server_role() -> bool:
@@ -207,10 +231,7 @@ func _update_footstep_audio(delta: float) -> void:
 	if delta <= 0.0:
 		return
 
-	var distance_moved := global_position.distance_to(_last_footstep_position)
-	_last_footstep_position = global_position
-	var estimated_speed := distance_moved / delta
-	var is_moving_now := estimated_speed > FOOTSTEP_SPEED_THRESHOLD
+	var is_moving_now := _footstep_moving
 
 	if movement_component != null and movement_component.is_moving:
 		is_moving_now = true
@@ -236,6 +257,12 @@ func _on_network_tick(tick: int) -> void:
 		_owner_tick(tick)
 	else:
 		_proxy_tick(_estimated_server_tick(tick))
+	_update_footstep_motion()
+
+func _update_footstep_motion() -> void:
+	var speed := global_position.distance_to(_last_footstep_position) * float(NetworkTick.tick_rate)
+	_last_footstep_position = global_position
+	_footstep_moving = speed > FOOTSTEP_SPEED_THRESHOLD
 
 func _owner_tick(local_tick: int) -> void:
 	if not is_instance_valid(player_input) or not is_instance_valid(movement_component):
@@ -334,6 +361,12 @@ func _server_tick(tick: int) -> void:
 	# State is broadcast in batches by WorldSnapshots (world_snapshot_service.gd).
 
 func _proxy_tick(server_tick: int) -> void:
+	if not _deferred_actions.is_empty():
+		_deferred_wait_ticks += 1
+		if _deferred_wait_ticks >= DEFERRED_ACTION_TIMEOUT_TICKS:
+			# Out of hearing range: the position will not come; run anyway so
+			# weapon state stays in step.
+			_flush_deferred_actions()
 	var render_tick := server_tick - _interpolator.interpolation_delay_ticks
 	if _interpolator.snapshot_buffer.size() < 2:
 		_interpolator.apply_latest(self, render_tick)
@@ -368,6 +401,11 @@ func _apply_input_actions(frame: PlayerInputFrame) -> void:
 
 	if frame.fire_held and not _is_firing_net:
 		_is_firing_net = true
+		# Become audible before the first shot so listeners get our position
+		# in the next snapshot (their proxies hold the shot until then).
+		var current_item := _get_current_equipment()
+		if current_item:
+			report_noise(current_item.get_use_noise_radius(), 0.5)
 		_remote_start_fire.rpc(frame.shot_intent)
 	elif not frame.fire_held and _is_firing_net:
 		_is_firing_net = false
@@ -438,7 +476,86 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 			movement_component
 		)
 		return
+	if _snap_next_snapshot:
+		# Back from CULLED: jump to the real position instead of sliding from
+		# the stale one (which would also fake a burst of footsteps).
+		_snap_next_snapshot = false
+		global_position = snapshot.get("position", global_position)
+		rotation = float(snapshot.get("rotation", rotation))
+		_last_footstep_position = global_position
 	_interpolator.push_snapshot(snapshot)
+	if not _deferred_actions.is_empty():
+		_flush_deferred_actions()
+
+## Client only: called by WorldSnapshots for every remote player each packet.
+func set_net_presence(presence: NetPresence) -> void:
+	if presence == _net_presence:
+		return
+	var was_culled := _net_presence == NetPresence.CULLED
+	_net_presence = presence
+	if presence == NetPresence.CULLED:
+		_interpolator.snapshot_buffer.clear()
+	elif was_culled:
+		_snap_next_snapshot = true
+	_refresh_proxy_visibility()
+
+func _refresh_proxy_visibility() -> void:
+	visible = not is_dead and _net_presence == NetPresence.VISIBLE
+
+## Returns true if `action` was queued instead of run now. Only remote proxies
+## that the server is not currently sending (CULLED) queue; the queue keeps
+## order, so later actions wait behind earlier ones.
+func _defer_until_located(action: Callable) -> bool:
+	if _flushing_deferred or multiplayer.is_server() or _is_owner_role():
+		return false
+	if _deferred_actions.is_empty() and _net_presence != NetPresence.CULLED:
+		return false
+	if _deferred_actions.is_empty():
+		_deferred_wait_ticks = 0
+	_deferred_actions.append(action)
+	return true
+
+func _flush_deferred_actions() -> void:
+	_flushing_deferred = true
+	while not _deferred_actions.is_empty():
+		var action: Callable = _deferred_actions.pop_front()
+		action.call()
+		if action.get_method() == &"_remote_start_fire" and not _deferred_actions.is_empty():
+			# Let the weapon tick once before anything else (e.g. stop_fire)
+			# runs, so a quick tap still fires a shot.
+			_flushing_deferred = false
+			NetworkTick.tick_started.connect(_on_deferred_flush_tick, CONNECT_ONE_SHOT)
+			return
+	_flushing_deferred = false
+
+func _on_deferred_flush_tick(_tick: int) -> void:
+	if is_inside_tree():
+		_flush_deferred_actions()
+
+## Server only: this player is making a sound that carries `max_distance` for
+## `seconds`. Players within range keep receiving their position (as AUDIBLE)
+## even when they can't see them.
+func report_noise(max_distance: float, seconds: float) -> void:
+	if max_distance <= 0.0:
+		return
+	var until_tick := NetworkTick.tick + int(ceil(seconds * float(NetworkTick.tick_rate)))
+	if NetworkTick.tick >= _noise_until_tick:
+		_noise_radius = max_distance
+	else:
+		_noise_radius = maxf(_noise_radius, max_distance)
+	_noise_until_tick = maxi(_noise_until_tick, until_tick)
+
+## Server only: how far this player can be heard right now.
+func get_noise_radius() -> float:
+	if is_dead:
+		return 0.0
+	var radius := 0.0
+	if NetworkTick.tick < _noise_until_tick:
+		radius = _noise_radius
+	# Same rule the client uses to play footsteps (_update_footstep_audio).
+	if footstep_player and velocity.length() > FOOTSTEP_SPEED_THRESHOLD:
+		radius = maxf(radius, footstep_player.max_distance)
+	return radius
 
 func _apply_input_lead_feedback(lead_tick: int, lead: int) -> void:
 	if lead_tick <= 0 or lead_tick <= _last_lead_sample_tick:
@@ -496,6 +613,8 @@ func _remote_interact(target_path: NodePath):
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
+	if _defer_until_located(_remote_start_fire.bind(shot_intent)):
+		return
 	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
 		shot_intent = ShotIntent.BODY
 	current_shot_intent = shot_intent
@@ -513,6 +632,8 @@ func can_register_hit(is_head_hit: bool) -> bool:
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_stop_fire():
+	if _defer_until_located(_remote_stop_fire):
+		return
 	var current_item = _get_current_equipment()
 	if current_item and current_item.has_method("stop_fire"):
 		current_item.stop_fire()
@@ -521,27 +642,37 @@ func _remote_stop_fire():
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_reload():
+	if _defer_until_located(_remote_reload):
+		return
 	var current_item = _get_current_equipment()
 	if current_item and current_item.has_method("reload"):
 		current_item.reload()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon():
+	if _defer_until_located(_remote_switch_weapon):
+		return
 	if equipment_manager != null and equipment_manager.has_method("switch_to_next_item"):
 		equipment_manager.switch_to_next_item()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_previous():
+	if _defer_until_located(_remote_switch_weapon_previous):
+		return
 	if equipment_manager != null and equipment_manager.has_method("switch_to_previous_item"):
 		equipment_manager.switch_to_previous_item()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_slot(slot: int):
+	if _defer_until_located(_remote_switch_weapon_slot.bind(slot)):
+		return
 	if equipment_manager != null and equipment_manager.has_method("switch_to_slot"):
 		equipment_manager.switch_to_slot(slot)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_drop_weapon():
+	if _defer_until_located(_remote_drop_weapon):
+		return
 	if equipment_manager != null and equipment_manager.has_method("drop_current_item"):
 		equipment_manager.drop_current_item()
 
@@ -633,6 +764,11 @@ func reset_for_respawn() -> void:
 	_death_sequence_id += 1
 	is_dead = false
 	is_slow_walking = false
+	_net_presence = NetPresence.VISIBLE
+	_snap_next_snapshot = false
+	_deferred_actions.clear()
+	_noise_radius = 0.0
+	_noise_until_tick = 0
 	_is_firing_net = false
 	velocity = Vector2.ZERO
 	show()
