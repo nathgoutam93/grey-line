@@ -88,6 +88,7 @@ func test_destructible_walls_destroy_and_restore() -> void:
 	var ray := PhysicsRayQueryParameters2D.create(center - Vector2(40, 0), center + Vector2(40, 0), 1)
 	var space := get_viewport().world_2d.direct_space_state
 	check(not space.intersect_ray(ray).is_empty(), "intact cell has no collision")
+	check(walls.cell_from_hit(space.intersect_ray(ray)) == cell, "ray hit resolved to the wrong cell")
 	check(is_instance_valid(walls.mirror), "fog mirror missing")
 	check(walls.mirror.global_transform == walls.global_transform, "mirror transform differs")
 	check(not walls.mirror.collision_enabled and walls.mirror.occlusion_enabled, "mirror flags wrong")
@@ -107,6 +108,46 @@ func test_destructible_walls_destroy_and_restore() -> void:
 	check(level.get_child_count() == 0, "mirror leaked on exit")
 	MaskViewProvider.set_viewport(old_viewport)
 	viewport.queue_free()
+
+func test_wall_damage_state_and_reset() -> void:
+	var walls := DestructibleWalls.new()
+	walls.name = "DamageTestWall"
+	walls.tile_set = load("res://resources/destruction/destructible_walls_tileset.tres")
+	for material in range(3):
+		walls.set_cell(Vector2i(material, 0), 0, Vector2i(material, 0))
+	add_child(walls)
+	var service := DestructionService.new()
+	add_child(service)
+	var events: Array = []
+	service.cells_destroyed.connect(func(cells: Array[Vector2i]): events.append(cells))
+	var soft := Vector2i.ZERO
+	var reinforced := Vector2i(1, 0)
+	var hard := Vector2i(2, 0)
+	service.apply_cell_damage(walls, soft, 10, DestructionMaterial.KIND_BULLET)
+	check(walls.has_wall(soft), "partial damage destroyed cell")
+	service.apply_cell_damage(walls, soft, 30, DestructionMaterial.KIND_BULLET)
+	service.apply_cell_damage(walls, soft, 100, DestructionMaterial.KIND_BULLET)
+	check(not walls.has_wall(soft) and events.size() == 1, "destruction missing or emitted twice")
+	check(service._pending.size() == 1, "destruction not batched by wall path")
+	service.apply_cell_damage(walls, reinforced, 1000, DestructionMaterial.KIND_BULLET)
+	service.apply_cell_damage(walls, hard, 1000, DestructionMaterial.KIND_EXPLOSIVE)
+	check(walls.has_wall(reinforced) and walls.has_wall(hard), "material damage rules bypassed")
+	var path := get_path_to(walls)
+	var state := {path: PackedVector2Array([Vector2(soft)])}
+	walls.restore_all()
+	service._full_state(state, {})
+	service._full_state(state, {})
+	check(walls.destroyed_cells() == [soft], "full state is not idempotent")
+	service.apply_cell_damage(walls, reinforced, 100, DestructionMaterial.KIND_EXPLOSIVE)
+	service.reset_all()
+	check(walls.get_used_cells().size() == 3 and service._pending.is_empty(), "reset did not restore grid and clear pending events")
+	service.apply_cell_damage(walls, reinforced, 60, DestructionMaterial.KIND_EXPLOSIVE)
+	check(walls.has_wall(reinforced), "reset retained previous partial HP damage")
+	service.apply_cell_damage(walls, reinforced, 90, DestructionMaterial.KIND_EXPLOSIVE)
+	check(not walls.has_wall(reinforced), "reinforced explosive damage did not accumulate")
+	walls.queue_free()
+	service.queue_free()
+	await get_tree().process_frame
 
 func test_input_frame_round_trip() -> void:
 	var f := PlayerInputFrame.new()

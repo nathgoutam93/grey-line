@@ -10,6 +10,8 @@ var _original_cells: Array[Vector2i] = []
 func _ready() -> void:
 	add_to_group(GROUP)
 	occlusion_enabled = false
+	# Body RIDs must identify individual cells for weapon and blast ray hits.
+	physics_quadrant_size = 1
 	_original_data = tile_map_data.duplicate()
 	_original_cells = get_used_cells()
 	var viewport := MaskViewProvider.viewport

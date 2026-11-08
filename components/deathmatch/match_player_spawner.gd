@@ -177,6 +177,9 @@ func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2,
 		player.setup_locals()
 		MaskViewProvider.viewport.player_camera = player.camera
 		MaskViewProvider.viewport.player = player
+		var destruction := DestructionService.current(get_tree())
+		if destruction != null:
+			destruction.request_initial_state()
 	for node in get_tree().get_nodes_in_group("Player"):
 		var teammate := node as PlayerController
 		if teammate != null:
