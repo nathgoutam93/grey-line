@@ -27,12 +27,14 @@ const P_ROTATIONS := 4 # PackedFloat32Array
 const P_ACK_TICK := 5 # receiver's own player: last applied input tick
 const P_LEAD_TICK := 6 # receiver's own player: input lead sample tick
 const P_INPUT_LEAD := 7 # receiver's own player: input lead in ticks
-const P_FLAGS := 8 # PackedByteArray, per entry: FLAG_VISIBLE or 0 (audio only)
+const P_FLAGS := 8 # PackedByteArray, per entry: visibility and noise bits
 const P_WEAPON_SLOT := 9 # receiver's own player: selected (or switching-to) slot
 const P_WEAPON_AMMO := 10 # receiver's own player: PackedInt32Array [mag, reserve] per weapon slot
 const PACKET_SIZE := 11
 
 const FLAG_VISIBLE := 1
+const FLAG_FOOTSTEPS := 2
+const FLAG_SPOTTED := 4 # Reserved for optional teammate spotting.
 ## Keep sending a player as visible this long after it leaves view, so the
 ## client never hides something its own fog of war is still fading out.
 const VISIBLE_GRACE_TICKS := 15
@@ -111,11 +113,16 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 				flag = 0
 			if flag < 0:
 				continue
+			var bits := 0
+			if (flag & FLAG_VISIBLE) != 0:
+				bits |= FLAG_VISIBLE
+			if target.net_sync.is_making_footstep_noise():
+				bits |= FLAG_FOOTSTEPS
 			ids.append(target.owner_peer_id)
 			positions.append(target.global_position)
 			velocities.append(target.velocity)
 			rotations.append(target.rotation)
-			flags.append(flag)
+			flags.append(bits)
 	return [tick, ids, positions, velocities, rotations, ack_tick, lead_tick, input_lead, flags, weapon_slot, weapon_ammo]
 
 func _find_player_node(peer_id: int) -> PlayerController:
@@ -164,8 +171,9 @@ func _receive_world_snapshot(packet: Array) -> void:
 		if player == null or not is_instance_valid(player):
 			continue
 		present[player] = true
+		player.net_sync.net_footsteps = (flags[i] & FLAG_FOOTSTEPS) != 0
 		if ids[i] != local_peer_id:
-			player.net_sync.set_net_presence(PlayerNetSync.NetPresence.VISIBLE if flags[i] == FLAG_VISIBLE else PlayerNetSync.NetPresence.AUDIBLE)
+			player.net_sync.set_net_presence(PlayerNetSync.NetPresence.VISIBLE if (flags[i] & FLAG_VISIBLE) != 0 else PlayerNetSync.NetPresence.AUDIBLE)
 		var snapshot := {
 			"tick": tick,
 			"position": positions[i],

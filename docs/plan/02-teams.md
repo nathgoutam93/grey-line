@@ -103,10 +103,10 @@ The `WorldSnapshots` packet is unchanged in layout. Teammates are simply always 
    - `Deathmatch`: when `teams_enabled` (new export, default `true`), the score limit applies to `team_scores` and the winner is a *team*. `_local_match_result_text` shows VICTORY if the local player's team won.
    - Leaderboard: group rows by team, team colour on names.
 9. **(Optional, ask first) Teammate spotting.**
-   - Add `FLAG_SPOTTED = 2` to `WorldSnapshotService`. An enemy that a *teammate* can see but the viewer can't is sent with only `FLAG_SPOTTED`.
+   - Add `FLAG_SPOTTED = 4` (bit 1 is used by `FLAG_FOOTSTEPS = 2` after step 3) to `WorldSnapshotService`. An enemy that a *teammate* can see but the viewer can't is sent with only `FLAG_SPOTTED`.
    - The client sets presence `SPOTTED`: a new `NetPresence` value that is **not drawn and not audible** (no footsteps unless also audible).
    - The HUD shows a marker at its position for 1 s.
-   - **This changes `flags[i] == FLAG_VISIBLE` comparisons to bit tests.** Do this together with step 3, which also turns the flags into a bitfield.
+   - **Keep `FLAG_VISIBLE` comparisons as bit tests.** Step 3 turns the flags into a bitfield; spotting must preserve its footstep bit.
 10. **Tests.** First move `_find_wall_setup()` from `tests/net/visibility_test.gd` into `tests/net/net_test_base.gd` as `find_wall_setup()`, and update its caller. Then create `tests/net/teams_test.gd` (uses a bot from step 1); the host sets teams explicitly with `MultiplayerSession.set_team`:
     - `teammate_always_visible`: client and bot on the same team, bot placed behind a wall (`find_wall_setup`) → the client sees it VISIBLE.
     - `enemy_still_needs_line_of_sight`: the host on the other team, behind the client and silent → CULLED.

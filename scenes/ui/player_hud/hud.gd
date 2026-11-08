@@ -44,6 +44,10 @@ var _slot_nodes_by_slot := {}
 var _is_local_hud := false
 var _visibility_initialized := false
 var _stun_flash_tween: Tween = null
+var _walk_toggle: TouchScreenButton
+var _walk_label: Label
+var _walk_style: StyleBoxFlat
+var _walk_active := false
 
 func _ready() -> void:
 	_slot_nodes_by_slot = {
@@ -55,6 +59,7 @@ func _ready() -> void:
 		EquipmentData.EquipmentSlot.UTILITY_3: utility_extra_slot_ui
 	}
 	_connect_slot_touch_buttons()
+	_create_walk_toggle()
 	call_deferred("_apply_persisted_touch_layout")
 
 	await get_tree().process_frame
@@ -67,6 +72,64 @@ func _apply_persisted_touch_layout() -> void:
 		return
 	PlayerProfile.ensure_touch_layout_defaults_from_controls(controls_root)
 	PlayerProfile.apply_touch_layout_to_controls(controls_root)
+
+func _create_walk_toggle() -> void:
+	if controls_root == null:
+		return
+	_walk_toggle = TouchScreenButton.new()
+	_walk_toggle.name = "Walk"
+	# The transparent texture defines the same hit bounds as the circle below.
+	var texture := GradientTexture2D.new()
+	texture.width = 84
+	texture.height = 84
+	texture.gradient = Gradient.new()
+	texture.gradient.colors = PackedColorArray([Color.TRANSPARENT, Color.TRANSPARENT])
+	_walk_toggle.texture_normal = texture
+	var shape := CircleShape2D.new()
+	shape.radius = 42.0
+	_walk_toggle.shape = shape
+	_walk_toggle.position = get_viewport().get_visible_rect().size * Vector2(0.32, 0.74)
+	_walk_toggle.pressed.connect(_on_walk_toggle_pressed)
+	_walk_toggle.visible = _player.player_input.input_mode == PlayerInputCollector.InputMode.TOUCH
+	controls_root.add_child(_walk_toggle)
+	var background := Panel.new()
+	background.size = Vector2(84, 84)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_walk_style = StyleBoxFlat.new()
+	_walk_style.bg_color = Color(0.06, 0.1, 0.14, 0.85)
+	_walk_style.border_color = Color(0.65, 0.75, 0.8, 0.8)
+	_walk_style.set_border_width_all(2)
+	_walk_style.set_corner_radius_all(42)
+	background.add_theme_stylebox_override("panel", _walk_style)
+	_walk_toggle.add_child(background)
+	_walk_label = Label.new()
+	_walk_label.text = "Walk"
+	_walk_label.size = Vector2(84, 84)
+	_walk_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_walk_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_walk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_walk_label.add_theme_font_size_override("font_size", 18)
+	_walk_toggle.add_child(_walk_label)
+
+func _on_walk_toggle_pressed() -> void:
+	if not _is_local_hud or _player.is_dead:
+		return
+	var input := _player.player_input
+	if input.input_mode != PlayerInputCollector.InputMode.TOUCH:
+		return
+	input.touch_slow_walk = not input.touch_slow_walk
+	_sync_walk_toggle()
+
+func _sync_walk_toggle() -> void:
+	if _walk_toggle == null:
+		return
+	var active := _player.player_input.touch_slow_walk
+	if active == _walk_active:
+		return
+	_walk_active = active
+	_walk_label.text = "Walk\nON" if active else "Walk"
+	_walk_style.bg_color = Color(0.12, 0.35, 0.24, 0.95) if active else Color(0.06, 0.1, 0.14, 0.85)
+	_walk_style.border_color = Color(0.4, 0.9, 0.6) if active else Color(0.65, 0.75, 0.8, 0.8)
 
 func _connect_slot_touch_buttons() -> void:
 	for slot in _slot_nodes_by_slot:
@@ -174,6 +237,7 @@ func _update_slot_selection_visual() -> void:
 
 func _process(_delta: float) -> void:
 	_update_visibility()
+	_sync_walk_toggle()
 	_sync_weapon_slots()
 	_update_slot_selection_visual()
 	if not visible:

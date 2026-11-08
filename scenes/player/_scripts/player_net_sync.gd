@@ -86,6 +86,7 @@ var _noise_radius := 0.0
 var _noise_until_tick := 0
 
 # Shared / proxy state
+var net_footsteps := false
 var _reconciler := ClientReconciler.new()
 var _interpolator := RemoteInterpolator.new()
 var _tick_offset := 0.0
@@ -136,6 +137,7 @@ func reset_state() -> void:
 	_last_reload_request_tick = -1
 	_interpolator.snapshot_buffer.clear()
 	_net_presence = NetPresence.VISIBLE
+	net_footsteps = false
 	_snap_next_snapshot = false
 	_deferred_actions.clear()
 
@@ -144,6 +146,9 @@ func is_server_role() -> bool:
 
 func is_owner_role() -> bool:
 	return player.owner_peer_id == multiplayer.get_unique_id()
+
+func is_proxy() -> bool:
+	return not is_server_role() and not is_owner_role()
 
 func _is_predicting_owner() -> bool:
 	return is_owner_role() and not multiplayer.is_server()
@@ -498,6 +503,8 @@ func _reconcile_weapon_state(ack_tick: int, server_slot: int, server_ammo: Packe
 
 ## Client only: called by WorldSnapshots for every remote player each packet.
 func set_net_presence(presence: NetPresence) -> void:
+	if presence == NetPresence.CULLED:
+		net_footsteps = false
 	if presence == _net_presence:
 		return
 	var was_culled := _net_presence == NetPresence.CULLED
@@ -557,6 +564,11 @@ func report_noise(max_distance: float, seconds: float) -> void:
 		_noise_radius = maxf(_noise_radius, max_distance)
 	_noise_until_tick = maxi(_noise_until_tick, until_tick)
 
+## Authoritative footstep rule, independent of weapon speed multipliers.
+func is_making_footstep_noise() -> bool:
+	return not player.is_dead and not player.is_slow_walking \
+		and player.velocity.length() > PlayerController.FOOTSTEP_SPEED_THRESHOLD
+
 ## Server only: how far the player can be heard right now.
 func get_noise_radius() -> float:
 	if player.is_dead:
@@ -565,7 +577,7 @@ func get_noise_radius() -> float:
 	if NetworkTick.tick < _noise_until_tick:
 		radius = _noise_radius
 	# Same rule the client uses to play footsteps.
-	if player.footstep_player and player.velocity.length() > PlayerController.FOOTSTEP_SPEED_THRESHOLD:
+	if player.footstep_player and is_making_footstep_noise():
 		radius = maxf(radius, player.footstep_player.max_distance)
 	return radius
 

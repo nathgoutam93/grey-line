@@ -34,6 +34,7 @@ var TOUCH_CONTROL_IDS: Array[String] = [
 	"Shoot",
 	"Headshot",
 	"Reload",
+	"Walk",
 	"TouchAimZone",
 ]
 const AVATAR_CATALOG := {
@@ -79,6 +80,11 @@ const DEFAULT_TOUCH_LAYOUT := {
 		"kind": "touch_button",
 		"position_norm": [0.1859375, 0.23888889],
 		"scale": [0.7, 0.7],
+	},
+	"Walk": {
+		"kind": "touch_button",
+		"position_norm": [0.32, 0.74],
+		"scale": [1.0, 1.0],
 	},
 }
 

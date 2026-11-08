@@ -164,10 +164,11 @@ func _update_footstep_audio(delta: float) -> void:
 	if delta <= 0.0:
 		return
 
-	var is_moving_now := _footstep_moving
-
-	if movement_component != null and movement_component.is_moving:
-		is_moving_now = true
+	var is_moving_now := false
+	if net_sync != null and net_sync.is_proxy():
+		is_moving_now = _footstep_moving and net_sync.net_footsteps
+	else:
+		is_moving_now = (_footstep_moving or (movement_component != null and movement_component.is_moving)) and not is_slow_walking
 	if is_dead:
 		is_moving_now = false
 

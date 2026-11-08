@@ -397,6 +397,13 @@ func test_hearing_follows_noise_radius() -> void:
 	check(not VisibilityQuery.can_hear(listener, source), "silent player heard")
 	source.velocity = Vector2(200, 0) # walking: footsteps carry footstep_player.max_distance (800)
 	check(VisibilityQuery.can_hear(listener, source), "footsteps not heard at 500 px")
+	source.is_slow_walking = true
+	check(not source.net_sync.is_making_footstep_noise(), "slow walker reports footstep noise")
+	check(not VisibilityQuery.can_hear(listener, source), "slow walker heard at 500 px")
+	source.net_sync.report_noise(1200.0, 1.0)
+	check(VisibilityQuery.can_hear(listener, source), "slow walking suppressed equipment noise")
+	source.net_sync.reset_state()
+	source.is_slow_walking = false
 	source.velocity = Vector2.ZERO
 	source.net_sync.report_noise(300.0, 1.0)
 	check(not VisibilityQuery.can_hear(listener, source), "300 px sound heard at 500 px")
@@ -404,6 +411,88 @@ func test_hearing_follows_noise_radius() -> void:
 	check(VisibilityQuery.can_hear(listener, source), "1200 px sound not heard at 500 px")
 	listener.queue_free()
 	source.queue_free()
+
+func test_slow_walk_silences_local_footstep_audio() -> void:
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	player._footstep_moving = true
+	player.movement_component.is_moving = true
+	player.is_slow_walking = true
+	player._update_footstep_audio(NetworkTick.get_tick_delta())
+	check(not player.footstep_player.playing, "local slow walker played footsteps")
+	player.is_slow_walking = false
+	player._update_footstep_audio(NetworkTick.get_tick_delta())
+	check(player.footstep_player.playing, "local runner did not play footsteps")
+	player.footstep_player.stop()
+	player.queue_free()
+
+func test_world_snapshot_keeps_visibility_and_footstep_bits_separate() -> void:
+	var viewer := await _spawn_player(Vector2(-2400, -2400))
+	var target := await _spawn_player(Vector2(-1900, -2400))
+	viewer.owner_peer_id = 2
+	target.owner_peer_id = 3
+	viewer.rotation = 0.0
+	target.velocity = Vector2(200, 0)
+	var packet := WorldSnapshots.build_packet(2)
+	var ids: PackedInt32Array = packet[WorldSnapshotService.P_IDS]
+	var index := ids.find(3)
+	check(index >= 0, "visible runner absent from packet")
+	if index >= 0:
+		var flags: PackedByteArray = packet[WorldSnapshotService.P_FLAGS]
+		check((flags[index] & WorldSnapshotService.FLAG_VISIBLE) != 0, "running cleared visibility bit")
+		check((flags[index] & WorldSnapshotService.FLAG_FOOTSTEPS) != 0, "running missing footstep bit")
+		target.is_slow_walking = true
+		packet = WorldSnapshots.build_packet(2)
+		ids = packet[WorldSnapshotService.P_IDS]
+		flags = packet[WorldSnapshotService.P_FLAGS]
+		index = ids.find(3)
+		check(index >= 0 and flags[index] == WorldSnapshotService.FLAG_VISIBLE, "visible slow walker has wrong bits")
+	target.net_sync.net_footsteps = true
+	target.net_sync.set_net_presence(PlayerNetSync.NetPresence.CULLED)
+	check(not target.net_sync.net_footsteps, "culled player kept footstep flag")
+	viewer.queue_free()
+	target.queue_free()
+
+func _send_screen_touch(index: int, position: Vector2, pressed: bool) -> void:
+	var event := InputEventScreenTouch.new()
+	event.index = index
+	event.position = position
+	event.pressed = pressed
+	get_viewport().push_input(event, true)
+
+func test_touch_walk_toggle_keeps_joystick_touch_and_saves_position() -> void:
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	var collector := player.player_input
+	collector.input_mode = PlayerInputCollector.InputMode.TOUCH
+	await get_tree().process_frame
+	var walk := player.hud.controls_root.get_node("Walk") as TouchScreenButton
+	var joystick := collector._resolve_move_joystick()
+	check(walk.visible, "touch Walk toggle is hidden")
+	var move_position := joystick.get_global_rect().get_center() + Vector2(0, -50)
+	_send_screen_touch(6, move_position, true)
+	await get_tree().process_frame
+	var walk_position := walk.get_global_transform_with_canvas() * Vector2(42, 42)
+	_send_screen_touch(7, walk_position, true)
+	await get_tree().process_frame
+	check(joystick.is_pressed, "Walk tap released the joystick's other finger")
+	check(collector.touch_slow_walk and collector.build_input_frame(10).slow_walk_held, "Walk tap did not enable slow-walk input")
+	_send_screen_touch(7, walk_position, false)
+	check(collector.build_input_frame(11).slow_walk_held, "Walk did not stay toggled after release")
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--walk-preview="):
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(arg.trim_prefix("--walk-preview="))
+	_send_screen_touch(7, walk_position, true)
+	_send_screen_touch(7, walk_position, false)
+	_send_screen_touch(6, move_position, false)
+	check(not collector.touch_slow_walk and not collector.build_input_frame(12).slow_walk_held, "second tap did not disable slow walk")
+	var saved_layout: Dictionary = PlayerProfile.get_touch_layout()["Walk"]
+	PlayerProfile.set_touch_control_position_norm("Walk", Vector2(0.4, 0.8))
+	PlayerProfile.apply_touch_layout_to_controls(player.hud.controls_root)
+	check(walk.position.is_equal_approx(get_viewport().get_visible_rect().size * Vector2(0.4, 0.8)), "Walk position was not restored from the profile")
+	PlayerProfile.set_touch_control_layout("Walk", saved_layout)
+	collector.input_mode = PlayerInputCollector.InputMode.MOUSE_KEYBOARD
+	check(not walk.visible and not collector.build_input_frame(13).slow_walk_held, "touch Walk leaked into keyboard mode")
+	player.queue_free()
 
 func test_lobby_rosters_show_every_player_in_their_team() -> void:
 	var view := LobbyView.new()
