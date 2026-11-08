@@ -12,6 +12,16 @@ func run_host_lobby() -> void:
 	check("unbalanced_request_rejected", MultiplayerSession.get_team(client_id) == Teams.BRAVO, "server rejected a 2–0 split")
 	_bot_id = MultiplayerSession.add_bot()
 	check("bot_auto_balances", MultiplayerSession.get_team(_bot_id) == Teams.ALPHA, "bot joined the smaller team")
+	var extra_a := MultiplayerSession.add_bot()
+	var extra_b := MultiplayerSession.add_bot()
+	check("five_players_balance_three_two", MultiplayerSession.player_names.size() == 5
+		and MultiplayerSession.player_teams.values().count(Teams.ALPHA) == 3
+		and MultiplayerSession.player_teams.values().count(Teams.BRAVO) == 2, "five players assigned 3 Alpha / 2 Bravo")
+	send("five_player_rosters")
+	var rosters: Variant = await wait_for("five_player_rosters", 5.0)
+	check("five_player_rosters_replicate", rosters is Vector2i and rosters == Vector2i(3, 2), "client roster counts: %s" % [rosters])
+	MultiplayerSession.remove_bot(extra_b)
+	MultiplayerSession.remove_bot(extra_a)
 	var button := get_tree().current_scene.find_child("SwitchTeam", true, false) as Button
 	check("host_switch_button_available", button != null and button.visible and not button.disabled, "host can switch with three players")
 	if button != null:
@@ -22,6 +32,10 @@ func run_host_lobby() -> void:
 	check("client_switches_in_lobby", switched, "client's balanced request accepted")
 	var labels: Variant = await wait_for("lobby_labels", 5.0)
 	check("lobby_labels_show_teams", labels == true, "client slots show team prefixes and colours")
+	var start := get_tree().current_scene.find_child("start_match", true, false) as Button
+	if start != null:
+		start.pressed.emit()
+	check("host_start_button_starts_match", start != null and MultiplayerSession.match_started, "host can start from the redesigned lobby")
 
 func run_client() -> void:
 	pass
@@ -41,8 +55,13 @@ func on_message(key: String, value: Variant) -> void:
 		for node in get_tree().current_scene.find_children("player_slot_*", "Label", true, false):
 			var label := node as Label
 			if label.text.begins_with("[A] ") or label.text.begins_with("[B] "):
-				labelled = label.modulate in Teams.COLORS.values()
+				labelled = label.get_theme_color("font_color") in Teams.COLORS.values()
 		send("lobby_labels", labelled)
+	elif key == "five_player_rosters":
+		await wait_until(func(): return MultiplayerSession.player_names.size() == 5, 5.0)
+		var alpha := get_tree().current_scene.find_child("AlphaRoster", true, false)
+		var bravo := get_tree().current_scene.find_child("BravoRoster", true, false)
+		send("five_player_rosters", Vector2i(alpha.find_children("player_slot_*", "Label", true, false).size(), bravo.find_children("player_slot_*", "Label", true, false).size()))
 	elif key == "match_switch":
 		MultiplayerSession.request_team.rpc_id(1, int(value))
 		send("match_switch_sent")

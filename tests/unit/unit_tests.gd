@@ -129,6 +129,10 @@ func test_teams_assignment_and_switching() -> void:
 	check(not Teams.can_switch(teams, 1, Teams.NONE, 4), "invalid team accepted")
 	check(teams[1] == Teams.ALPHA, "validation mutated teams")
 	check(Teams.other(Teams.ALPHA) == Teams.BRAVO and Teams.other(Teams.BRAVO) == Teams.ALPHA, "opposite teams wrong")
+	var five_players := {}
+	for peer_id in [1, -1, -2, -3, -4]:
+		five_players[peer_id] = Teams.pick_team_for_new_player(five_players)
+	check(five_players.values().count(Teams.ALPHA) == 3 and five_players.values().count(Teams.BRAVO) == 2, "five players must split 3–2")
 
 func test_free_for_all_fallback_keeps_individual_winner() -> void:
 	var mode := DeathmatchGameMode.new()
@@ -389,3 +393,41 @@ func test_hearing_follows_noise_radius() -> void:
 	check(VisibilityQuery.can_hear(listener, source), "1200 px sound not heard at 500 px")
 	listener.queue_free()
 	source.queue_free()
+
+func test_lobby_rosters_show_every_player_in_their_team() -> void:
+	var view := LobbyView.new()
+	view.size = Vector2(1280, 720)
+	add_child(view)
+	var names := {1: "Host", -1: "Bot 1", -2: "Bot 2", -3: "Bot 3", -4: "Bot 4"}
+	var teams := {}
+	for id in names:
+		teams[id] = Teams.pick_team_for_new_player(teams)
+	var payload := {"player_names": names, "player_teams": teams, "local_peer_id": 1,
+		"is_connected": true, "is_server": true, "map_scene_path": "res://scenes/maps/map_1/map_1.tscn"}
+	view.render(payload)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var alpha := view.find_child("AlphaRoster", true, false)
+	var bravo := view.find_child("BravoRoster", true, false)
+	check(alpha.find_children("player_slot_*", "Label", true, false).size() == 3, "Alpha roster did not show three players")
+	check(bravo.find_children("player_slot_*", "Label", true, false).size() == 2, "Bravo roster did not show two players")
+	var balance := view.find_child("TeamBalance", true, false) as Label
+	check(balance.text.begins_with("3 VS 2"), "five-player balance is not explicit")
+	# Optional graphical capture for reviewing this fixture in a real renderer.
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--lobby-preview="):
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(arg.trim_prefix("--lobby-preview="))
+	for id in [-5, -6, -7]:
+		names[id] = "Bot %d" % -id
+		teams[id] = Teams.pick_team_for_new_player(teams)
+	view.render(payload)
+	await get_tree().process_frame
+	check(view.find_children("player_slot_*", "Label", true, false).size() == 8, "lobby hid players beyond the old five-card limit")
+	view.size = Vector2(800, 600)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	for button_name in ["start_match", "SwitchTeam", "AddBot", "RemoveBot"]:
+		var button := view.find_child(button_name, true, false) as Button
+		check(view.get_global_rect().encloses(button.get_global_rect()), "%s overflows the lobby" % button_name)
+	view.queue_free()

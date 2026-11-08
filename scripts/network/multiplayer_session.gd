@@ -212,6 +212,7 @@ func get_lobby_sync_payload() -> Dictionary:
 		"player_teams": player_teams.duplicate(true),
 		"match_started": match_started,
 		"map_scene_path": map_scene_path,
+		"max_players": max_players,
 		"is_connected": multiplayer.multiplayer_peer != null,
 		"is_server": multiplayer.multiplayer_peer != null and multiplayer.is_server(),
 		"local_peer_id": multiplayer.get_unique_id() if multiplayer.multiplayer_peer != null else -1,
