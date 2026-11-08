@@ -14,6 +14,7 @@
 [ext_resource type="AudioStream" uid="uid://dgtb0i23wso5n" path="res://assets/sounds/wild-ambience.mp3" id="8_mflnu"]
 [ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
 [ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
+[ext_resource type="Script" path="res://components/destruction/destruction_service.gd" id="12_destruction"]
 
 [sub_resource type="Gradient" id="Gradient_fxymx"]
 interpolation_mode = 1
@@ -1454,6 +1455,9 @@ position = Vector2(100, 250)
 scale = Vector2(0.1, 0.1)
 texture = SubResource("ViewportTexture_rq4m3")
 centered = false
+
+[node name="DestructionService" type="Node" parent="." unique_id=1834057219]
+script = ExtResource("12_destruction")
 
 [node name="DeathmatchGameMode" parent="." unique_id=1766349449 node_paths=PackedStringArray("map", "spawn_point_container") instance=ExtResource("3_mflnu")]
 map = NodePath("../Map")

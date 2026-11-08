@@ -68,6 +68,46 @@ func _wall(from: Vector2, size: Vector2) -> StaticBody2D:
 
 # --- PlayerInputFrame -------------------------------------------------------
 
+func test_destructible_walls_destroy_and_restore() -> void:
+	var old_viewport := MaskViewProvider.viewport
+	var viewport := FowViewportController.new()
+	var level := Node2D.new()
+	level.name = "Level"
+	viewport.add_child(level)
+	add_child(viewport)
+	var walls := DestructibleWalls.new()
+	walls.position = Vector2(-2100, -2400)
+	walls.tile_set = load("res://resources/destruction/destructible_walls_tileset.tres")
+	for y in range(3):
+		walls.set_cell(Vector2i(0, y), 0, Vector2i.ZERO)
+	add_child(walls)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var cell := Vector2i(0, 1)
+	var center := walls.to_global(walls.map_to_local(cell))
+	var ray := PhysicsRayQueryParameters2D.create(center - Vector2(40, 0), center + Vector2(40, 0), 1)
+	var space := get_viewport().world_2d.direct_space_state
+	check(not space.intersect_ray(ray).is_empty(), "intact cell has no collision")
+	check(is_instance_valid(walls.mirror), "fog mirror missing")
+	check(walls.mirror.global_transform == walls.global_transform, "mirror transform differs")
+	check(not walls.mirror.collision_enabled and walls.mirror.occlusion_enabled, "mirror flags wrong")
+	walls.destroy_cells([cell])
+	check(not walls.has_wall(cell), "destroyed cell remains")
+	check(walls.mirror.get_cell_source_id(cell) == -1, "mirror retains cell")
+	check(space.intersect_ray(ray).is_empty(), "destroyed cell still blocks ray")
+	check(walls.destroyed_cells() == [cell], "destroyed state wrong")
+	walls.restore_all()
+	check(walls.get_used_cells().size() == 3 and walls.mirror.get_used_cells().size() == 3, "restore lost cells")
+	# Restoring creates new physics bodies; the broadphase registers them on its next step.
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(not space.intersect_ray(ray).is_empty(), "restore did not restore collision")
+	walls.queue_free()
+	await get_tree().process_frame
+	check(level.get_child_count() == 0, "mirror leaked on exit")
+	MaskViewProvider.set_viewport(old_viewport)
+	viewport.queue_free()
+
 func test_input_frame_round_trip() -> void:
 	var f := PlayerInputFrame.new()
 	f.tick = 123
@@ -108,6 +148,15 @@ func test_input_frame_copy_and_merge() -> void:
 	check(later.drop_pressed and later.slot_select == 2, "merge lost earlier presses")
 
 # --- Teams ------------------------------------------------------------------
+
+func test_destruction_material_damage_rules() -> void:
+	for kind in [DestructionMaterial.KIND_BULLET, DestructionMaterial.KIND_EXPLOSIVE, DestructionMaterial.KIND_MELEE]:
+		check(DestructionMaterial.can_damage(DestructionMaterial.SOFT, kind), "soft wall rejected damage")
+		check(not DestructionMaterial.can_damage(DestructionMaterial.HARD, kind), "hard wall accepted damage")
+	check(DestructionMaterial.can_damage(DestructionMaterial.REINFORCED, DestructionMaterial.KIND_EXPLOSIVE), "reinforced wall rejected explosive damage")
+	check(not DestructionMaterial.can_damage(DestructionMaterial.REINFORCED, DestructionMaterial.KIND_BULLET), "bullet damaged reinforced wall")
+	check(not DestructionMaterial.can_damage(DestructionMaterial.REINFORCED, DestructionMaterial.KIND_MELEE), "melee damaged reinforced wall")
+	check(not DestructionMaterial.can_damage(-1, DestructionMaterial.KIND_EXPLOSIVE), "invalid material accepted damage")
 
 func test_teams_damage_rules() -> void:
 	check(not Teams.can_damage(Teams.ALPHA, Teams.ALPHA, 1, 2, false), "friendly fire allowed")

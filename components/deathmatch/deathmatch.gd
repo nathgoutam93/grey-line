@@ -25,6 +25,7 @@ class_name DeathmatchGameMode
 
 @onready var spawning: MatchPlayerSpawner = $Spawning
 @onready var scoreboard: MatchScoreboard = $Scoreboard
+@onready var destruction: DestructionService = get_tree().get_first_node_in_group(DestructionService.GROUP)
 
 const TIMER_REFRESH_INTERVAL := 1.0
 const RESYNC_REQUEST_DELAY_SECONDS := 0.75
