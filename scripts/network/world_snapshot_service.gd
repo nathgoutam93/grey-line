@@ -28,7 +28,9 @@ const P_ACK_TICK := 5 # receiver's own player: last applied input tick
 const P_LEAD_TICK := 6 # receiver's own player: input lead sample tick
 const P_INPUT_LEAD := 7 # receiver's own player: input lead in ticks
 const P_FLAGS := 8 # PackedByteArray, per entry: FLAG_VISIBLE or 0 (audio only)
-const PACKET_SIZE := 9
+const P_WEAPON_SLOT := 9 # receiver's own player: selected (or switching-to) slot
+const P_WEAPON_AMMO := 10 # receiver's own player: PackedInt32Array [mag, reserve] per weapon slot
+const PACKET_SIZE := 11
 
 const FLAG_VISIBLE := 1
 ## Keep sending a player as visible this long after it leaves view, so the
@@ -74,6 +76,8 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 	var ack_tick := 0
 	var lead_tick := 0
 	var input_lead := 0
+	var weapon_slot := -1
+	var weapon_ammo := PackedInt32Array()
 
 	# The viewer may be dead (hidden, about to despawn): it still sees and
 	# hears from where it fell. With no player node at all, nothing is sent.
@@ -90,6 +94,8 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 				ack_tick = owner_fields[0]
 				lead_tick = owner_fields[1]
 				input_lead = owner_fields[2]
+				weapon_slot = owner_fields[3]
+				weapon_ammo = owner_fields[4]
 			elif VisibilityQuery.can_see(viewer, target, smoke):
 				seen[target.owner_peer_id] = tick
 				flag = FLAG_VISIBLE
@@ -104,7 +110,7 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 			velocities.append(target.velocity)
 			rotations.append(target.rotation)
 			flags.append(flag)
-	return [tick, ids, positions, velocities, rotations, ack_tick, lead_tick, input_lead, flags]
+	return [tick, ids, positions, velocities, rotations, ack_tick, lead_tick, input_lead, flags, weapon_slot, weapon_ammo]
 
 func _find_player_node(peer_id: int) -> PlayerController:
 	for node in get_tree().get_nodes_in_group("Player"):
@@ -164,6 +170,8 @@ func _receive_world_snapshot(packet: Array) -> void:
 			snapshot["ack_tick"] = int(packet[P_ACK_TICK])
 			snapshot["lead_tick"] = int(packet[P_LEAD_TICK])
 			snapshot["input_lead"] = int(packet[P_INPUT_LEAD])
+			snapshot["weapon_slot"] = int(packet[P_WEAPON_SLOT])
+			snapshot["weapon_ammo"] = packet[P_WEAPON_AMMO] as PackedInt32Array
 		player.apply_snapshot(snapshot)
 
 	# Everyone the server left out is neither seen nor heard.

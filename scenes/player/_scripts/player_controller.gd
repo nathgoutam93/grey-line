@@ -74,6 +74,7 @@ var _has_input_lead_sample := false
 var _last_lead_sample_tick := 0
 var _last_stamped_tick := 0
 var _carry_actions: PlayerInputFrame = null
+var _predicted_weapon_states: Dictionary = {}
 
 # Server state
 var _input_queue: Dictionary = {}
@@ -254,6 +255,7 @@ func _on_network_tick(tick: int) -> void:
 	if _is_server_role():
 		_server_tick(tick)
 	elif _is_owner_role():
+		_record_predicted_weapon_state()
 		_owner_tick(tick)
 	else:
 		_proxy_tick(_estimated_server_tick(tick))
@@ -377,8 +379,12 @@ func _apply_input_actions(frame: PlayerInputFrame) -> void:
 	is_slow_walking = frame.slow_walk_held
 	current_shot_intent = frame.shot_intent
 
-	# Only the authoritative server executes combat/inventory actions.
-	# It then broadcasts results through existing _remote_* RPCs.
+	# The owning client predicts fire/reload/switch immediately; the server
+	# (authoritative) executes everything and broadcasts via _remote_* RPCs,
+	# which the predicting owner ignores. Drop/interact stay server-driven.
+	if _is_predicting_owner():
+		_predict_owner_actions(frame)
+		return
 	if not _is_server_role():
 		return
 
@@ -411,6 +417,27 @@ func _apply_input_actions(frame: PlayerInputFrame) -> void:
 		_is_firing_net = false
 		_remote_stop_fire.rpc()
 
+func _is_predicting_owner() -> bool:
+	return _is_owner_role() and not multiplayer.is_server()
+
+func _predict_owner_actions(frame: PlayerInputFrame) -> void:
+	if frame.reload_pressed and frame.tick > _last_reload_request_tick:
+		_last_reload_request_tick = frame.tick
+		_do_reload()
+	if equipment_manager != null:
+		if frame.switch_prev_pressed:
+			equipment_manager.switch_to_previous_item()
+		if frame.switch_next_pressed:
+			equipment_manager.switch_to_next_item()
+		if frame.slot_select >= 0:
+			equipment_manager.switch_to_slot(frame.slot_select)
+	if frame.fire_held and not _is_firing_net:
+		_is_firing_net = true
+		_do_start_fire(frame.shot_intent)
+	elif not frame.fire_held and _is_firing_net:
+		_is_firing_net = false
+		_do_stop_fire()
+
 func _server_or_local_interact() -> void:
 	var target_path: NodePath = NodePath("")
 	if interactables.size() > 0 and interactables[0]:
@@ -425,7 +452,12 @@ func _server_or_local_interact() -> void:
 ## [ack_tick, lead_tick, input_lead] — frame `lead_tick` arrived `input_lead`
 ## ticks before the server needed it.
 func get_owner_snapshot_fields() -> Array:
-	return [_last_authoritative_input_tick, _lead_sample_tick, _lead_sample_value]
+	var slot := -1
+	var ammo := PackedInt32Array()
+	if equipment_manager != null:
+		slot = equipment_manager.get_target_slot()
+		ammo = equipment_manager.capture_weapon_ammo()
+	return [_last_authoritative_input_tick, _lead_sample_tick, _lead_sample_value, slot, ammo]
 
 @rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
 func server_receive_input(packed_frames: Array) -> void:
@@ -475,6 +507,11 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 			_predicted_positions,
 			movement_component
 		)
+		_reconcile_weapon_state(
+			int(snapshot.get("ack_tick", 0)),
+			int(snapshot.get("weapon_slot", -1)),
+			snapshot.get("weapon_ammo", PackedInt32Array())
+		)
 		return
 	if _snap_next_snapshot:
 		# Back from CULLED: jump to the real position instead of sliding from
@@ -486,6 +523,64 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	_interpolator.push_snapshot(snapshot)
 	if not _deferred_actions.is_empty():
 		_flush_deferred_actions()
+
+## Owner client: weapon state ([mag, reserve] per weapon slot) after the
+## weapons ticked for a stamped input tick. Weapons tick right after this
+## player in each NetworkTick, so the state is captured at the start of the
+## next tick and filed under the last stamped tick.
+func _record_predicted_weapon_state() -> void:
+	if _last_stamped_tick <= 0 or equipment_manager == null:
+		return
+	_predicted_weapon_states[_last_stamped_tick] = equipment_manager.capture_weapon_ammo()
+	if _predicted_weapon_states.size() > MAX_INPUT_BUFFER_SIZE:
+		var cutoff := _last_stamped_tick - MAX_INPUT_BUFFER_SIZE
+		for key in _predicted_weapon_states.keys():
+			if int(key) < cutoff:
+				_predicted_weapon_states.erase(key)
+
+## Owner client: the server's ammo for `ack_tick` is the truth. Shift the
+## current ammo (and the newer predictions) by however far our prediction for
+## that tick was off, the same way position is reconciled. Also follow the
+## server's weapon slot once no switch of ours is still on its way to it.
+func _reconcile_weapon_state(ack_tick: int, server_slot: int, server_ammo: PackedInt32Array) -> void:
+	if equipment_manager == null or ack_tick <= 0:
+		return
+	var predicted: Variant = _predicted_weapon_states.get(ack_tick, null)
+	for key in _predicted_weapon_states.keys():
+		if int(key) < ack_tick:
+			_predicted_weapon_states.erase(key)
+	if predicted != null:
+		var predicted_ammo: PackedInt32Array = predicted
+		if predicted_ammo.size() == server_ammo.size():
+			var deltas := PackedInt32Array()
+			deltas.resize(server_ammo.size())
+			var any_delta := false
+			for i in range(0, server_ammo.size(), 2):
+				# Skip slots that are empty on either side (pickup/drop in flight).
+				if server_ammo[i] < 0 or predicted_ammo[i] < 0:
+					continue
+				deltas[i] = server_ammo[i] - predicted_ammo[i]
+				deltas[i + 1] = server_ammo[i + 1] - predicted_ammo[i + 1]
+				any_delta = any_delta or deltas[i] != 0 or deltas[i + 1] != 0
+			if any_delta:
+				equipment_manager.apply_weapon_ammo_deltas(deltas)
+				for key in _predicted_weapon_states.keys():
+					var entry: PackedInt32Array = _predicted_weapon_states[key]
+					for i in range(mini(entry.size(), deltas.size())):
+						if entry[i] >= 0:
+							entry[i] += deltas[i]
+					_predicted_weapon_states[key] = entry
+
+	if server_slot < 0 or server_slot == equipment_manager.get_target_slot():
+		return
+	for key in _input_buffer.keys():
+		if int(key) <= ack_tick:
+			continue
+		var frame := _input_buffer[key] as PlayerInputFrame
+		if frame != null and (frame.switch_next_pressed or frame.switch_prev_pressed or frame.slot_select >= 0):
+			return # our own switch has not reached the server yet
+	if equipment_manager.get_item_in_slot(server_slot) != null:
+		equipment_manager.equip_slot(server_slot)
 
 ## Client only: called by WorldSnapshots for every remote player each packet.
 func set_net_presence(presence: NetPresence) -> void:
@@ -613,16 +708,18 @@ func _remote_interact(target_path: NodePath):
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_start_fire(shot_intent: int = ShotIntent.BODY):
+	if _is_predicting_owner():
+		return # already started locally when the input was sampled
 	if _defer_until_located(_remote_start_fire.bind(shot_intent)):
 		return
+	_do_start_fire(shot_intent)
+
+func _do_start_fire(shot_intent: int) -> void:
 	if shot_intent != ShotIntent.BODY and shot_intent != ShotIntent.HEAD:
 		shot_intent = ShotIntent.BODY
 	current_shot_intent = shot_intent
-
-	var current_item = _get_current_equipment()
-	if current_item and current_item.has_method("start_fire"):
-		current_item.start_fire()
-	elif current_item and current_item.has_method("start_use"):
+	var current_item := _get_current_equipment()
+	if current_item:
 		current_item.start_use()
 
 func can_register_hit(is_head_hit: bool) -> bool:
@@ -632,52 +729,68 @@ func can_register_hit(is_head_hit: bool) -> bool:
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_stop_fire():
+	if _is_predicting_owner():
+		return
 	if _defer_until_located(_remote_stop_fire):
 		return
-	var current_item = _get_current_equipment()
-	if current_item and current_item.has_method("stop_fire"):
-		current_item.stop_fire()
-	elif current_item and current_item.has_method("stop_use"):
+	_do_stop_fire()
+
+func _do_stop_fire() -> void:
+	var current_item := _get_current_equipment()
+	if current_item:
 		current_item.stop_use()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_reload():
+	if _is_predicting_owner():
+		return
 	if _defer_until_located(_remote_reload):
 		return
-	var current_item = _get_current_equipment()
-	if current_item and current_item.has_method("reload"):
-		current_item.reload()
+	_do_reload()
+
+func _do_reload() -> void:
+	var weapon := _get_current_equipment() as WeaponInstance
+	if weapon:
+		weapon.reload()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon():
+	if _is_predicting_owner():
+		return
 	if _defer_until_located(_remote_switch_weapon):
 		return
-	if equipment_manager != null and equipment_manager.has_method("switch_to_next_item"):
+	if equipment_manager != null:
 		equipment_manager.switch_to_next_item()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_previous():
+	if _is_predicting_owner():
+		return
 	if _defer_until_located(_remote_switch_weapon_previous):
 		return
-	if equipment_manager != null and equipment_manager.has_method("switch_to_previous_item"):
+	if equipment_manager != null:
 		equipment_manager.switch_to_previous_item()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_slot(slot: int):
+	if _is_predicting_owner():
+		return
 	if _defer_until_located(_remote_switch_weapon_slot.bind(slot)):
 		return
-	if equipment_manager != null and equipment_manager.has_method("switch_to_slot"):
+	if equipment_manager != null:
 		equipment_manager.switch_to_slot(slot)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_drop_weapon():
 	if _defer_until_located(_remote_drop_weapon):
 		return
+	_predicted_weapon_states.clear()
 	if equipment_manager != null and equipment_manager.has_method("drop_current_item"):
 		equipment_manager.drop_current_item()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_pickup(pickup_path: NodePath):
+	_predicted_weapon_states.clear()
 	var weapon_pickup := _resolve_pickup_node(pickup_path)
 	if weapon_pickup == null:
 		push_warning("Pickup node not found for path: %s" % [String(pickup_path)])
@@ -781,6 +894,7 @@ func reset_for_respawn() -> void:
 	_last_lead_sample_tick = 0
 	_last_stamped_tick = 0
 	_carry_actions = null
+	_predicted_weapon_states.clear()
 	_input_queue.clear()
 	_last_input = null
 	_last_applied_input_tick = 0
