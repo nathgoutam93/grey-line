@@ -2,6 +2,10 @@ extends Node
 class_name PlayerProfileStore
 
 const SAVE_PATH := "user://player_profile.json"
+## Command-line user arg (after `--`) that keeps the profile in memory only:
+## defaults are loaded and nothing is written. Used by tests/run_tests.sh so
+## test runs never touch the real profile.
+const EPHEMERAL_ARG := "--ephemeral-profile"
 const PROFILE_VERSION := 1
 const DEFAULT_PLAYER_NAME := "Player"
 const DEFAULT_AVATAR_ID := "avatar_01"
@@ -80,8 +84,11 @@ const DEFAULT_TOUCH_LAYOUT := {
 
 var _profile: PlayerData = PlayerData.new()
 var _default_keybinds: Dictionary = {}
+## False when started with EPHEMERAL_ARG: load_profile/save_profile skip disk.
+var persistence_enabled := true
 
 func _ready() -> void:
+	persistence_enabled = not OS.get_cmdline_user_args().has(EPHEMERAL_ARG)
 	_default_keybinds = _capture_current_keybinds()
 	load_profile()
 	apply_keybinds_to_input_map()
@@ -275,6 +282,9 @@ func reset_to_defaults() -> void:
 	save_profile()
 
 func load_profile() -> void:
+	if not persistence_enabled:
+		_profile = _default_profile()
+		return
 	if not FileAccess.file_exists(SAVE_PATH):
 		_profile = _default_profile()
 		save_profile()
@@ -309,6 +319,8 @@ func load_profile() -> void:
 
 func save_profile() -> void:
 	_sanitize_profile_in_place()
+	if not persistence_enabled:
+		return
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
 		push_warning("Failed to open profile save file: %s" % SAVE_PATH)

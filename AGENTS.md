@@ -21,9 +21,12 @@
 - Keep `.gd.uid` files tracked with their corresponding scripts/scenes.
 
 ## Testing Guidelines
-- No automated test framework is currently configured for game logic.
-- Validate changes with focused manual playtests: main menu -> host/join lobby -> start match -> verify replication, combat, and UI sync.
-- For networking changes, run at least two clients (host + one client) before opening a PR.
+- Run the headless suite before opening a PR: `tests/run_tests.sh` (all suites, about 80 s) or `tests/run_tests.sh unit sync` for a subset. It finds Godot via `$GODOT`, `godot4`/`godot` on PATH, or the macOS app, and exits non-zero on any failure (logs path is printed).
+- Pre-commit hook (no CI; tests run locally): enable once per clone with `git config core.hooksPath .githooks`. `.githooks/pre-commit` runs the suite on the *staged* snapshot (mirrored into `.git/precommit-tree`) whenever game files (`.gd`, `.tscn`, `.tres`, `.gdshader`, `.cfg`, `project.godot`) are staged, and aborts the commit on failure. `GREYLINE_PRECOMMIT_SUITES="unit sync"` runs a subset; `SKIP_TESTS=1 git commit ...` or `--no-verify` skips it.
+- Suites: `unit` (`tests/unit/unit_tests.gd`: input frames, history, interpolation, reconciliation, one-tick movement, ammo sync, server vision/hearing) and two-process host+client scenarios in `tests/net/`: `sync` (input clock, prediction, snapshots), `visibility` (fog of war + audio presence), `firing` (owner prediction, ammo/slot reconciliation), `match` (kills, respawn, score limit).
+- Tests pass `--ephemeral-profile` (profile stays in memory, never saved) and use ports 3300+, so they don't touch your profile or a running game. `tests/` is excluded from exports.
+- New network scenario: add `tests/net/<name>_test.gd` extending `net_test_base.gd` (override `run_host`/`run_client`; the client reports with `send()`, the host checks with `check()`), then add `<name>` to `ALL_SUITES` in `tests/run_tests.sh`.
+- Still do a focused manual playtest for gameplay/feel changes: main menu -> host/join lobby -> start match -> verify replication, combat, and UI sync, with at least two clients (host + one client) on separate machines for networking changes.
 
 ## Commit & Pull Request Guidelines
 - Recent commits are short, imperative summaries; optional prefixes like `fix:` are common. Keep subject lines specific.
