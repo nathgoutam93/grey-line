@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `project.godot` is the Godot 4.6 project entry; main scene is wired from there.
+- `project.godot` is the Godot 4.7 project entry; main scene is wired from there.
 - `scenes/` contains playable scenes and feature flows (`main_menu`, `lobby`, `player`, `maps`, `ui`, `weapon`, `utilities`).
 - `components/` holds reusable gameplay/UI components (health, movement, camera shake, weapon manager, fog of war, etc.).
 - `scripts/` contains global/shared logic, including networking (`scripts/network/*`), profile data, and utilities.
