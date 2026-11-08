@@ -160,6 +160,19 @@ func client_peer() -> int:
 		return id
 	return -1
 
+## Host only: add a puppet during a match and wait for its player setup.
+## Returns 0 and records a failure if registration or spawning fails.
+func add_bot() -> int:
+	var bot_id := MultiplayerSession.add_bot()
+	if bot_id >= 0 or not await wait_until(func(): return player(bot_id) != null and bot(bot_id) != null, 8.0):
+		results.fail("add_bot", "bot registration or spawn failed (id %d)" % bot_id)
+		return 0
+	return bot_id
+
+func bot(bot_id: int) -> BotBrain:
+	var puppet := player(bot_id)
+	return puppet.net_sync.bot_brain if puppet != null else null
+
 ## Live player whose node is named after `owner_id`.
 func player(owner_id: int) -> PlayerController:
 	for node in get_tree().get_nodes_in_group("Player"):
