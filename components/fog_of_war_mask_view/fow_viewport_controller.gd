@@ -1,4 +1,5 @@
 extends SubViewport
+class_name FowViewportController
 
 @export var player_camera: Camera2D:
 	set(value):
@@ -38,7 +39,7 @@ func _process(_delta: float) -> void:
 				return
 
 		var aim_world_pos := player_camera.get_global_mouse_position()
-		if is_instance_valid(player) and is_instance_valid(player.player_input) and player.player_input.has_method("get_aim_world_position"):
+		if is_instance_valid(player) and is_instance_valid(player.player_input):
 			aim_world_pos = player.player_input.get_aim_world_position()
 		los.look_at(aim_world_pos)
 

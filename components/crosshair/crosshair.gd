@@ -69,7 +69,7 @@ func _local_peer_id_or_zero() -> int:
 	var peer := multiplayer.multiplayer_peer
 	if peer == null:
 		return 0
-	if peer.has_method("get_connection_status") and peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+	if peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
 		return 0
 
 	return multiplayer.get_unique_id()

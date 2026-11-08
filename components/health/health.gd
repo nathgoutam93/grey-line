@@ -24,9 +24,7 @@ func take_damage(amount: int, killer_id: int, is_headshot: bool = false):
 		return
 	current_health -= amount
 	current_health = maxi(current_health, 0)
-	
-	print("Took damage:", amount, "Current health:", current_health)
-	
+
 	if current_health == 0:
 		is_dead = true
 		emit_signal("die", killer_id)

@@ -50,7 +50,7 @@ const TOUCH_CONTROL_IDS: Array[String] = [
 @onready var _join_button: BaseButton = get_node_or_null("../UI/Control/HBoxContainer/join")
 @onready var _host_button: BaseButton = get_node_or_null("../UI/Control/HBoxContainer/host")
 
-var _profile: Node = null
+var _profile: PlayerProfileStore = null
 var _waiting_rebind_action := ""
 var _keybind_buttons: Dictionary = {}
 var _touch_x_sliders: Dictionary = {}
@@ -62,7 +62,7 @@ var _updating_touch_ui := false
 var _onboarding_required := false
 
 func _ready() -> void:
-	_profile = get_node_or_null("/root/PlayerProfile")
+	_profile = PlayerProfile
 	if _profile == null:
 		return
 
@@ -130,12 +130,12 @@ func _load_profile_into_ui() -> void:
 	if _profile == null:
 		return
 
-	var username_variant: Variant = _profile.call("get_username")
+	var username_variant: Variant = _profile.get_username()
 	if username_variant is String and _username_input != null:
 		_username_input.text = username_variant as String
 
 	if _avatar_option != null:
-		var catalog_variant: Variant = _profile.call("get_avatar_catalog")
+		var catalog_variant: Variant = _profile.get_avatar_catalog()
 		_avatar_option.clear()
 		_rebuild_avatar_grid({})
 		if catalog_variant is Dictionary:
@@ -149,7 +149,7 @@ func _load_profile_into_ui() -> void:
 				_avatar_option.set_item_metadata(_avatar_option.item_count - 1, avatar_id)
 			_rebuild_avatar_grid(catalog)
 
-			var selected_avatar_variant: Variant = _profile.call("get_avatar_id")
+			var selected_avatar_variant: Variant = _profile.get_avatar_id()
 			if selected_avatar_variant is String:
 				var selected_avatar_id := selected_avatar_variant as String
 				_select_avatar_by_id(selected_avatar_id, false)
@@ -165,7 +165,7 @@ func _refresh_avatar_preview() -> void:
 		return
 	var selected_index := maxi(_avatar_option.selected, 0)
 	var avatar_id := String(_avatar_option.get_item_metadata(selected_index))
-	var catalog_variant: Variant = _profile.call("get_avatar_catalog")
+	var catalog_variant: Variant = _profile.get_avatar_catalog()
 	if not (catalog_variant is Dictionary):
 		return
 	var catalog := catalog_variant as Dictionary
@@ -217,7 +217,7 @@ func _select_avatar_by_id(avatar_id: String, persist: bool) -> void:
 			button.set_pressed_no_signal(true)
 	_refresh_avatar_preview()
 	if persist and _profile != null:
-		_profile.call("set_avatar_id", avatar_id)
+		_profile.set_avatar_id(avatar_id)
 		profile_changed.emit()
 		_refresh_onboarding_gate(false)
 		_set_status("Avatar saved.")
@@ -243,7 +243,7 @@ func _refresh_touch_controls() -> void:
 		var value_label := _touch_value_labels[control_id] as Label
 		if x_slider == null or y_slider == null or value_label == null:
 			continue
-		var pos_variant: Variant = _profile.call("get_touch_control_position_norm", control_id)
+		var pos_variant: Variant = _profile.get_touch_control_position_norm(control_id)
 		if pos_variant is Vector2:
 			var pos := pos_variant as Vector2
 			x_slider.value = pos.x
@@ -314,7 +314,7 @@ func _on_leave_game_confirmed() -> void:
 func _on_username_changed(new_text: String) -> void:
 	if _profile == null:
 		return
-	_profile.call("set_username", new_text)
+	_profile.set_username(new_text)
 	profile_changed.emit()
 	_refresh_onboarding_gate(false)
 	_set_status("Username saved.")
@@ -363,14 +363,14 @@ func _apply_rebind_event(event: InputEvent) -> void:
 		return
 	InputMap.action_erase_events(action)
 	InputMap.action_add_event(action, event)
-	_profile.call("set_action_binding", action, [event])
+	_profile.set_action_binding(action, [event])
 	_refresh_keybind_buttons()
 	_set_status("%s bound to %s." % [String(action), _event_to_text(event)])
 
 func _on_reset_keybinds_pressed() -> void:
 	if _profile == null:
 		return
-	_profile.call("reset_keybinds_to_default")
+	_profile.reset_keybinds_to_default()
 	_refresh_keybind_buttons()
 	_set_status("Keybinds reset to default.")
 
@@ -395,14 +395,14 @@ func _apply_touch_position_change(control_id: String, value: float, is_x: bool) 
 		position.x = value
 	else:
 		position.y = value
-	_profile.call("set_touch_control_position_norm", control_id, position)
+	_profile.set_touch_control_position_norm(control_id, position)
 	value_label.text = "(%.3f, %.3f)" % [position.x, position.y]
 	_set_status("%s position saved." % control_id)
 
 func _on_reset_touch_pressed() -> void:
 	if _profile == null:
 		return
-	_profile.call("reset_touch_layout_to_default")
+	_profile.reset_touch_layout_to_default()
 	_refresh_touch_controls()
 	_set_status("Touch layout reset to default.")
 
@@ -417,9 +417,9 @@ func _on_complete_profile_pressed() -> void:
 		_set_status("Avatar selection is required.")
 		return
 	var avatar_id := String(_avatar_option.get_item_metadata(maxi(_avatar_option.selected, 0)))
-	_profile.call("set_username", username)
-	_profile.call("set_avatar_id", avatar_id)
-	_profile.call("complete_profile_setup")
+	_profile.set_username(username)
+	_profile.set_avatar_id(avatar_id)
+	_profile.complete_profile_setup()
 	profile_changed.emit()
 	_load_profile_into_ui()
 	_refresh_onboarding_gate(false)
@@ -450,9 +450,7 @@ func _refresh_onboarding_gate(force_open: bool) -> void:
 func _is_profile_completed() -> bool:
 	if _profile == null:
 		return true
-	if _profile.has_method("is_profile_completed"):
-		return bool(_profile.call("is_profile_completed"))
-	return true
+	return _profile.is_profile_completed()
 
 func _set_status(text: String) -> void:
 	if _status_label != null:

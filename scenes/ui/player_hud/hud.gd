@@ -65,13 +65,8 @@ func _ready() -> void:
 func _apply_persisted_touch_layout() -> void:
 	if not is_instance_valid(controls_root):
 		return
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile == null:
-		return
-	if profile.has_method("ensure_touch_layout_defaults_from_controls"):
-		profile.call("ensure_touch_layout_defaults_from_controls", controls_root)
-	if profile.has_method("apply_touch_layout_to_controls"):
-		profile.call("apply_touch_layout_to_controls", controls_root)
+	PlayerProfile.ensure_touch_layout_defaults_from_controls(controls_root)
+	PlayerProfile.apply_touch_layout_to_controls(controls_root)
 
 func _connect_slot_touch_buttons() -> void:
 	for slot in _slot_nodes_by_slot:
@@ -92,14 +87,13 @@ func _on_slot_touch_pressed(slot: int) -> void:
 		return
 	if not is_instance_valid(_player.player_input):
 		return
-	if _player.player_input.has_method("queue_slot_select"):
-		_player.player_input.queue_slot_select(slot)
+	_player.player_input.queue_slot_select(slot)
 	
 func _local_peer_id_or_zero() -> int:
 	var peer := multiplayer.multiplayer_peer
 	if peer == null:
 		return 0
-	if peer.has_method("get_connection_status") and peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+	if peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
 		return 0
 	return multiplayer.get_unique_id()
 
@@ -122,7 +116,7 @@ func _set_controls_input_enabled(is_enabled: bool) -> void:
 	controls_root.process_mode = Node.PROCESS_MODE_INHERIT if is_enabled else Node.PROCESS_MODE_DISABLED
 
 
-func _get_equipment_manager() -> Node:
+func _get_equipment_manager() -> EquipmentManager:
 	return _player.equipment_manager
 
 
@@ -166,7 +160,7 @@ func _update_slot_selection_visual() -> void:
 	if not equipment_manager:
 		return
 
-	var current_slot = int(equipment_manager.get("current_slot"))
+	var current_slot := int(equipment_manager.current_slot)
 	for slot in _slot_nodes_by_slot:
 		var slot_ui := _slot_nodes_by_slot[slot] as CanvasItem
 		if not slot_ui:

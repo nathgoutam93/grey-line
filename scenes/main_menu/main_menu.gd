@@ -40,28 +40,18 @@ func _exit_tree() -> void:
 		MultiplayerSession.main_menu_state_changed.disconnect(_on_main_menu_state_changed)
 
 func _refresh_player_card() -> void:
-	var profile := get_node_or_null("/root/PlayerProfile")
-	if profile == null:
-		return
-
 	var resolved_name := DEFAULT_PLAYER_NAME
-	if profile.has_method("get_username"):
-		var candidate := String(profile.call("get_username")).strip_edges()
-		if candidate != "":
-			resolved_name = candidate
+	var candidate := PlayerProfile.get_username().strip_edges()
+	if candidate != "":
+		resolved_name = candidate
 	if _player_name_label != null:
 		_player_name_label.text = resolved_name
 
 	var avatar_texture: Texture2D = null
 	var avatar_path := DEFAULT_AVATAR_PATH
-	if profile.has_method("get_avatar_catalog") and profile.has_method("get_avatar_id"):
-		var catalog_variant : Dictionary = profile.call("get_avatar_catalog")
-		var avatar_id := String(profile.call("get_avatar_id"))
-		if catalog_variant is Dictionary:
-			var catalog := catalog_variant as Dictionary
-			var candidate_path := String(catalog.get(avatar_id, "")).strip_edges()
-			if candidate_path != "":
-				avatar_path = candidate_path
+	var candidate_path := String(PlayerProfile.get_avatar_catalog().get(PlayerProfile.get_avatar_id(), "")).strip_edges()
+	if candidate_path != "":
+		avatar_path = candidate_path
 	avatar_texture = load(avatar_path) as Texture2D
 	if _player_avatar != null:
 		_player_avatar.texture = avatar_texture

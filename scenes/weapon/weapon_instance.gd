@@ -171,14 +171,11 @@ func drop_weapon_pickup() -> void:
 	if not multiplayer.is_server():
 		return
 
-	var pickup = data.pickup_scene.instantiate() as RigidBody2D
+	var pickup := data.pickup_scene.instantiate() as WeaponPickup
 	pickup.global_position = global_position
-	if pickup.has_method("set_weapon_data"):
-		pickup.set_weapon_data(data)
-	if "ammo_in_mag" in pickup:
-		pickup.ammo_in_mag = ammo_in_mag
-	if "ammo_reserve" in pickup:
-		pickup.ammo_reserve = ammo_reserve
+	pickup.set_weapon_data(data)
+	pickup.ammo_in_mag = ammo_in_mag
+	pickup.ammo_reserve = ammo_reserve
 
 	var map_node = get_tree().current_scene.find_child("Map", true, false)
 	map_node.add_child.call_deferred(pickup, true)

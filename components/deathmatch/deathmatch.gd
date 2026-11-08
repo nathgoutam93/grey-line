@@ -234,7 +234,7 @@ func _change_to_post_match_scene() -> bool:
 		return false
 	var mask_viewport := MaskViewProvider.viewport
 	if is_instance_valid(mask_viewport):
-		mask_viewport.set("player_camera", null)
-		mask_viewport.set("player", null)
+		mask_viewport.player_camera = null
+		mask_viewport.player = null
 	MultiplayerSession.call_deferred("return_to_lobby_after_match")
 	return true

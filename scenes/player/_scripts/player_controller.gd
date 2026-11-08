@@ -28,7 +28,7 @@ enum ShotIntent {
 
 @export var net_sync: PlayerNetSync
 
-@export var hud: CanvasLayer
+@export var hud: PlayerHud
 @export var camera: Camera2D
 @export var audio_listner: AudioListener2D
 
@@ -76,7 +76,7 @@ func setup_locals():
 	skeletal_character.material = null
 	if player_input:
 		player_input.on_local_player_spawned()
-	if equipment_manager and equipment_manager.has_method("apply_local_view"):
+	if equipment_manager:
 		equipment_manager.apply_local_view()
 
 
@@ -86,15 +86,15 @@ func get_current_equipment() -> EquipmentInstance:
 	return equipment_manager.get_current_item()
 
 
-func get_speed():
-	var speed_multiplier = 1
+func get_speed() -> float:
+	var speed_multiplier := 1.0
 
 	if is_slow_walking:
 		speed_multiplier *= slow_walk_multiplier
 	
-	var current_item = get_current_equipment()
-	if current_item is WeaponInstance:
-		speed_multiplier *= (current_item as WeaponInstance).data.speed_multiplier
+	var weapon := get_current_equipment() as WeaponInstance
+	if weapon:
+		speed_multiplier *= weapon.data.speed_multiplier
 
 	return speed * speed_multiplier
 
@@ -220,10 +220,7 @@ func _remote_die(global_pos: Vector2):
 	dead_scene.global_position = global_pos
 	get_tree().current_scene.add_child(dead_scene)
 
-	var tick_rate := int(NetworkTick.get("tick_rate"))
-	if tick_rate <= 0:
-		tick_rate = 60
-	var despawn_ticks := maxi(1, int(round(DEATH_DESPAWN_DELAY_SECONDS * float(tick_rate))))
+	var despawn_ticks := maxi(1, int(round(DEATH_DESPAWN_DELAY_SECONDS * float(NetworkTick.tick_rate))))
 	await _wait_network_ticks(despawn_ticks)
 	if death_sequence != _death_sequence_id:
 		return
@@ -288,7 +285,7 @@ func apply_explosion_force(explosion_origin: Vector2, force_amount: float) -> vo
 func _remote_apply_screen_flash(detonation_pos: Vector2, duration_seconds: float, effect_radius: float, max_angle_deg: float, max_alpha: float = 0.95) -> void:
 	if not is_local_player:
 		return
-	if not is_instance_valid(hud) or not hud.has_method("show_stun_flash"):
+	if not is_instance_valid(hud):
 		return
 
 	var to_blast := detonation_pos - global_position
@@ -312,7 +309,7 @@ func _remote_apply_screen_flash(detonation_pos: Vector2, duration_seconds: float
 	if final_alpha <= 0.01:
 		return
 
-	hud.call("show_stun_flash", maxf(duration_seconds, 0.05), final_alpha)
+	hud.show_stun_flash(maxf(duration_seconds, 0.05), final_alpha)
 
 
 func _has_flash_line_of_sight(detonation_pos: Vector2) -> bool:

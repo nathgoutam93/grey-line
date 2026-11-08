@@ -40,8 +40,6 @@ func _ready():
 	setup_default_equipment()
 
 func setup_default_equipment():
-	print(multiplayer.get_unique_id())
-
 	for equipment_data in default_equipment:
 		# instantiate and configure
 		if equipment_data == null or equipment_data.instance_scene == null:
@@ -66,19 +64,11 @@ func setup_default_equipment():
 		skeletal_character.hand_socket.add_child(item)
 		item.unequip()
 
-		print("default equipment: %s slot=%d" % [equipment_data.name, slot])
 		if equipped_items.has(slot) and equipped_items[slot] != null:
 			push_warning("Default equipment slot %d already occupied, overwriting" % slot)
 		equipped_items[slot] = item
 
 	equip_slot(current_slot)
-
-	# debug: how many were stored?
-	var count := 0
-	for k in equipped_items.keys():
-		if equipped_items[k] != null:
-			count += 1
-	print("equipment_manager: %d default items stored" % count)
 
 
 func get_current_item() -> EquipmentInstance:

@@ -50,18 +50,15 @@ func _on_player_entered(player):
 func _on_player_exited(_player):
 	pass
 
-func _get_equipment_manager(player):
-	return player.equipment_manager
+func _get_equipment_manager(player: PlayerController) -> EquipmentManager:
+	return player.equipment_manager if player else null
 
 
 func can_auto_pickup(player):
 	if weapon_data == null:
 		return false
-	var mgr = _get_equipment_manager(player)
-	if mgr and mgr.has_method("get_item_in_slot"):
-		var existing = mgr.get_item_in_slot(weapon_data.slot)
-		return existing == null
-	return false
+	var mgr := _get_equipment_manager(player)
+	return mgr != null and mgr.get_item_in_slot(weapon_data.slot) == null
 
 func pickup_weapon(player):
 	if not multiplayer.is_server():

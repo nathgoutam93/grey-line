@@ -140,12 +140,7 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 func _resolve_touch_aim_zone() -> TouchAimZone:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
 		return null
-	if player.hud.has_method("get_touch_aim_zone"):
-		return player.hud.get_touch_aim_zone()
-	var node := player.hud.get_node_or_null("Controls/TouchAimZone")
-	if node is TouchAimZone:
-		return node
-	return null
+	return player.hud.get_touch_aim_zone()
 
 func _resolve_move_joystick() -> VirtualJoystick:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):

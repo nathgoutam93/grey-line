@@ -86,13 +86,6 @@ func register_death(victim_id: int, killer_id: int, is_headshot: bool = false) -
 	_refresh_combat_data(victim_id)
 	_refresh_combat_data(killer_id)
 
-	print("K/D updated:")
-	print("Player %d -> Kills: %d, Deaths: %d" % [
-		killer_id,
-		player_stats.get(killer_id, {}).get("kills", 0),
-		player_stats.get(killer_id, {}).get("deaths", 0)
-	])
-
 	broadcast_stats()
 
 ## Server only: re-read every player's loadout; true if anything changed.
@@ -165,7 +158,7 @@ func _local_player_hud() -> PlayerHud:
 	var local_player := _map.get_node_or_null(str(multiplayer.get_unique_id())) as PlayerController
 	if local_player == null:
 		return null
-	return local_player.hud as PlayerHud
+	return local_player.hud
 
 # --- ping -------------------------------------------------------------------
 
