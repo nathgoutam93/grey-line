@@ -37,6 +37,41 @@ func apply_cell_damage(walls: DestructibleWalls, cell: Vector2i, amount: int, ki
 	_pending[path] = pending
 	cells_destroyed.emit(cells)
 
+func apply_explosion(center: Vector2, radius: float, max_damage: int) -> void:
+	if not multiplayer.is_server() or radius <= 0.0 or max_damage <= 0:
+		return
+	var space := get_viewport().world_2d.direct_space_state
+	var damage_events: Array[Dictionary] = []
+	for walls in _walls_nodes():
+		var low := walls.cell_at_world(center)
+		var high := low
+		for offset in [Vector2(-radius, -radius), Vector2(radius, -radius), Vector2(radius, radius), Vector2(-radius, radius)]:
+			var cell := walls.cell_at_world(center + offset)
+			low = low.min(cell)
+			high = high.max(cell)
+		for x in range(low.x, high.x + 1):
+			for y in range(low.y, high.y + 1):
+				var cell := Vector2i(x, y)
+				if not DestructionMaterial.can_damage(walls.cell_material(cell), DestructionMaterial.KIND_EXPLOSIVE):
+					continue
+				var target := walls.to_global(walls.map_to_local(cell))
+				var amount := roundi(max_damage * maxf(1.0 - center.distance_to(target) / radius, 0.0))
+				if amount > 0 and blast_line_clear(space, center, target, walls, cell):
+					damage_events.append({"walls": walls, "cell": cell, "amount": amount})
+	# Resolve against the intact geometry first, so iteration order cannot send a blast through extra layers.
+	for event in damage_events:
+		apply_cell_damage(event.walls, event.cell, event.amount, DestructionMaterial.KIND_EXPLOSIVE)
+
+static func blast_line_clear(space: PhysicsDirectSpaceState2D, from: Vector2, to: Vector2, walls: DestructibleWalls = null, cell: Vector2i = Vector2i.ZERO, target_body: CollisionObject2D = null) -> bool:
+	var query := PhysicsRayQueryParameters2D.create(from, to, 1)
+	query.hit_from_inside = true
+	var hit := space.intersect_ray(query)
+	if hit.is_empty():
+		return true
+	if walls != null and hit.get("collider") == walls:
+		return walls.cell_from_hit(hit) == cell
+	return target_body != null and hit.get("collider") == target_body
+
 func _physics_process(_delta: float) -> void:
 	if not multiplayer.is_server() or _pending.is_empty():
 		return

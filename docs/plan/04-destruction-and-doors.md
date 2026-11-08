@@ -14,7 +14,7 @@ This step is split into sub-phases, 4A–4F. Do them in order; each ends in a wo
 | Materials | `SOFT` (drywall, wood): bullets, melee and explosives. `REINFORCED`: explosives only. `HARD`: indestructible. Existing exterior walls stay as they are (static, indestructible). |
 | HP | SOFT 40, REINFORCED 150 (`max_hp` per tile in TileSet custom data) |
 | Bullets | Damage the first cell they hit and stop there (no penetration in v1; see 4F). Wall damage per weapon: `Weapon.wall_damage` (new field, default 10). |
-| Explosions | Damage every cell within the radius whose centre has line of sight to the blast (hard walls shield). The same check is applied to **player damage**, which fixes the current bug where frags hurt through walls. |
+| Explosions | Frags deal **200 max wall damage**, scaled by distance (user-approved). Damage every cell within the radius whose centre has line of sight to the blast (hard walls shield). The same check is applied to **player damage**, which fixes the current bug where frags hurt through walls. Player damage retains its existing values and includes teammates and the thrower. |
 | Melee | Knife hits damage SOFT cells (`melee_wall_damage` 20) and doors (a kick, see 4D). |
 | Doors | States `CLOSED`, `OPEN`, `BROKEN`. Interact toggles CLOSED/OPEN (quiet: 250 px noise). Doors have HP 60; melee does 60 (one kick breaks them). Broken doors are permanently open (loud: 900 px noise). Explosions break them. |
 | Sound | v1: hearing radius is attenuated by intact walls between listener and source (raycast). v2 (later): a portal graph like Siege's propagation nodes. |

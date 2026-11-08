@@ -107,6 +107,13 @@ func _shoot_raycast() -> void:
 				hit_player.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
 
 	if multiplayer.is_server():
+		if not has_unoccluded_hurtbox_hit and not occlusion_result.is_empty():
+			var walls := occlusion_result.get("collider") as DestructibleWalls
+			var service := DestructionService.current(get_tree())
+			if walls != null and service != null:
+				var kind := DestructionMaterial.KIND_BULLET if data.uses_ammo else DestructionMaterial.KIND_MELEE
+				var amount := data.wall_damage if data.uses_ammo else data.melee_wall_damage
+				service.apply_cell_damage(walls, walls.cell_from_hit(occlusion_result), amount, kind)
 		LagCompensationService.restore_players(saved_transforms)
 
 func _build_self_exclude_list() -> Array:

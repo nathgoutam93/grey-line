@@ -66,7 +66,124 @@ func _wall(from: Vector2, size: Vector2) -> StaticBody2D:
 	add_child(body)
 	return body
 
-# --- PlayerInputFrame -------------------------------------------------------
+func _destructible_wall(at: Vector2, cells: Array[Vector2i], material: int = DestructionMaterial.SOFT) -> DestructibleWalls:
+	var walls := DestructibleWalls.new()
+	walls.position = at
+	walls.tile_set = load("res://resources/destruction/destructible_walls_tileset.tres")
+	for cell in cells:
+		walls.set_cell(cell, 0, Vector2i(material, 0))
+	add_child(walls)
+	return walls
+
+# --- Destruction ------------------------------------------------------------
+
+func test_weapon_wall_damage_survives_pickups() -> void:
+	var weapon := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon
+	weapon.wall_damage = 17
+	weapon.melee_wall_damage = 33
+	var data := weapon.to_dict()
+	var restored := Weapon.new_from_dict(data)
+	check(restored.wall_damage == 17 and restored.melee_wall_damage == 33, "pickup lost custom wall damage")
+	data.erase("wall_damage")
+	data.erase("melee_wall_damage")
+	restored = Weapon.new_from_dict(data)
+	check(restored.wall_damage == 10 and restored.melee_wall_damage == 20, "old pickup missing damage defaults")
+
+func test_bullet_damage_rules() -> void:
+	var shooter := await _spawn_player(Vector2(-2400, -2400))
+	shooter.rotation = 0.0
+	var rifle := shooter.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance
+	var service := DestructionService.new()
+	add_child(service)
+	var walls := _destructible_wall(rifle.global_position + Vector2(100, -8), [Vector2i.ZERO])
+	walls.set_cell(Vector2i(1, 0), 0, Vector2i(DestructionMaterial.REINFORCED, 0))
+	walls.update_internals()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	for hit in range(3):
+		rifle._shoot_raycast()
+		check(walls.has_wall(Vector2i.ZERO), "soft cell broke before fourth bullet")
+	rifle._shoot_raycast()
+	check(not walls.has_wall(Vector2i.ZERO), "four bullets did not break soft cell")
+	check(walls.has_wall(Vector2i(1, 0)), "bullet penetrated into the next cell")
+	for hit in range(20):
+		rifle._shoot_raycast()
+	check(walls.has_wall(Vector2i(1, 0)), "bullets broke reinforced cell")
+	walls.queue_free()
+	service.queue_free()
+	shooter.queue_free()
+	await get_tree().process_frame
+
+func test_melee_damages_soft_wall() -> void:
+	var shooter := await _spawn_player(Vector2(-2400, -2400))
+	shooter.rotation = 0.0
+	var knife := shooter.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.MELEE) as WeaponInstance
+	var service := DestructionService.new()
+	add_child(service)
+	var walls := _destructible_wall(knife.global_position + Vector2(20, -8), [Vector2i.ZERO])
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	knife._shoot_raycast()
+	check(walls.has_wall(Vector2i.ZERO), "one knife hit broke 40 HP cell")
+	knife._shoot_raycast()
+	check(not walls.has_wall(Vector2i.ZERO), "two knife hits did not break soft cell")
+	walls.queue_free()
+	service.queue_free()
+	shooter.queue_free()
+	await get_tree().process_frame
+
+func test_explosion_shielded_by_hard_wall() -> void:
+	var service := DestructionService.new()
+	add_child(service)
+	var walls := _destructible_wall(Vector2(-2400, -2400), [Vector2i.ZERO], DestructionMaterial.HARD)
+	walls.set_cell(Vector2i(2, 0), 0, Vector2i.ZERO)
+	walls.update_internals()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var blast := walls.global_position + Vector2(-24, 8)
+	service.apply_explosion(blast, 320.0, 200)
+	check(walls.has_wall(Vector2i.ZERO), "hard cell was destroyed")
+	check(walls.has_wall(Vector2i(2, 0)) and service._cell_hp.is_empty(), "hard cell failed to shield soft cell")
+	walls.destroy_cells([Vector2i.ZERO])
+	service.apply_explosion(blast, 320.0, 200)
+	check(not walls.has_wall(Vector2i(2, 0)), "exposed soft cell was not damaged")
+	walls.queue_free()
+	service.queue_free()
+	await get_tree().process_frame
+
+func test_frag_respects_cover_and_breaches_reinforced() -> void:
+	var service := DestructionService.new()
+	add_child(service)
+	var protected := await _spawn_player(Vector2(-2200, -2400))
+	var exposed := await _spawn_player(Vector2(-2350, -2500))
+	var cover := _wall(Vector2(-2280, -2400), Vector2(16, 400))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var frag := FragProjectile.new()
+	frag.position = Vector2(-2350, -2400)
+	frag.detonate_smoke_scene = null
+	add_child(frag)
+	frag._detonate()
+	check(protected.health_component.current_health == 100, "frag damaged a player through hard cover")
+	check(protected.movement_component.external_velocity.is_zero_approx(), "frag pushed player through cover")
+	check(exposed.health_component.current_health < 100, "cover blocked an exposed player")
+	cover.queue_free()
+	await get_tree().process_frame
+	var walls := _destructible_wall(Vector2(-2320, -2416), [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)], DestructionMaterial.REINFORCED)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var breach_frag := FragProjectile.new()
+	breach_frag.position = Vector2(-2350, -2400)
+	breach_frag.detonate_smoke_scene = null
+	add_child(breach_frag)
+	breach_frag._detonate()
+	check(walls.destroyed_cells().size() == 3, "200 wall damage failed to breach nearby reinforced cells")
+	check(protected.health_component.current_health < 100, "new breach failed to expose the player in the same blast")
+	protected.queue_free()
+	exposed.queue_free()
+	walls.queue_free()
+	service.queue_free()
+	await get_tree().process_frame
 
 func test_destructible_walls_destroy_and_restore() -> void:
 	var old_viewport := MaskViewProvider.viewport
@@ -148,6 +265,8 @@ func test_wall_damage_state_and_reset() -> void:
 	walls.queue_free()
 	service.queue_free()
 	await get_tree().process_frame
+
+# --- PlayerInputFrame -------------------------------------------------------
 
 func test_input_frame_round_trip() -> void:
 	var f := PlayerInputFrame.new()

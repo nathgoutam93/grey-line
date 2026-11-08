@@ -6,6 +6,7 @@ const RPC_CHANNEL_UI := 2
 @export var explosion_radius: float = 320.0
 @export var max_force: float = 680.0
 @export var max_damage: int = 95
+@export var wall_damage: int = 200
 @export var min_damage: int = 15
 @export var speed: float = 760.0
 @export var max_travel_distance: float = 900.0
@@ -106,6 +107,10 @@ func _detonate() -> void:
 	)
 
 	var effective_radius := maxf(explosion_radius, 1.0)
+	var service := DestructionService.current(get_tree())
+	if service != null:
+		service.apply_explosion(global_position, effective_radius, wall_damage)
+	var space := get_world_2d().direct_space_state
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player == null or player.is_dead:
@@ -117,6 +122,8 @@ func _detonate() -> void:
 
 		var factor := clampf(1.0 - (distance / effective_radius), 0.0, 1.0)
 		if factor <= 0.0:
+			continue
+		if not DestructionService.blast_line_clear(space, global_position, player.global_position):
 			continue
 
 		player.apply_explosion_force(global_position, maxf(max_force, 0.0) * factor)

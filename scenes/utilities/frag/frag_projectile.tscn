@@ -27,6 +27,7 @@ properties/3/spawn = true
 properties/3/replication_mode = 1
 
 [node name="FragProjectile" type="RigidBody2D" unique_id=771101971]
+collision_layer = 32
 material = ExtResource("1_dlrbe")
 physics_material_override = SubResource("PhysicsMaterial_frag")
 gravity_scale = 0.0
