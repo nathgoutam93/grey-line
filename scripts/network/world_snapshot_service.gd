@@ -16,6 +16,7 @@ class_name WorldSnapshotService
 
 ## 2 ticks at 60 Hz = 30 snapshots per second.
 const SEND_INTERVAL_TICKS := 2
+const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
 
 # Packet layout (Array):
@@ -46,6 +47,25 @@ var _last_sent_tick := 0
 ## Server: packets sent per peer id (diagnostics and tests). At most one per
 ## physics frame, so under load it can be fewer than one per send interval.
 var packets_sent := {}
+
+## Input RPCs use this persistent path: in-flight packets can arrive while
+## MultiplayerSpawner replaces every player at a round boundary.
+@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
+func submit_player_input(life_id: int, packed_frames: Array) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender <= 1 or not multiplayer.get_peers().has(sender):
+		return
+	_receive_player_input(sender, life_id, packed_frames)
+
+func _receive_player_input(sender: int, life_id: int, packed_frames: Array) -> void:
+	if not multiplayer.is_server():
+		return
+	var player := _find_owned_player(sender)
+	if player == null or player.is_dead or life_id == 0 or player.net_sync.life_id != life_id:
+		return
+	player.net_sync.server_receive_input(packed_frames, sender)
 
 func _physics_process(_delta: float) -> void:
 	if not _is_server():
@@ -90,8 +110,8 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 	var weapon_slot := -1
 	var weapon_ammo := PackedInt32Array()
 
-	# The viewer may be dead (hidden, about to despawn): it still sees and
-	# hears from where it fell. With no player node at all, nothing is sent.
+	# Rounds use the selected teammate's view after death. Deathmatch retains
+	# the fallen player's view until despawn; a missing viewer receives no players.
 	var viewer := _find_player_node(peer_id)
 	if viewer != null:
 		# Spectators share the target's visibility history, including grace, rather than retaining corpse sight.
@@ -134,13 +154,17 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 
 func _find_player_node(peer_id: int) -> PlayerController:
 	var mode := MatchGameMode.current(get_tree()) as RoundGameMode
+	var player := _find_owned_player(peer_id)
+	if mode != null and (player == null or player.is_dead):
+		return mode.spectator_player_for(peer_id)
+	return player
+
+func _find_owned_player(peer_id: int) -> PlayerController:
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player != null and player.is_inside_tree() and player.owner_peer_id == peer_id:
-			if mode != null and player.is_dead:
-				return mode.spectator_player_for(peer_id)
 			return player
-	return mode.spectator_player_for(peer_id) if mode != null else null
+	return null
 
 func _live_players() -> Array[PlayerController]:
 	var result: Array[PlayerController] = []

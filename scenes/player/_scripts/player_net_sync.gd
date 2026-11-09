@@ -31,7 +31,6 @@ const DEFAULT_INTERP_DELAY_TICKS := 4
 # Max rewind = one-way latency + interpolation delay; 12 ticks = 200 ms.
 const MAX_LAG_COMP_REWIND_TICKS := 12
 const TICK_OFFSET_SMOOTHING := 0.1
-const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_UI := 2
 
 # Every input packet carries the last N frames so a single lost packet does not
@@ -93,6 +92,8 @@ var _tick_offset := 0.0
 var _last_received_snapshot_tick := 0
 ## Client: snapshots accepted for this player (diagnostics and tests).
 var snapshots_received := 0
+## Server-issued identity of this spawned life; rejects input left over from a previous round.
+var life_id := 0
 var _is_firing_net := false
 var _last_reload_request_tick := -1
 var _net_presence := NetPresence.VISIBLE
@@ -198,7 +199,7 @@ func _owner_tick(local_tick: int) -> void:
 			for fill_tick in range(_last_stamped_tick + 1, stamp):
 				_predict_owner_frame(frame.copy_continuous(fill_tick))
 	_predict_owner_frame(frame)
-	server_receive_input.rpc_id(1, _send_history.duplicate())
+	WorldSnapshots.submit_player_input.rpc_id(1, life_id, _send_history.duplicate())
 
 func _predict_owner_frame(frame: PlayerInputFrame) -> void:
 	_input_buffer[frame.tick] = frame
@@ -350,11 +351,9 @@ func _predict_owner_actions(frame: PlayerInputFrame) -> void:
 		_is_firing_net = false
 		_do_stop_fire()
 
-@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
-func server_receive_input(packed_frames: Array) -> void:
+func server_receive_input(packed_frames: Array, sender_id: int) -> void:
 	if not is_server_role():
 		return
-	var sender_id := multiplayer.get_remote_sender_id()
 	if sender_id != player.owner_peer_id:
 		return
 	var server_tick := NetworkTick.tick

@@ -256,6 +256,10 @@ func _remote_die(global_pos: Vector2):
 	dead_scene.global_position = global_pos
 	get_tree().current_scene.add_child(dead_scene)
 
+	# MultiplayerSpawner owns removal on clients. A local death timer can race
+	# its authoritative despawn, especially when the next round starts at 5 s.
+	if not multiplayer.is_server():
+		return
 	var despawn_ticks := maxi(1, int(round(DEATH_DESPAWN_DELAY_SECONDS * float(NetworkTick.tick_rate))))
 	await _wait_network_ticks(despawn_ticks)
 	if death_sequence != _death_sequence_id:

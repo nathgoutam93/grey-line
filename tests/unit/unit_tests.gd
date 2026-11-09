@@ -77,6 +77,32 @@ func _destructible_wall(at: Vector2, cells: Array[Vector2i], material: int = Des
 
 # --- Destruction ------------------------------------------------------------
 
+func test_input_ingress_rejects_missing_dead_and_previous_lives() -> void:
+	var owner := await _spawn_player(Vector2(-2400, -2400))
+	var teammate := await _spawn_player(Vector2(-2200, -2400))
+	owner.owner_peer_id = 2
+	owner.net_sync.life_id = 202
+	teammate.owner_peer_id = 3
+	teammate.net_sync.life_id = 303
+	var frame := _move_frame(NetworkTick.tick + 1, Vector2.RIGHT)
+	var packed := [frame.to_packed()]
+	WorldSnapshots._receive_player_input(2, 101, packed) # Previous life.
+	WorldSnapshots._receive_player_input(2, 303, packed) # Someone else's life.
+	WorldSnapshots._receive_player_input(4, 202, packed) # No owned player.
+	check(owner.net_sync._input_queue.is_empty() and teammate.net_sync._input_queue.is_empty(), "invalid life or sender queued input")
+	WorldSnapshots._receive_player_input(2, 202, packed)
+	check(owner.net_sync._input_queue.has(frame.tick), "current life input was rejected")
+	owner.net_sync._input_queue.clear()
+	owner.is_dead = true
+	WorldSnapshots._receive_player_input(2, 202, packed)
+	check(owner.net_sync._input_queue.is_empty() and teammate.net_sync._input_queue.is_empty(), "dead viewer input affected a player or spectator target")
+	owner.queue_free()
+	await get_tree().process_frame
+	WorldSnapshots._receive_player_input(2, 202, packed) # In flight during respawn gap.
+	check(teammate.net_sync._input_queue.is_empty(), "input with no owned life affected a teammate")
+	teammate.queue_free()
+	await get_tree().process_frame
+
 func test_game_mode_lookup_uses_group() -> void:
 	var mode := MatchGameMode.new()
 	mode.name = "CustomRules"

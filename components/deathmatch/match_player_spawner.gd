@@ -106,7 +106,7 @@ func spawn_player(peer_id: int) -> void:
 	player_instance.team = MultiplayerSession.get_team(peer_id)
 	player_instance.set_multiplayer_authority(1)
 
-	player_instance.ready.connect(func(): _setup_player.rpc(peer_id, player_instance.get_path(), spawn_point.global_position, NetworkTick.tick, player_instance.team))
+	player_instance.ready.connect(func(): _setup_player.rpc(peer_id, player_instance.get_path(), spawn_point.global_position, NetworkTick.tick, player_instance.team, player_instance.get_instance_id()))
 	_map.add_child(player_instance, true)
 	print("Spawned player for peer %d at %s" % [peer_id, spawn_point.global_position])
 
@@ -135,7 +135,7 @@ func sync_existing_players_to_peer(peer_id: int) -> void:
 		var player := child as PlayerController
 		if player == null:
 			continue
-		_setup_player.rpc_id(peer_id, player.owner_peer_id, player.get_path(), player.global_position, NetworkTick.tick, player.team)
+		_setup_player.rpc_id(peer_id, player.owner_peer_id, player.get_path(), player.global_position, NetworkTick.tick, player.team, player.get_instance_id())
 
 ## Client only: ask the server to (re)send setup for every existing player.
 func request_resync() -> void:
@@ -152,7 +152,7 @@ func request_players_resync() -> void:
 	sync_existing_players_to_peer(peer_id)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_WORLD)
-func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2, server_tick: int, team: int) -> void:
+func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2, server_tick: int, team: int, life_id: int) -> void:
 	for _i in range(30):
 		if not is_inside_tree():
 			return
@@ -185,6 +185,7 @@ func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2,
 	player.global_position = spawn_position
 	player.set_multiplayer_authority(1)
 	player.net_sync.sync_server_tick(server_tick)
+	player.net_sync.life_id = life_id
 	player.owner_peer_id = peer_id
 	player.team = team
 	player.player_input.set_authority(peer_id)
