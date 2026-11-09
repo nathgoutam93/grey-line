@@ -507,7 +507,8 @@ func _reconcile_weapon_state(ack_tick: int, server_slot: int, server_ammo: Packe
 
 # --- fog-of-war presence (proxies) ------------------------------------------
 
-## Client only: called by WorldSnapshots for every remote player each packet.
+## Local presentation: clients use received packets; the host uses its own
+## filtered packet without changing authoritative simulation or world state.
 func set_net_presence(presence: NetPresence) -> void:
 	if presence == NetPresence.CULLED:
 		net_footsteps = false

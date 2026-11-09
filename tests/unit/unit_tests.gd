@@ -1418,6 +1418,56 @@ func test_slow_walk_silences_local_footstep_audio() -> void:
 	player.footstep_player.stop()
 	player.queue_free()
 
+func test_host_hides_enemies_with_no_remote_peers() -> void:
+	var host := await _spawn_player(Vector2(-2400, -2400))
+	var enemy := await _spawn_player(Vector2(-2800, -2400))
+	var ally := await _spawn_player(Vector2(-2800, -2300))
+	host.owner_peer_id = 1
+	host.team = Teams.ALPHA
+	enemy.owner_peer_id = -10
+	enemy.team = Teams.BRAVO
+	ally.owner_peer_id = -11
+	ally.team = Teams.ALPHA
+	host.rotation = 0.0
+	WorldSnapshots._last_visible_tick.clear()
+	WorldSnapshots._last_sent_tick = NetworkTick.tick - WorldSnapshotService.SEND_INTERVAL_TICKS
+	WorldSnapshots._physics_process(NetworkTick.get_tick_delta())
+	check(multiplayer.get_peers().is_empty() and not enemy.visible and ally.visible and host.visible, "host with no remote clients did not filter its own enemy view")
+	enemy.global_position = host.global_position + Vector2(400, 0)
+	WorldSnapshots._last_sent_tick = NetworkTick.tick - WorldSnapshotService.SEND_INTERVAL_TICKS
+	WorldSnapshots._physics_process(NetworkTick.get_tick_delta())
+	check(enemy.visible, "enemy did not reappear in host line of sight")
+	host.queue_free()
+	enemy.queue_free()
+	ally.queue_free()
+	await get_tree().process_frame
+	WorldSnapshots._last_visible_tick.clear()
+
+func _effective_canvas_material(item: CanvasItem) -> Material:
+	while item.use_parent_material:
+		item = item.get_parent() as CanvasItem
+		if item == null:
+			return null
+	return item.material
+
+func test_character_body_inherits_enemy_fog_and_allied_unmasking() -> void:
+	var actor := await _spawn_player(Vector2(-2400, -2400))
+	actor.owner_peer_id = -20
+	actor.team = Teams.BRAVO
+	actor.apply_team_visuals(Teams.ALPHA)
+	var body := actor.skeletal_character.get_node("polygons")
+	for child in body.get_children():
+		var polygon := child as Polygon2D
+		if polygon != null:
+			check(_effective_canvas_material(polygon) == actor._fog_material, "body polygon bypasses the enemy fog material: " + polygon.name)
+	actor.apply_team_visuals(Teams.BRAVO)
+	for child in body.get_children():
+		var polygon := child as Polygon2D
+		if polygon != null:
+			check(_effective_canvas_material(polygon) == null, "allied body polygon remained masked: " + polygon.name)
+	actor.queue_free()
+	await get_tree().process_frame
+
 func test_world_snapshot_keeps_visibility_and_footstep_bits_separate() -> void:
 	var viewer := await _spawn_player(Vector2(-2400, -2400))
 	var target := await _spawn_player(Vector2(-1900, -2400))

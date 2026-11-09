@@ -75,23 +75,41 @@ func _physics_process(_delta: float) -> void:
 		return
 	_last_sent_tick = tick
 	var peers := multiplayer.get_peers()
-	if peers.is_empty():
-		return
 	var players := _live_players()
 	if players.is_empty():
 		return # lobby / between matches
 	var smoke := VisibilityQuery.collect_smoke_blockers(get_tree())
 	var active_views: Dictionary = {}
-	for peer_id in peers:
+	var viewers := Array(peers)
+	if not OS.has_feature("dedicated_server"):
+		viewers.append(multiplayer.get_unique_id())
+	for peer_id in viewers:
 		var viewer := _find_player_node(peer_id)
 		if viewer != null:
 			active_views[viewer.owner_peer_id] = true
 	for key in _last_visible_tick.keys():
 		if not active_views.has(key):
 			_last_visible_tick.erase(key)
+	if not OS.has_feature("dedicated_server"):
+		# The host owns every authoritative node, but draws the same filtered
+		# view as a client (including the selected teammate while spectating).
+		var packet := _packet_for_peer(tick, players, multiplayer.get_unique_id(), smoke)
+		_apply_host_presence(packet, players)
 	for peer_id in peers:
 		_receive_world_snapshot.rpc_id(peer_id, _packet_for_peer(tick, players, peer_id, smoke))
 		packets_sent[peer_id] = int(packets_sent.get(peer_id, 0)) + 1
+
+func _apply_host_presence(packet: Array, players: Array[PlayerController]) -> void:
+	var ids: PackedInt32Array = packet[P_IDS]
+	var flags: PackedByteArray = packet[P_FLAGS]
+	for player in players:
+		if player.owner_peer_id == multiplayer.get_unique_id():
+			continue
+		var index := ids.find(player.owner_peer_id)
+		var presence := PlayerNetSync.NetPresence.CULLED
+		if index >= 0:
+			presence = PlayerNetSync.NetPresence.VISIBLE if (flags[index] & FLAG_VISIBLE) != 0 else PlayerNetSync.NetPresence.AUDIBLE
+		player.net_sync.set_net_presence(presence)
 
 ## Builds the packet a given peer would receive right now (also used by tooling).
 func build_packet(peer_id: int) -> Array:
