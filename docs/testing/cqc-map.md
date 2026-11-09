@@ -14,21 +14,29 @@ The generator uses `round_map_template.tscn` and normalizes generated resource/n
 
 ![Generated CQC 1 layout](../../scenes/maps/cqc_1/preview.png)
 
-The 200×130-cell map is 3200×2080 px. Dark walls are hard, slate walls reinforced, light walls soft, tan gaps doors, orange markers attacker spawns, blue markers defender spawns and teal the objective. There are six rooms, three exterior doors, six interior doors and five spawns per role. Wall materials only affect how much sound passes; no wall can be destroyed. Outdoor cover instances retain their own collision; their fog occluders are derived from those shapes. All structural walls use one tile layer and its automatic fog mirror.
+The 200×130-cell map is 3200×2080 px and plays as an indoor fight. Dark walls are hard, slate walls reinforced, light walls soft, tan gaps doors, orange markers attacker spawns, blue markers defender spawns, teal the objective and grey blocks props.
+
+- **Attackers** spawn on the street along the west edge, behind cars, a truck, crates and fences, and must flank to the house's four exterior doors (two on the north face, two on the south face; the west facade has none).
+- **The house** (x 40–190, y 12–118) is a 6×4 grid of rooms about 24×25 cells, joined by 26 interior doors placed so that no straight line runs through a chain of doorways. Every room is reachable, with several loops.
+- **Defenders** spawn in the east rooms around the **objective room** (east column, second row; 15×15-cell zone), which has three approaches.
+- **Furniture** (sofas, coffee tables, TV stands, dining sets, kitchen counters; 13 pieces) blocks movement only. **Cover** (12 crates, 3 cars, 2 trucks) and hard fence segments break up the street and the yards round the house.
+
+Wall materials only affect how much sound passes; no wall can be destroyed. All structural walls use one tile layer and its automatic fog mirror.
+
+The layout was tuned against the same rules as the tests: a collision-clear grid route from every attacker spawn, a sampled open-door sight scan and spawn privacy. Door positions in parallel walls are offset (one near each end of a room) because aligned doorways create the long lines.
 
 ## Measured tuning
 
-The player scene overrides the controller's base speed: normal running is **250 px/s**. Layout timing uses the scene value.
+The player scene overrides the controller's base speed: normal running is **250 px/s**.
 
 | Measurement | Result |
 |---|---|
-| Collision-clear grid routes, five attacker spawns to objective centre, doors open | 17.44 / 17.60 / 17.76 / 18.14 / 18.53 s |
-| Actual normal puppet input through the server movement/collision pipeline, from spawn `(14, 46)` | **17.87 s** in the graphical host/client run |
-| Longest sampled open-door sight line | **1434.34 px**, below the 1440 px target |
-| Sight scan | Actual Environment collision; 32 px sampling grid, 256 ray directions; all doors open |
+| Collision-clear grid routes, five attacker spawns to objective centre, doors open | 16.45 / 16.75 / 16.37 / 15.98 / 15.60 s |
+| Actual normal puppet input through the server movement/collision pipeline, from spawn `(5, 59)` | **17.17 s** in the headless host/client run |
+| Longest sampled open-door sight line (2-cell grid, 128 directions, 3 px ray steps) | about **1350 px**, below the 1440 px target |
 | Opposing spawn visibility | Every attacker/defender spawn pair has blocking Environment cover |
 
-The approaches were shortened against the actual running speed, then sight breaks and an offset objective doorway removed long diagonal/open-door shooting corridors. Route tests allow doors to be open; interaction time, firefights and human route choice are additional to the running measurements. The route helper drives test puppets only and adds no gameplay AI.
+Fence gaps in the yards are 4 cells (64 px): a 3-cell gap stopped the route puppet on the player capsule.
 
 ## Automated and rendered coverage
 

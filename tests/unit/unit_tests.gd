@@ -690,8 +690,13 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 	var world := packed.instantiate()
 	add_child(world)
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
-	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(188, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(150, 50)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
-	check(world.get_node("Map/Doors").get_child_count() == 9, "expected three exterior and six interior doors")
+	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(190, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(65, 50)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
+	var exterior := 0
+	for door in world.get_node("Map/Doors").get_children():
+		var cell := walls.local_to_map(walls.to_local((door as Node2D).global_position))
+		if cell.y in [12, 118] or cell.x in [40, 190]:
+			exterior += 1
+	check(world.get_node("Map/Doors").get_child_count() == 30 and exterior == 4, "expected four exterior and 26 interior doors (%d exterior)" % exterior)
 	var cover := 0
 	var furniture := 0
 	for prop in world.get_node("Map/Props").get_children():
@@ -700,8 +705,8 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 			cover += 1
 		elif body != null and body.collision_layer == 2 and body.get_node_or_null("FogOccluder") == null:
 			furniture += 1 # blocks movement only: no bullets, sight or fog occlusion
-	check(cover == 15, "outdoor cover instances missing")
-	check(furniture == 5, "house furniture missing or blocking sight (%d)" % furniture)
+	check(cover == 17, "outdoor cover instances missing")
+	check(furniture == 13, "house furniture missing or blocking sight (%d)" % furniture)
 	check(world.get_meta("layout_size") == Vector2i(200, 130), "CQC metrics metadata missing")
 	world.queue_free()
 	await get_tree().process_frame
@@ -745,7 +750,7 @@ func test_map_validation_catches_blocked_spawns_and_stale_cells() -> void:
 	check("\n".join(validator.validate(world)).contains("Blocked spawn"), "validation accepted a spawn inside the boundary")
 	point.position = original
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
-	walls.destroy_cells([Vector2i(134, 50)])
+	walls.destroy_cells([Vector2i(65, 50)])
 	check("\n".join(validator.validate(world)).contains("stale"), "validation accepted generated scene drift")
 	world.queue_free()
 	await get_tree().process_frame
