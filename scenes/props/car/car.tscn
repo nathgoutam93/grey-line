@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://c44afg3fumb4"]
+[gd_scene format=3 uid="uid://c44afg3fumb4"]
 
 [ext_resource type="Texture2D" uid="uid://wngyceerep68" path="res://scenes/props/car/car.png" id="1_lxo03"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="pp_script"]
+[ext_resource type="Resource" path="res://resources/perspective/car_stack.tres" id="pp_profile"]
 
 [node name="Car" type="StaticBody2D"]
 
@@ -9,3 +11,7 @@ texture = ExtResource("1_lxo03")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 polygon = PackedVector2Array(-210, -83, 2, -100, 95, -112, 205, -78, 230, -2, 214, 66, 93, 108, 20, 92, -207, 83, -234, -1)
+
+[node name="Perspective" type="MeshInstance2D" parent="Car" unique_id=667005111]
+script = ExtResource("pp_script")
+profile = ExtResource("pp_profile")

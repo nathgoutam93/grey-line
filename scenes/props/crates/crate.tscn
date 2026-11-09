@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://drl1y3lb8tswy"]
+[gd_scene format=3 uid="uid://drl1y3lb8tswy"]
 
 [ext_resource type="Texture2D" uid="uid://d2gm3fdf42eju" path="res://scenes/props/crates/metal_box.png" id="1_874ai"]
 [ext_resource type="Script" path="res://scenes/props/crates/breakable_prop.gd" id="2_breakable"]
 [ext_resource type="AudioStream" uid="uid://bdcx3r6kem8hg" path="res://assets/sounds/equip2.mp3" id="3_break_sound"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="pp_script"]
+[ext_resource type="Resource" path="res://resources/perspective/crate_box.tres" id="pp_profile"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0xykb"]
 size = Vector2(505, 493)
@@ -17,3 +19,7 @@ texture = ExtResource("1_874ai")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-0.5, 2.5)
 shape = SubResource("RectangleShape2D_0xykb")
+
+[node name="Perspective" type="MeshInstance2D" parent="Sprite2D" unique_id=978798538]
+script = ExtResource("pp_script")
+profile = ExtResource("pp_profile")

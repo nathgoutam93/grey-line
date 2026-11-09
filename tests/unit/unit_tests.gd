@@ -123,6 +123,72 @@ func test_game_mode_lookup_uses_group() -> void:
 	mode.queue_free()
 	await get_tree().process_frame
 
+func _mesh_custom(mesh: ArrayMesh) -> PackedFloat32Array:
+	return mesh.surface_get_arrays(0)[Mesh.ARRAY_CUSTOM0]
+
+func test_height_mesh_sides_face_outward_for_either_winding() -> void:
+	for square in [PackedVector2Array([Vector2(0, 0), Vector2(10, 0), Vector2(10, 10), Vector2(0, 10)]), PackedVector2Array([Vector2(0, 0), Vector2(0, 10), Vector2(10, 10), Vector2(10, 0)])]:
+		var builder := HeightMeshBuilder.new()
+		builder.add_prism_sides(square, 30.0, Color.GRAY)
+		var mesh := builder.build()
+		var vertices: PackedVector2Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var custom := _mesh_custom(mesh)
+		check(vertices.size() == 24, "prism of 4 edges did not make 4 quads")
+		for face in 4:
+			var first := face * 6
+			var midpoint := (vertices[first] + vertices[first + 1]) * 0.5
+			var normal := Vector2(custom[first * 4 + 1], custom[first * 4 + 2])
+			check(normal.dot(midpoint - Vector2(5, 5)) > 0.0 and custom[first * 4 + 3] == 0.0, "side face normal points inward or is textured")
+		var heights: Array[float] = []
+		for i in vertices.size():
+			heights.append(custom[i * 4])
+		check(heights.min() == 0.0 and heights.max() == 30.0, "side faces do not span floor to height")
+
+func _profile(kind: PerspectiveProfile.Kind, height: float) -> PerspectiveProfile:
+	var profile := PerspectiveProfile.new()
+	profile.kind = kind
+	profile.height = height
+	return profile
+
+func test_perspective_sprite_profiles_build_boxes_stacks_and_slices() -> void:
+	var image := Image.create(32, 16, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.2, 0.4, 0.6, 1.0))
+	var sprite := Sprite2D.new()
+	sprite.texture = ImageTexture.create_from_image(image)
+	var box := _mesh_custom(PerspectiveSprite.build_mesh(sprite, _profile(PerspectiveProfile.Kind.BOX, 30.0)))
+	check(box.size() == 30 * 4, "box is not 4 sides and a roof")
+	var roof_textured := true
+	for i in range(24, 30):
+		roof_textured = roof_textured and box[i * 4] == 30.0 and box[i * 4 + 3] == 1.0
+	check(roof_textured and box[3] == 0.0, "box roof is not the textured sprite at full height")
+	check(PerspectiveSprite.average_color(sprite.texture).is_equal_approx(Color(0.2, 0.4, 0.6, 1.0)), "side colour is not the sprite's average")
+	var stack_profile := _profile(PerspectiveProfile.Kind.STACK, 40.0)
+	stack_profile.layers = 5
+	var stack := PerspectiveSprite.build_mesh(sprite, stack_profile)
+	var stack_custom := _mesh_custom(stack)
+	var colors: PackedColorArray = stack.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	check(stack_custom.size() == 5 * 6 * 4 and stack_custom[0] == 0.0 and stack_custom[(5 * 6 - 1) * 4] == 40.0, "stack layers do not run from the floor to the top")
+	check(colors[0].r < colors[colors.size() - 1].r and colors[colors.size() - 1].is_equal_approx(Color.WHITE), "stack does not darken towards the floor")
+	var slices := _profile(PerspectiveProfile.Kind.SLICES, 24.0)
+	slices.slice_count = 4
+	var uvs: PackedVector2Array = PerspectiveSprite.build_mesh(sprite, slices).surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+	check(uvs.size() == 24 and is_equal_approx(uvs[0].x, 0.0) and is_equal_approx(uvs[18].x, 0.75), "slices do not map one strip frame per layer")
+	sprite.free()
+
+func test_props_and_round_maps_use_perspective_visuals() -> void:
+	for path in ["res://scenes/props/crates/crate.tscn", "res://scenes/props/crates/sci_fi_crate.tscn", "res://scenes/props/container/container.tscn", "res://scenes/props/door/door.tscn", "res://scenes/props/car/car.tscn", "res://scenes/props/truck/truck.tscn"]:
+		var prop := (load(path) as PackedScene).instantiate()
+		var lifted := prop.find_children("*", "MeshInstance2D", true, false).filter(func(node: Node): return node is PerspectiveSprite)
+		var visual := lifted[0] as PerspectiveSprite if not lifted.is_empty() else null
+		check(visual != null and visual.profile != null and visual.profile.height > 0.0 and (visual.get_parent() as Sprite2D) != null and (visual.get_parent() as Sprite2D).texture != null, "%s has no PerspectiveSprite under a textured sprite" % path)
+		prop.free()
+	var map := (load("res://scenes/maps/cqc_1/cqc_1.tscn") as PackedScene).instantiate()
+	check(map.get_node_or_null("Map/PerspectiveWalls") is PerspectiveWalls, "cqc_1 walls are not drawn in perspective")
+	map.free()
+	var cells := {Vector2i(0, 0): 0, Vector2i(1, 0): 0, Vector2i(2, 0): 1, Vector2i(0, 1): 0}
+	var runs := PerspectiveWalls.runs(cells, Vector2i(1, 0), func(_cell: Vector2i) -> bool: return true)
+	check(runs == [[Vector2i(0, 0), Vector2i(1, 0), 0], [Vector2i(2, 0), Vector2i(2, 0), 1], [Vector2i(0, 1), Vector2i(0, 1), 0]], "wall runs did not merge by row and material: %s" % [runs])
+
 func test_action_lock_blocks_movement_but_keeps_aim() -> void:
 	var player := await _spawn_player(Vector2(-2400, -2400))
 	player.actions_locked = true

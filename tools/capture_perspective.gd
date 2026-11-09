@@ -1,12 +1,12 @@
 extends Node
 
-## Renders cqc_1 from a few camera positions with and without perspective
-## walls. Run with a window (not --headless):
-##   godot --path . res://tools/capture_perspective_walls.tscn -- --ephemeral-profile --out=/tmp/walls
+## Renders cqc_1 from a few camera positions with flat and perspective walls
+## and props. Run with a window (not --headless):
+##   godot --path . res://tools/capture_perspective.tscn -- --ephemeral-profile --out=/tmp/walls
 
 const MAP := "res://scenes/maps/cqc_1/cqc_1.tscn"
 const CHARACTER := "res://components/skeletal_mesh/character_skeletal.tscn"
-const SHOTS := [["door", Vector2(2272, 760)], ["spawn", Vector2(420, 700)], ["corridor", Vector2(2900, 1300)]]
+const SHOTS := [["door", Vector2(2272, 760)], ["spawn", Vector2(420, 700)], ["corridor", Vector2(2900, 1300)], ["vehicles", Vector2(1220, 720)], ["crate", Vector2(2600, 480)]]
 
 func _ready() -> void:
 	_run.call_deferred()
@@ -23,7 +23,9 @@ func _run() -> void:
 	if fog != null:
 		fog.visible = false
 	var map := world.get_node("Map") as Node2D
-	var walls := map.get_node("PerspectiveWalls") as PerspectiveWalls
+	var door := map_door(world)
+	if door != null:
+		door.set_state_local(Door.State.OPEN) # an open door shows the rotated box
 	var hud := world.find_child("RoundHud", true, false) as CanvasItem
 	if hud != null:
 		hud.hide()
@@ -46,8 +48,7 @@ func _run() -> void:
 		camera.force_update_scroll()
 		var images := {}
 		for mode in ["3d", "flat"]:
-			walls.visible = mode == "3d"
-			(map.get_node("DestructibleWalls") as CanvasItem).self_modulate.a = 0.0 if mode == "3d" else 1.0
+			_set_lifted(map, mode == "3d")
 			for _i in range(4):
 				await get_tree().process_frame
 			RenderingServer.force_draw(false)
@@ -63,3 +64,15 @@ func _run() -> void:
 		compare.save_png(path)
 		print("saved ", path)
 	get_tree().quit()
+
+## Shows the perspective meshes (walls and props) or the flat originals.
+func _set_lifted(map: Node, lifted: bool) -> void:
+	(map.get_node("DestructibleWalls") as CanvasItem).self_modulate.a = 0.0 if lifted else 1.0
+	for node in map.find_children("*", "MeshInstance2D", true, false):
+		if node is PerspectiveWalls or node is PerspectiveSprite:
+			(node as CanvasItem).visible = lifted
+			if node is PerspectiveSprite:
+				(node.get_parent() as CanvasItem).self_modulate.a = 0.0 if lifted else 1.0
+
+func map_door(world: Node) -> Door:
+	return world.get_node_or_null("Map/Doors/Door1") as Door

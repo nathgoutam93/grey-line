@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scenes/props/door/door.gd" id="1_door"]
 [ext_resource type="PackedScene" path="res://components/interactable/interactable.tscn" id="2_interactable"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="pp_script"]
+[ext_resource type="Resource" path="res://resources/perspective/door_box.tres" id="pp_profile"]
 
 [sub_resource type="RectangleShape2D" id="DoorShape"]
 size = Vector2(64, 8)
@@ -26,3 +28,7 @@ shape = SubResource("DoorShape")
 texture = SubResource("DoorTexture")
 
 [node name="Interactable" parent="." unique_id=1562840379 instance=ExtResource("2_interactable")]
+
+[node name="Perspective" type="MeshInstance2D" parent="Sprite2D" unique_id=559388197]
+script = ExtResource("pp_script")
+profile = ExtResource("pp_profile")

@@ -147,3 +147,14 @@ pointing/emulate_touch_from_mouse=true
 
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
+
+[shader_globals]
+
+perspective_camera={
+"type": "vec2",
+"value": Vector2(0, 0)
+}
+perspective_eye_height={
+"type": "float",
+"value": 700.0
+}
