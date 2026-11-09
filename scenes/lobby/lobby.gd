@@ -12,6 +12,7 @@ func _ready() -> void:
 	_view.switch_team_requested.connect(_on_switch_team_pressed)
 	_view.add_bot_requested.connect(func(): MultiplayerSession.add_bot())
 	_view.remove_bot_requested.connect(_on_remove_bot_pressed)
+	_view.map_cycle_requested.connect(MultiplayerSession.cycle_selected_map)
 	MultiplayerSession.enter_lobby()
 	_view.render(MultiplayerSession.get_lobby_sync_payload())
 

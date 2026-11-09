@@ -41,10 +41,16 @@ var objective: ObjectiveZone
 var spectate_target: Dictionary = {}
 var local_spectate_target := 0
 var _view_instance_id := 0
+var round_score_label: Label
+var role_label: Label
+var phase_label: Label
+var objective_bar: ProgressBar
+var spectate_button: Button
 
 func _ready() -> void:
 	add_to_group("game_mode")
 	_clock_tick = NetworkTick.tick
+	_build_round_hud()
 	if timer_touch_toggle_button != null:
 		timer_touch_toggle_button.pressed.connect(_toggle_stats)
 	if leave_game_button != null:
@@ -258,11 +264,82 @@ func _process(_delta: float) -> void:
 func _refresh_hud() -> void:
 	if match_timer_label != null:
 		var seconds := displayed_seconds()
-		match_timer_label.text = "Waiting for players" if phase == Phase.WAITING else "%02d:%02d" % [seconds / 60, seconds % 60]
+		match_timer_label.text = "--:--" if phase == Phase.WAITING else "%02d:%02d" % [seconds / 60, seconds % 60]
 	if leaderboard != null:
 		leaderboard.visible = _stats_visible and phase != Phase.MATCH_END
 	if leave_game_button != null:
 		leave_game_button.visible = _stats_visible and phase != Phase.MATCH_END
+	if round_score_label == null:
+		return
+	round_score_label.text = "ALPHA %d  –  %d BRAVO" % [team_scores[Teams.ALPHA], team_scores[Teams.BRAVO]]
+	var team := MultiplayerSession.get_team(multiplayer.get_unique_id())
+	role_label.text = "%s  /  %s" % [Teams.display_name(team).to_upper(), "ATTACK" if role_of(team) == Role.ATTACK else "DEFEND"] if team != Teams.NONE else "SPECTATOR"
+	role_label.modulate = Teams.COLORS.get(team, Color.WHITE)
+	match phase:
+		Phase.WAITING: phase_label.text = "Waiting for players"
+		Phase.FREEZE: phase_label.text = "ROUND %d  /  GET READY" % (round_index + 1)
+		Phase.LIVE: phase_label.text = "ROUND %d  /  LIVE" % (round_index + 1)
+		Phase.ROUND_END: phase_label.text = Teams.display_name(winner_team).to_upper() + " WINS THE ROUND"
+		Phase.MATCH_END: phase_label.text = "MATCH COMPLETE"
+	objective_bar.visible = objective_progress > 0.0 and phase in [Phase.LIVE, Phase.ROUND_END]
+	objective_bar.value = objective_progress
+	spectate_button.visible = local_spectate_target != 0 and _living_player(multiplayer.get_unique_id()) == null
+	spectate_button.text = "Watching %s  ·  Next teammate [F]" % MultiplayerSession.get_player_name(local_spectate_target)
+
+func _build_round_hud() -> void:
+	var panel := PanelContainer.new()
+	panel.name = "RoundHud"
+	$MatchResultLayer/Control.add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	panel.offset_left = -235
+	panel.offset_right = 235
+	panel.offset_top = 46
+	panel.offset_bottom = 166
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.035, 0.07, 0.1, 0.94)
+	style.border_color = Color(0.2, 0.32, 0.37)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(10)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	panel.add_theme_stylebox_override("panel", style)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 5)
+	panel.add_child(column)
+	round_score_label = _hud_label("RoundScore", 23)
+	role_label = _hud_label("RoundRole", 15)
+	phase_label = _hud_label("RoundPhase", 13)
+	column.add_child(round_score_label)
+	column.add_child(role_label)
+	column.add_child(phase_label)
+	objective_bar = ProgressBar.new()
+	objective_bar.name = "ObjectiveProgress"
+	objective_bar.max_value = 1.0
+	objective_bar.step = 0.0
+	objective_bar.show_percentage = false
+	objective_bar.custom_minimum_size.y = 12
+	objective_bar.tooltip_text = "Objective capture"
+	column.add_child(objective_bar)
+	spectate_button = Button.new()
+	spectate_button.name = "SpectateNext"
+	spectate_button.pressed.connect(_on_spectate_next_pressed)
+	column.add_child(spectate_button)
+	_refresh_hud()
+
+func _hud_label(label_name: String, size: int) -> Label:
+	var label := Label.new()
+	label.name = label_name
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", size)
+	return label
+
+func _on_spectate_next_pressed() -> void:
+	if multiplayer.is_server():
+		cycle_spectate(multiplayer.get_unique_id())
+	else:
+		request_spectate_next.rpc_id(1)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pickup") and _living_player(multiplayer.get_unique_id()) == null:

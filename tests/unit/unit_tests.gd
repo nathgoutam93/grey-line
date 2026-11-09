@@ -334,6 +334,8 @@ func test_objective_counts_contest_pause_and_accumulated_capture() -> void:
 		mode._clock_tick += 1
 		mode._tick_objective()
 	var saved := mode.objective_progress
+	mode._refresh_hud()
+	check(mode.objective_bar.visible and is_equal_approx(mode.objective_bar.value, saved), "HUD did not show objective progress")
 	defender.global_position = zone.global_position + Vector2(40, 0)
 	await _flush_area_monitoring()
 	check(zone.living_counts(Teams.ALPHA) == Vector2i(1, 1), "contested fixture missing a defender")
@@ -368,6 +370,7 @@ func test_round_halftime_and_first_to_two_match_end() -> void:
 			break
 	check(mode.phase == RoundGameMode.Phase.FREEZE and mode.attacking_team == Teams.BRAVO and mode.round_index == 1, "halftime did not swap roles after the first finished round")
 	check(mode.role_of(Teams.ALPHA) == RoundGameMode.Role.DEFEND, "fixed Alpha team did not become defender")
+	check(mode.role_label.text.contains("DEFEND") and mode.round_score_label.text.contains("ALPHA 1"), "HUD did not refresh role or round score at halftime")
 	mode._on_network_tick(mode.phase_end_tick)
 	mode._finish_round(Teams.ALPHA)
 	mode._on_network_tick(mode.phase_end_tick)
@@ -427,6 +430,44 @@ func test_spectating_uses_teammate_visibility_and_cycles_only_allies() -> void:
 	check(not mode.spectate_target.has(-2), "living opponent could request spectator information")
 	WorldSnapshots._last_visible_tick.clear()
 	await _free_round_fixture(fixture)
+
+func test_rounds_dev_map_loads_role_spawns_and_clear_objective() -> void:
+	var saved_viewport := MaskViewProvider.viewport
+	var world := (load("res://scenes/maps/map_1/map_1_rounds.tscn") as PackedScene).instantiate()
+	add_child(world)
+	await _flush_area_monitoring()
+	var mode := world.get_node("RoundGameMode") as RoundGameMode
+	check(mode != null and world.get_node("DestructionService") is DestructionService, "round map missing mode or destruction service")
+	check(world.get_node("Map/SpawnPoints/AttackerSpawns").get_child_count() == 3 and world.get_node("Map/SpawnPoints/DefenderSpawns").get_child_count() == 3, "dev map did not split existing role spawns")
+	var zone := world.get_node("Map/ObjectiveZone") as ObjectiveZone
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = (zone.get_node("CollisionShape2D") as CollisionShape2D).shape
+	query.transform = zone.global_transform
+	query.collision_mask = 1
+	var hits := get_viewport().world_2d.direct_space_state.intersect_shape(query, 8)
+	check(hits.is_empty(), "dev objective overlaps environment: %s" % [hits])
+	check(mode.phase_label.text == "Waiting for players" and not mode.objective_bar.visible, "waiting HUD or hidden empty objective bar wrong")
+	world.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(saved_viewport)
+
+func test_lobby_map_picker_is_host_only_and_updates_mode_title() -> void:
+	var view := LobbyView.new()
+	add_child(view)
+	var payload := {"player_names": {1: "Host", 2: "Client"}, "player_avatar_ids": {}, "player_teams": {1: Teams.ALPHA, 2: Teams.BRAVO}, "is_connected": true, "is_server": true, "local_peer_id": 1, "match_started": false, "map_scene_path": MultiplayerSession.MAPS[1]}
+	view.render(payload)
+	var picker := view.find_child("CycleMap", true, false) as Button
+	var changes: Array = []
+	view.map_cycle_requested.connect(func(): changes.append(true))
+	check(picker.visible and (view.find_child("ModeTitle", true, false) as Label).text == "ATTACK / DEFEND", "host map picker or round-mode title missing")
+	picker.pressed.emit()
+	check(changes.size() == 1, "map picker did not emit host selection action")
+	payload["is_server"] = false
+	payload["local_peer_id"] = 2
+	view.render(payload)
+	check(not picker.visible, "client can see a map-change control")
+	view.queue_free()
+	await get_tree().process_frame
 
 func test_weapon_wall_damage_survives_pickups() -> void:
 	var weapon := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon

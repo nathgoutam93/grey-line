@@ -35,6 +35,7 @@ const DEFAULT_AVATAR_ID := "avatar_01"
 const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
 const RPC_CHANNEL_UI := 2
+const MAPS: Array[String] = ["res://scenes/maps/map_1/map_1.tscn", "res://scenes/maps/map_1/map_1_rounds.tscn"]
 
 static var persisted_player_names := {}
 static var persisted_player_avatar_ids := {}
@@ -199,10 +200,20 @@ func return_to_lobby_after_match() -> void:
 
 func set_selected_map_scene_path(path: String) -> void:
 	var cleaned_path := path.strip_edges()
-	if cleaned_path == "":
+	if not NetUtil.has_active_peer(multiplayer) or not multiplayer.is_server() or match_started or cleaned_path not in MAPS:
 		return
-	map_scene_path = cleaned_path
-	persisted_map_scene_path = cleaned_path
+	_selected_map_event.rpc(cleaned_path)
+
+func cycle_selected_map() -> void:
+	var index := MAPS.find(map_scene_path)
+	set_selected_map_scene_path(MAPS[(index + 1) % MAPS.size()])
+
+@rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
+func _selected_map_event(path: String) -> void:
+	if path not in MAPS:
+		return
+	map_scene_path = path
+	persisted_map_scene_path = path
 	_emit_lobby_sync()
 
 func get_lobby_sync_payload() -> Dictionary:
@@ -350,6 +361,7 @@ func request_lobby_sync() -> void:
 	if peer_id <= 0:
 		return
 	_sync_lobby_data_to_all.rpc_id(peer_id, player_names, player_avatar_ids, player_teams, match_started)
+	_selected_map_event.rpc_id(peer_id, map_scene_path)
 
 func _open_lobby_scene() -> void:
 	_persist_runtime_state()

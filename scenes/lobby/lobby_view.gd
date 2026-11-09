@@ -13,6 +13,7 @@ signal start_requested
 signal switch_team_requested
 signal add_bot_requested
 signal remove_bot_requested
+signal map_cycle_requested
 
 var _rosters: Dictionary = {}
 var _counts: Dictionary = {}
@@ -28,6 +29,9 @@ var _switch: Button
 var _host_tools: HBoxContainer
 var _remove_bot: Button
 var _content: GridContainer
+var _mode_title: Label
+var _mode_name: Label
+var _map_cycle: Button
 
 func _ready() -> void:
 	_avatar_catalog = PlayerProfile.get_avatar_catalog()
@@ -58,7 +62,9 @@ func _build() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	title.add_child(_label("GREYLINE / MULTIPLAYER", 13, ACCENT))
-	title.add_child(_label("TEAM DEATHMATCH", 28, TEXT))
+	_mode_title = _label("TEAM DEATHMATCH", 28, TEXT)
+	_mode_title.name = "ModeTitle"
+	title.add_child(_mode_title)
 	_connection = _label("MATCH LOBBY", 13, MUTED)
 	title.add_child(_connection)
 	var map_card := PanelContainer.new()
@@ -79,7 +85,12 @@ func _build() -> void:
 	map_text.add_child(_label("SELECTED MAP", 11, MUTED))
 	_map_name = _label("Map 1", 20, TEXT)
 	map_text.add_child(_map_name)
-	map_text.add_child(_label("Team deathmatch", 12, MUTED))
+	_mode_name = _label("Team deathmatch", 12, MUTED)
+	_mode_name.name = "MapMode"
+	map_text.add_child(_mode_name)
+	_map_cycle = _button("Change map", "CycleMap")
+	_map_cycle.pressed.connect(func(): map_cycle_requested.emit())
+	map_text.add_child(_map_cycle)
 
 	_content = GridContainer.new()
 	_content.columns = 2
@@ -201,6 +212,10 @@ func render(payload: Dictionary) -> void:
 	_connection.text = "%d CONNECTED  /  %s" % [names.size(), "HOST LOBBY" if host else "PLAYER LOBBY"]
 	var scene_file := String(payload.get("map_scene_path", "")).get_file().trim_suffix(".tscn")
 	_map_name.text = scene_file.replace("_", " ").capitalize() if not scene_file.is_empty() else "No map"
+	var rounds := scene_file == "map_1_rounds"
+	_mode_title.text = "ATTACK / DEFEND" if rounds else "TEAM DEATHMATCH"
+	_mode_name.text = "One life per round" if rounds else "Team deathmatch"
+	_map_cycle.visible = connected and host and not started
 	var assigned := int(counts[Teams.ALPHA]) + int(counts[Teams.BRAVO]) == names.size()
 	var balanced := assigned and absi(int(counts[Teams.ALPHA]) - int(counts[Teams.BRAVO])) <= 1
 	_balance.text = "%d VS %d  ·  %s" % [counts[Teams.ALPHA], counts[Teams.BRAVO], "Teams balanced" if balanced else "Waiting for balanced teams"]
