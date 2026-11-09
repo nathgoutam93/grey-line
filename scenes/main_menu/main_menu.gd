@@ -19,6 +19,7 @@ const MAP_1_THUMBNAIL_PATH := "res://scenes/maps/map_1/_assets/map_f.png"
 @onready var _host_button: Button = get_node_or_null("UI/Control/HBoxContainer/host")
 
 var _selected_map_scene_path := MAP_1_SCENE_PATH
+var _rejoin_button: Button
 
 func _ready() -> void:
 	Input.emulate_mouse_from_touch = true
@@ -73,6 +74,19 @@ func _connect_action_buttons() -> void:
 		_join_button.pressed.connect(_on_join_pressed)
 	if _host_button != null and not _host_button.pressed.is_connected(_on_host_pressed):
 		_host_button.pressed.connect(_on_host_pressed)
+	# A match this player dropped out of (crash, lost connection) still holds
+	# their slot: offer to rejoin it with the saved ticket.
+	if _join_button != null and _rejoin_button == null:
+		_rejoin_button = Button.new()
+		_rejoin_button.name = "rejoin"
+		_rejoin_button.text = "Rejoin match"
+		_rejoin_button.custom_minimum_size = _join_button.custom_minimum_size
+		_rejoin_button.size_flags_horizontal = _join_button.size_flags_horizontal
+		_rejoin_button.pressed.connect(MultiplayerSession.rejoin_match)
+		_join_button.get_parent().add_child(_rejoin_button)
+		_join_button.get_parent().move_child(_rejoin_button, 0)
+	if _rejoin_button != null:
+		_rejoin_button.visible = MultiplayerSession.has_rejoin_ticket()
 
 func _on_join_pressed() -> void:
 	var manual_host := ""
@@ -90,6 +104,8 @@ func _on_main_menu_state_changed(status_text: String, manual_visible: bool) -> v
 		_discovery_status_label.text = status_text
 	if _hostname_input != null:
 		_hostname_input.visible = manual_visible
+	if _rejoin_button != null:
+		_rejoin_button.visible = MultiplayerSession.has_rejoin_ticket()
 
 func _on_map_card_pressed() -> void:
 	_apply_selected_map(MAP_1_SCENE_PATH)

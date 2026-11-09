@@ -72,18 +72,21 @@ func _ready():
 		call_deferred("_request_players_resync_delayed")
 		return
 
-	multiplayer.peer_connected.connect(_on_peer_connected)
-	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	MultiplayerSession.player_left.connect(_on_peer_disconnected)
+	MultiplayerSession.player_dropped.connect(_on_player_dropped)
+	MultiplayerSession.player_rejoined.connect(_on_player_rejoined)
 	MultiplayerSession.bot_added.connect(spawning.spawn_player_if_missing)
 	MultiplayerSession.bot_removed.connect(scoreboard.remove_peer)
 	_update_match_timer_ui.rpc(_format_match_time(match_time_remaining))
 	spawning.call_deferred("spawn_initial_connected_players")
 
 func _exit_tree() -> void:
-	if multiplayer.peer_connected.is_connected(_on_peer_connected):
-		multiplayer.peer_connected.disconnect(_on_peer_connected)
-	if multiplayer.peer_disconnected.is_connected(_on_peer_disconnected):
-		multiplayer.peer_disconnected.disconnect(_on_peer_disconnected)
+	if MultiplayerSession.player_left.is_connected(_on_peer_disconnected):
+		MultiplayerSession.player_left.disconnect(_on_peer_disconnected)
+	if MultiplayerSession.player_dropped.is_connected(_on_player_dropped):
+		MultiplayerSession.player_dropped.disconnect(_on_player_dropped)
+	if MultiplayerSession.player_rejoined.is_connected(_on_player_rejoined):
+		MultiplayerSession.player_rejoined.disconnect(_on_player_rejoined)
 
 func _process(delta: float) -> void:
 	if post_match_transition_started:
@@ -125,16 +128,30 @@ func _request_players_resync_delayed() -> void:
 	await get_tree().create_timer(RESYNC_REQUEST_DELAY_SECONDS).timeout
 	spawning.request_resync()
 
-func _on_peer_connected(id: int):
-	print("Peer connected: %d" % id)
-	_sync_match_state_to_peer(id)
+## A dropped player rejoined: same slot and stats, fresh life.
+func _on_player_rejoined(old_id: int, new_id: int) -> void:
+	print("Peer %d rejoined as %d" % [old_id, new_id])
+	scoreboard.rekey_peer(old_id, new_id)
+	_sync_match_state_to_peer(new_id)
 	if not match_ended:
-		spawning.spawn_player(id)
-		spawning.call_deferred("sync_existing_players_to_peer", id)
+		spawning.spawn_player(new_id)
+		spawning.call_deferred("sync_existing_players_to_peer", new_id)
 
 func _on_peer_disconnected(id: int):
-	print("Peer disconnected: %d" % id)
+	print("Peer left: %d" % id)
 	scoreboard.remove_peer(id)
+	_free_player(id)
+
+## The slot and stats are held; the body leaves so it is not a free kill. The
+## spawner does not respawn it while the peer is disconnected.
+func _on_player_dropped(id: int) -> void:
+	print("Peer dropped: %d" % id)
+	_free_player(id)
+
+func _free_player(id: int) -> void:
+	var player := map.get_node_or_null(str(id)) as PlayerController if is_instance_valid(map) else null
+	if player != null:
+		player.queue_free()
 
 func _sync_match_state_to_peer(peer_id: int) -> void:
 	scoreboard.send_stats_to(peer_id)
@@ -163,9 +180,15 @@ func _toggle_hud_menu_visibility() -> void:
 func _on_leave_game_pressed() -> void:
 	if post_match_scene_change_requested:
 		return
-	post_match_scene_change_requested = true
-	if not _change_to_post_match_scene():
-		post_match_scene_change_requested = false
+	LeaveMatchDialog.confirm(self, func():
+		if post_match_scene_change_requested or not is_inside_tree():
+			return
+		post_match_scene_change_requested = true
+		var mask_viewport := MaskViewProvider.viewport
+		if is_instance_valid(mask_viewport):
+			mask_viewport.player_camera = null
+			mask_viewport.player = null
+		MultiplayerSession.leave_match())
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _update_match_timer_ui(text: String) -> void:
@@ -210,6 +233,7 @@ func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary, team
 	if post_match_transition_started:
 		return
 	post_match_transition_started = true
+	MultiplayerSession.mark_match_over()
 	if teams_enabled:
 		winning_team = winner_id
 	else:

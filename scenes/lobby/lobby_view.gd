@@ -15,6 +15,7 @@ signal switch_team_requested
 signal add_bot_requested
 signal remove_bot_requested
 signal map_cycle_requested
+signal cancel_rejoin_requested
 
 var _rosters: Dictionary = {}
 var _counts: Dictionary = {}
@@ -22,6 +23,7 @@ var _team_tags: Dictionary = {}
 var _avatar_cache: Dictionary = {}
 var _avatar_catalog: Dictionary = {}
 var _map_thumbnail: TextureRect
+var _cancel_rejoin: Button
 var _map_name: Label
 var _connection: Label
 var _balance: Label
@@ -139,6 +141,10 @@ func _build() -> void:
 	_start = _button("START MATCH", "start_match", true)
 	_start.pressed.connect(func(): start_requested.emit())
 	actions.add_child(_start)
+	_cancel_rejoin = _button("Cancel", "CancelRejoin")
+	_cancel_rejoin.pressed.connect(func(): cancel_rejoin_requested.emit())
+	_cancel_rejoin.visible = false
+	actions.add_child(_cancel_rejoin)
 
 func _build_team(team: int) -> void:
 	var color: Color = Teams.COLORS[team]
@@ -235,6 +241,13 @@ func render(payload: Dictionary) -> void:
 	_switch.disabled = not Teams.can_switch(teams, local_id, wanted, ceili(int(payload.get("max_players", 8)) / 2.0))
 	_switch.tooltip_text = "Switching would unbalance the teams." if _switch.disabled else "Join " + Teams.display_name(wanted)
 	_host_tools.visible = OS.is_debug_build() and connected and host and not started
+	# A dropped player reconnecting to its running match (MultiplayerSession.rejoin).
+	var rejoining := bool(payload.get("rejoining", false))
+	_cancel_rejoin.visible = rejoining
+	if rejoining:
+		_status.text = String(payload.get("rejoin_status", "Rejoining match..."))
+		_switch.visible = false
+		_start.visible = false
 	_remove_bot.disabled = not ids.any(func(id: int): return id < 0)
 
 func _add_player(roster: VBoxContainer, id: int, player_name: String, avatar_id: String, team: int, local_id: int) -> void:

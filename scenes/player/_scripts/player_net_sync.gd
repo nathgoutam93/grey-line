@@ -71,6 +71,9 @@ var _carry_actions: PlayerInputFrame = null
 
 # Server state
 var bot_brain: BotBrain = null
+## Server: the owner dropped out of the match; the body stands still, keeps
+## its aim and can be killed (see MultiplayerSession.player_dropped).
+var owner_dropped := false
 var _input_queue: Dictionary = {}
 var _last_input: PlayerInputFrame
 var _last_applied_input_tick := 0
@@ -125,6 +128,7 @@ func reset_state() -> void:
 	_carry_actions = null
 	_input_queue.clear()
 	_last_input = null
+	owner_dropped = false
 	_last_applied_input_tick = 0
 	_last_authoritative_input_tick = 0
 	_lead_sample_tick = 0
@@ -239,7 +243,16 @@ func _server_tick(tick: int) -> void:
 			queued.merge_actions_from(frame)
 		frame = queued
 
-	if bot_brain != null:
+	if owner_dropped:
+		var idle := PlayerInputFrame.new()
+		idle.tick = tick
+		idle.view_tick = tick
+		if _last_input != null:
+			idle.aim_dir = _last_input.aim_dir
+		frame = idle
+		_last_applied_input_tick = tick
+		_last_input = frame
+	elif bot_brain != null:
 		frame = bot_brain.build_input_frame(tick)
 		_last_applied_input_tick = tick
 		_last_input = frame

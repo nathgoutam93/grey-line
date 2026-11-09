@@ -123,6 +123,47 @@ func test_game_mode_lookup_uses_group() -> void:
 	mode.queue_free()
 	await get_tree().process_frame
 
+func test_dropped_slot_is_held_rekeyed_on_rejoin_and_released_on_leave() -> void:
+	var session := MultiplayerSession
+	var saved := [session.player_names.duplicate(), session.player_teams.duplicate(), session.match_started]
+	var token := "0123456789abcdef0123456789abcdef"
+	session.player_names = {1: "host", 5: "dropper", 6: "leaver"}
+	session.player_teams = {1: Teams.ALPHA, 5: Teams.BRAVO, 6: Teams.BRAVO}
+	session.match_started = true
+	session._slot_tokens = {5: token, 6: "fedcba9876543210fedcba9876543210"}
+	session._on_peer_disconnected(5)
+	check(session.is_dropped(5) and session.holds_slot(5) and session.get_team(5) == Teams.BRAVO, "drop without Leave released the slot")
+	session._forfeited[6] = true
+	session._on_peer_disconnected(6)
+	check(not session.holds_slot(6) and not session.player_names.has(6) and not session.is_dropped(6), "confirmed Leave kept the slot")
+	check(session._slot_for_token("") == 0 and session._slot_for_token(token.substr(1)) == 0 and session._slot_for_token(token.to_upper()) == 0 and session._slot_for_token(token) == 5, "token lookup accepted a malformed or wrong token")
+	session._rekey_slot(5, 9)
+	check(session.current_id(5) == 9 and session.holds_slot(5) and session.get_player_name(5) == "dropper" and session.get_team(9) == Teams.BRAVO and not session.is_dropped(5) and session._slot_for_token(token) == 9, "rejoin did not move the slot to the new peer id")
+	session._on_peer_disconnected(5) # late timeout of the superseded connection
+	check(session.player_names.has(9), "old connection's disconnect released the rejoined slot")
+	session._rekey_slot(9, 11)
+	check(session.current_id(5) == 11 and session.current_id(9) == 11, "second rejoin left a stale alias")
+	session._clear_slot_state()
+	session.player_names = saved[0]
+	session.player_teams = saved[1]
+	session.match_started = saved[2]
+
+func test_dropped_body_stands_still_and_keeps_aim() -> void:
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	var moving := _move_frame(NetworkTick.tick, Vector2(1, 0))
+	moving.aim_dir = Vector2.UP
+	player.net_sync._input_queue[moving.tick] = moving
+	player.net_sync._server_tick(moving.tick)
+	var start := player.global_position
+	check(start.distance_to(Vector2(-2400, -2400)) > 0.1, "fixture input did not move the player")
+	player.net_sync.owner_dropped = true
+	for i in range(1, 6):
+		player.net_sync._server_tick(moving.tick + i)
+	check(player.global_position.distance_to(start) < 0.5, "dropped body kept moving with the last input")
+	check_near(player.rotation, -PI * 0.5, 0.001, "dropped body lost its aim")
+	player.queue_free()
+	await get_tree().process_frame
+
 func test_action_lock_blocks_movement_but_keeps_aim() -> void:
 	var player := await _spawn_player(Vector2(-2400, -2400))
 	player.actions_locked = true
