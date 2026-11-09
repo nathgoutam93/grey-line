@@ -40,6 +40,7 @@
 - Hearing multiplies the source radius by up to four Environment ray hits: SOFT 0.6, REINFORCED 0.4, HARD/static cover 0.35, and closed doors 0.7. Open/broken doors and destroyed cells no longer attenuate. The visibility suite checks both distant footsteps suppressed by cover and nearby footsteps still audible through it.
 - Destruction/door network fixtures live in `tests/fixtures/` and are instanced under `Map` with matching names on both peers. Run a network scenario without `--headless` and pass `--capture-dir=/tmp/greyline-step4` to save rendered client frames at its checkpoints. The shipped map retains its static exterior; these fixtures exercise Step 4 before the CQC map in Step 6.
 - Game modes inherit `MatchGameMode` for typed shared team/friendly-fire rules and join the `game_mode` group. Runtime and network-test lookup uses that group rather than the deathmatch scene node name.
+- `PlayerController.actions_locked` blocks movement/knockback while preserving aim, cancels active equipment use, and gates both authoritative and predicted fire/reload/switch/drop/interact actions. Weapon and throwable entry points also reject locked use; phase changes must set the lock on server and clients together.
 - Still do a focused manual playtest for gameplay/feel changes: main menu -> host/join lobby -> start match -> verify replication, combat, and UI sync, with at least two clients (host + one client) on separate machines for networking changes.
 
 ## Commit & Pull Request Guidelines

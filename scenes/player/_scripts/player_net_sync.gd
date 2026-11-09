@@ -285,6 +285,9 @@ func _proxy_tick(server_tick: int) -> void:
 func _apply_input_actions(frame: PlayerInputFrame) -> void:
 	player.is_slow_walking = frame.slow_walk_held
 	player.current_shot_intent = frame.shot_intent
+	if player.actions_locked:
+		cancel_locked_actions()
+		return
 
 	# The owning client predicts fire/reload/switch immediately; the server
 	# (authoritative) executes everything and broadcasts via _remote_* RPCs,
@@ -323,6 +326,10 @@ func _apply_input_actions(frame: PlayerInputFrame) -> void:
 	elif not frame.fire_held and _is_firing_net:
 		_is_firing_net = false
 		_remote_stop_fire.rpc()
+
+func cancel_locked_actions() -> void:
+	_is_firing_net = false
+	_deferred_actions.clear()
 
 func _predict_owner_actions(frame: PlayerInputFrame) -> void:
 	if frame.reload_pressed and frame.tick > _last_reload_request_tick:
@@ -615,7 +622,7 @@ func request_pickup(pickup_path: NodePath) -> void:
 
 @rpc("authority", "call_local", "unreliable", RPC_CHANNEL_UI)
 func _remote_interact(target_path: NodePath):
-	if not multiplayer.is_server() or target_path == NodePath(""):
+	if player.actions_locked or not multiplayer.is_server() or target_path == NodePath(""):
 		return
 	var interactable := get_node_or_null(target_path) as Interactable
 	if interactable != null:
@@ -630,6 +637,8 @@ func _remote_start_fire(shot_intent: int = PlayerController.ShotIntent.BODY):
 	_do_start_fire(shot_intent)
 
 func _do_start_fire(shot_intent: int) -> void:
+	if player.actions_locked:
+		return
 	if shot_intent != PlayerController.ShotIntent.BODY and shot_intent != PlayerController.ShotIntent.HEAD:
 		shot_intent = PlayerController.ShotIntent.BODY
 	player.current_shot_intent = shot_intent
@@ -659,12 +668,16 @@ func _remote_reload():
 	_do_reload()
 
 func _do_reload() -> void:
+	if player.actions_locked:
+		return
 	var weapon := player.get_current_equipment() as WeaponInstance
 	if weapon:
 		weapon.reload()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon():
+	if player.actions_locked:
+		return
 	if _is_predicting_owner():
 		return
 	if _defer_until_located(_remote_switch_weapon):
@@ -674,6 +687,8 @@ func _remote_switch_weapon():
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_previous():
+	if player.actions_locked:
+		return
 	if _is_predicting_owner():
 		return
 	if _defer_until_located(_remote_switch_weapon_previous):
@@ -683,6 +698,8 @@ func _remote_switch_weapon_previous():
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_slot(slot: int):
+	if player.actions_locked:
+		return
 	if _is_predicting_owner():
 		return
 	if _defer_until_located(_remote_switch_weapon_slot.bind(slot)):
@@ -692,6 +709,8 @@ func _remote_switch_weapon_slot(slot: int):
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_drop_weapon():
+	if player.actions_locked:
+		return
 	if _defer_until_located(_remote_drop_weapon):
 		return
 	_predicted_weapon_states.clear() # weapon instances change

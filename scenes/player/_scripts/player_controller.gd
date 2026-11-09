@@ -41,6 +41,23 @@ var current_shot_intent: int = ShotIntent.BODY
 var interactables: Array[Interactable]
 var is_dead := false
 var is_local_player := false
+var actions_locked := false:
+	set(value):
+		if actions_locked == value:
+			return
+		actions_locked = value
+		if value:
+			velocity = Vector2.ZERO
+			if movement_component != null:
+				movement_component.external_velocity = Vector2.ZERO
+				movement_component.is_moving = false
+			if equipment_manager != null:
+				for item in equipment_manager.equipped_items.values():
+					var equipment := item as EquipmentInstance
+					if equipment != null:
+						equipment.force_interrupt()
+			if net_sync != null:
+				net_sync.cancel_locked_actions()
 
 var _death_sequence_id := 0
 var _fog_material: Material
@@ -251,6 +268,7 @@ func _disable_hurtbox(hurtbox: Area2D) -> void:
 func reset_for_respawn() -> void:
 	_death_sequence_id += 1
 	is_dead = false
+	actions_locked = false
 	is_slow_walking = false
 	if net_sync:
 		net_sync.reset_state()

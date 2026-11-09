@@ -21,7 +21,9 @@ func simulate(input_frame: PlayerInputFrame) -> void:
 		return
 
 	var previous_position := player.position
-	var move_input := input_frame.move
+	var move_input := Vector2.ZERO if player.actions_locked else input_frame.move
+	if player.actions_locked:
+		external_velocity = Vector2.ZERO
 	var aim_dir := input_frame.aim_dir
 
 	if aim_dir.length_squared() > 0.0001:

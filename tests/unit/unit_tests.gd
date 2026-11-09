@@ -90,6 +90,72 @@ func test_game_mode_lookup_uses_group() -> void:
 	mode.queue_free()
 	await get_tree().process_frame
 
+func test_action_lock_blocks_movement_but_keeps_aim() -> void:
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	player.actions_locked = true
+	player.movement_component.external_velocity = Vector2(150, 0)
+	var frame := _move_frame(NetworkTick.tick, Vector2(0, -1))
+	frame.aim_dir = Vector2.UP
+	var start := player.global_position
+	PlayerSimulation.simulate(player, player.movement_component, frame)
+	check(player.global_position.is_equal_approx(start), "locked movement or knockback moved player")
+	check_near(player.rotation, -PI * 0.5, 0.001, "locked player could not aim")
+	check(not player.movement_component.is_moving and player.velocity.is_zero_approx(), "locked player retained movement state")
+	player.actions_locked = false
+	PlayerSimulation.simulate(player, player.movement_component, frame)
+	check(player.global_position.distance_to(start) > 0.1, "unlock did not restore movement")
+	player.queue_free()
+	await get_tree().process_frame
+
+func test_action_lock_cancels_and_blocks_combat_and_interactions() -> void:
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	var equipment := player.equipment_manager
+	var rifle := equipment.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance
+	equipment.current_slot = EquipmentManager.EquipmentSlot.PRIMARY
+	equipment.current_item = rifle
+	rifle.force_interrupt()
+	rifle.ammo_in_mag -= 5
+	rifle.is_firing = true
+	rifle.reload()
+	var door := (load("res://scenes/props/door/door.tscn") as PackedScene).instantiate() as Door
+	door.position = player.global_position + Vector2(40, 0)
+	add_child(door)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	player.actions_locked = true
+	var ammo := rifle.ammo_in_mag
+	check(not rifle.is_firing and not rifle.is_reloading, "locking failed to cancel firing or reload")
+	var frame := _move_frame(NetworkTick.tick + 1, Vector2.ZERO)
+	frame.fire_held = true
+	frame.reload_pressed = true
+	frame.slot_select = EquipmentManager.EquipmentSlot.SECONDARY
+	frame.drop_pressed = true
+	frame.interact_pressed = true
+	player.net_sync._apply_input_actions(frame)
+	player.net_sync._remote_switch_weapon_slot(EquipmentManager.EquipmentSlot.SECONDARY)
+	player.net_sync._remote_drop_weapon()
+	player.net_sync._remote_interact(door.get_node("Interactable").get_path())
+	rifle.start_use()
+	rifle.reload()
+	check(not rifle._single_shot() and rifle.ammo_in_mag == ammo, "locked weapon consumed ammo")
+	check(not rifle.is_firing and not rifle.is_reloading, "locked weapon started firing or reloading")
+	check(equipment.current_item == rifle and is_instance_valid(rifle), "locked input switched or dropped equipment")
+	check(door.state == Door.State.CLOSED, "locked input opened door")
+	var throwable := equipment.get_item_in_slot(EquipmentManager.EquipmentSlot.UTILITY_1) as ThrowableInstance
+	var throw_request := throwable._throw_request_id
+	throwable.start_use()
+	check(throwable._throw_request_id == throw_request, "locked player began throwing a grenade")
+	player.actions_locked = false
+	frame = _move_frame(NetworkTick.tick + 2, Vector2.ZERO)
+	frame.fire_held = true
+	player.net_sync._apply_input_actions(frame)
+	check(rifle.is_firing, "unlock did not restore fire input")
+	player.net_sync._remote_interact(door.get_node("Interactable").get_path())
+	check(door.state == Door.State.OPEN, "unlock did not restore interaction")
+	door.queue_free()
+	player.queue_free()
+	await get_tree().process_frame
+
 func test_weapon_wall_damage_survives_pickups() -> void:
 	var weapon := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon
 	weapon.wall_damage = 17
