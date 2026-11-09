@@ -17,6 +17,7 @@ const HARD_TIMEOUT_SECONDS := 90.0
 var role := ""
 var test_name := ""
 var port := 3300
+var selected_map := ""
 var results: TestLog
 var ticks := 0
 
@@ -32,6 +33,8 @@ func _ready() -> void:
 			test_name = arg.trim_prefix("--net-test=")
 		elif arg.begins_with("--port="):
 			port = int(arg.trim_prefix("--port="))
+		elif arg.begins_with("--map="):
+			selected_map = arg.trim_prefix("--map=")
 	results = TestLog.new("%s:%s" % [test_name, role])
 	if PlayerProfile.persistence_enabled:
 		# Never let a test rewrite the real profile.
@@ -58,6 +61,8 @@ func _start_host() -> void:
 	await multiplayer.peer_connected
 	await get_tree().create_timer(1.5).timeout
 	await run_host_lobby()
+	if not selected_map.is_empty():
+		MultiplayerSession.set_selected_map_scene_path(selected_map)
 	MultiplayerSession.start_match()
 	if not await wait_until(func(): return player(client_peer()) != null and player(1) != null, 15.0):
 		finish_with_failure("setup", "players did not spawn on the host")

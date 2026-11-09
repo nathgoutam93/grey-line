@@ -407,18 +407,17 @@ func test_round_halftime_and_first_to_two_match_end() -> void:
 func test_host_round_clock_cycles_without_client_timer_rpcs() -> void:
 	var fixture := await _round_fixture()
 	var mode: RoundGameMode = fixture.mode
-	mode.rounds_to_win = 2
 	mode.freeze_seconds = 0.1
 	mode.round_seconds = 0.1
 	mode.round_end_seconds = 0.1
 	mode._clock_tick = NetworkTick.tick
 	mode._publish_phase(RoundGameMode.Phase.FREEZE, 0.1)
 	NetworkTick.tick_started.connect(mode._on_network_tick)
-	var deadline := NetworkTick.tick + 180
+	var deadline := NetworkTick.tick + 300
 	while mode.phase != RoundGameMode.Phase.MATCH_END and NetworkTick.tick < deadline:
 		await get_tree().process_frame
-	check(mode.phase == RoundGameMode.Phase.MATCH_END and mode.round_index == 3, "host clock failed to cycle through freeze/live/end phases")
-	check(mode.team_scores[Teams.ALPHA] == 2 and mode.team_scores[Teams.BRAVO] == 1, "defender timeout wins or halftime roles wrong during real host ticks")
+	check(mode.phase == RoundGameMode.Phase.MATCH_END and mode.round_index == 7, "host clock failed to complete the default first-to-four match")
+	check(mode.team_scores[Teams.ALPHA] == 4 and mode.team_scores[Teams.BRAVO] == 3, "defender timeout wins or halftime after three rounds wrong during real host ticks")
 	await _free_round_fixture(fixture)
 
 func test_spectating_uses_teammate_visibility_and_cycles_only_allies() -> void:
