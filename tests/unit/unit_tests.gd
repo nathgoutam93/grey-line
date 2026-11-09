@@ -189,6 +189,22 @@ func test_props_and_round_maps_use_perspective_visuals() -> void:
 	var runs := PerspectiveWalls.runs(cells, Vector2i(1, 0), func(_cell: Vector2i) -> bool: return true)
 	check(runs == [[Vector2i(0, 0), Vector2i(1, 0), 0], [Vector2i(2, 0), Vector2i(2, 0), 1], [Vector2i(0, 1), Vector2i(0, 1), 0]], "wall runs did not merge by row and material: %s" % [runs])
 
+func test_furniture_blocks_movement_but_not_sight_or_bullets() -> void:
+	var sofa := (load("res://scenes/props/furniture/sofa.tscn") as PackedScene).instantiate() as StaticBody2D
+	sofa.position = Vector2(-2600, -2600)
+	sofa.scale = Vector2(0.5, 0.5)
+	add_child(sofa)
+	var player := await _spawn_player(Vector2(-2600, -2700))
+	await get_tree().physics_frame
+	for tick in range(90):
+		PlayerSimulation.simulate(player, player.movement_component, _move_frame(NetworkTick.tick + tick, Vector2.DOWN))
+	check(player.global_position.y < -2600 - 28.0, "player walked into the sofa (y=%.1f)" % player.global_position.y)
+	var ray := PhysicsRayQueryParameters2D.create(Vector2(-2600, -2700), Vector2(-2600, -2500), 1)
+	check(get_viewport().world_2d.direct_space_state.intersect_ray(ray).is_empty(), "sofa blocks Environment rays (sight, bullets, hearing)")
+	player.queue_free()
+	sofa.queue_free()
+	await get_tree().process_frame
+
 func test_action_lock_blocks_movement_but_keeps_aim() -> void:
 	var player := await _spawn_player(Vector2(-2400, -2400))
 	player.actions_locked = true
@@ -676,7 +692,16 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
 	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(188, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(150, 50)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
 	check(world.get_node("Map/Doors").get_child_count() == 9, "expected three exterior and six interior doors")
-	check(world.get_node("Map/Props").get_child_count() == 15, "outdoor cover instances missing")
+	var cover := 0
+	var furniture := 0
+	for prop in world.get_node("Map/Props").get_children():
+		var body := prop as CollisionObject2D
+		if body != null and body.collision_layer & 1 != 0:
+			cover += 1
+		elif body != null and body.collision_layer == 2 and body.get_node_or_null("FogOccluder") == null:
+			furniture += 1 # blocks movement only: no bullets, sight or fog occlusion
+	check(cover == 15, "outdoor cover instances missing")
+	check(furniture == 5, "house furniture missing or blocking sight (%d)" % furniture)
 	check(world.get_meta("layout_size") == Vector2i(200, 130), "CQC metrics metadata missing")
 	world.queue_free()
 	await get_tree().process_frame

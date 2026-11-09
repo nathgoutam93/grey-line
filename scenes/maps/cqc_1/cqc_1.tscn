@@ -14,13 +14,18 @@
 [ext_resource type="Script" path="res://scenes/props/crates/breakable_prop.gd" id="ext_resource_012"]
 [ext_resource type="AudioStream" path="res://assets/sounds/equip2.mp3" id="ext_resource_013"]
 [ext_resource type="PackedScene" path="res://scenes/props/truck/truck.tscn" id="ext_resource_014"]
-[ext_resource type="PackedScene" path="res://components/round_mode/objective_zone.tscn" id="ext_resource_015"]
-[ext_resource type="Script" path="res://components/round_mode/objective_zone.gd" id="ext_resource_016"]
-[ext_resource type="Material" path="res://materials/los_material.tres" id="ext_resource_017"]
-[ext_resource type="Script" path="res://components/destruction/destruction_service.gd" id="ext_resource_018"]
-[ext_resource type="PackedScene" path="res://components/round_mode/round_game_mode.tscn" id="ext_resource_019"]
-[ext_resource type="Script" path="res://components/round_mode/round_mode.gd" id="ext_resource_020"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="ext_resource_021"]
+[ext_resource type="PackedScene" path="res://scenes/props/furniture/sofa.tscn" id="ext_resource_015"]
+[ext_resource type="PackedScene" path="res://scenes/props/furniture/coffee_table.tscn" id="ext_resource_016"]
+[ext_resource type="PackedScene" path="res://scenes/props/furniture/dining_set.tscn" id="ext_resource_017"]
+[ext_resource type="PackedScene" path="res://scenes/props/furniture/tv_stand.tscn" id="ext_resource_018"]
+[ext_resource type="PackedScene" path="res://scenes/props/furniture/kitchen_counter.tscn" id="ext_resource_019"]
+[ext_resource type="PackedScene" path="res://components/round_mode/objective_zone.tscn" id="ext_resource_020"]
+[ext_resource type="Script" path="res://components/round_mode/objective_zone.gd" id="ext_resource_021"]
+[ext_resource type="Material" path="res://materials/los_material.tres" id="ext_resource_022"]
+[ext_resource type="Script" path="res://components/destruction/destruction_service.gd" id="ext_resource_023"]
+[ext_resource type="PackedScene" path="res://components/round_mode/round_game_mode.tscn" id="ext_resource_024"]
+[ext_resource type="Script" path="res://components/round_mode/round_mode.gd" id="ext_resource_025"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="ext_resource_026"]
 
 [sub_resource type="Gradient" id="sub_resource_001"]
 interpolation_mode = 1
@@ -204,114 +209,144 @@ position = Vector2(528, 1240)
 [node name="FogOccluder" type="Node" parent="Map/Props/Prop10" unique_id=1800000040]
 script = ExtResource("ext_resource_010")
 
-[node name="Prop11" type="StaticBody2D" parent="Map/Props" unique_id=1800000041 instance=ExtResource("ext_resource_011")]
+[node name="Prop11" type="StaticBody2D" parent="Map/Props" unique_id=1800000041 instance=ExtResource("ext_resource_015")]
+position = Vector2(2328, 1064)
+scale = Vector2(0.5, 0.5)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Prop12" type="StaticBody2D" parent="Map/Props" unique_id=1800000042 instance=ExtResource("ext_resource_016")]
+position = Vector2(2328, 1112)
+scale = Vector2(0.5, 0.5)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Prop13" type="StaticBody2D" parent="Map/Props" unique_id=1800000043 instance=ExtResource("ext_resource_017")]
+position = Vector2(2504, 1112)
+scale = Vector2(0.5, 0.5)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Prop14" type="StaticBody2D" parent="Map/Props" unique_id=1800000044 instance=ExtResource("ext_resource_011")]
 position = Vector2(904, 1192)
 scale = Vector2(0.19, 0.19)
 script = ExtResource("ext_resource_012")
 break_sound = ExtResource("ext_resource_013")
 
-[node name="FogOccluder" type="Node" parent="Map/Props/Prop11" unique_id=1800000042]
+[node name="FogOccluder" type="Node" parent="Map/Props/Prop14" unique_id=1800000045]
 script = ExtResource("ext_resource_010")
 
-[node name="Prop12" type="StaticBody2D" parent="Map/Props" unique_id=1800000043 instance=ExtResource("ext_resource_011")]
+[node name="Prop15" type="StaticBody2D" parent="Map/Props" unique_id=1800000046 instance=ExtResource("ext_resource_018")]
+position = Vector2(2328, 1320)
+scale = Vector2(0.5, 0.5)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Prop16" type="StaticBody2D" parent="Map/Props" unique_id=1800000047 instance=ExtResource("ext_resource_019")]
+position = Vector2(2568, 1320)
+scale = Vector2(0.5, 0.5)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Prop17" type="StaticBody2D" parent="Map/Props" unique_id=1800000048 instance=ExtResource("ext_resource_011")]
 position = Vector2(1720, 1384)
 scale = Vector2(0.19, 0.19)
 script = ExtResource("ext_resource_012")
 break_sound = ExtResource("ext_resource_013")
 
-[node name="FogOccluder" type="Node" parent="Map/Props/Prop12" unique_id=1800000044]
+[node name="FogOccluder" type="Node" parent="Map/Props/Prop17" unique_id=1800000049]
 script = ExtResource("ext_resource_010")
 
-[node name="Prop13" type="StaticBody2D" parent="Map/Props" unique_id=1800000045 instance=ExtResource("ext_resource_009")]
+[node name="Prop18" type="StaticBody2D" parent="Map/Props" unique_id=1800000050 instance=ExtResource("ext_resource_009")]
 position = Vector2(2680, 1784)
 scale = Vector2(0.45, 0.45)
 
-[node name="FogOccluder" type="Node" parent="Map/Props/Prop13" unique_id=1800000046]
+[node name="FogOccluder" type="Node" parent="Map/Props/Prop18" unique_id=1800000051]
 script = ExtResource("ext_resource_010")
 
-[node name="Prop14" type="StaticBody2D" parent="Map/Props" unique_id=1800000047 instance=ExtResource("ext_resource_011")]
+[node name="Prop19" type="StaticBody2D" parent="Map/Props" unique_id=1800000052 instance=ExtResource("ext_resource_011")]
 position = Vector2(2328, 1848)
 scale = Vector2(0.19, 0.19)
 script = ExtResource("ext_resource_012")
 break_sound = ExtResource("ext_resource_013")
 
-[node name="FogOccluder" type="Node" parent="Map/Props/Prop14" unique_id=1800000048]
+[node name="FogOccluder" type="Node" parent="Map/Props/Prop19" unique_id=1800000053]
 script = ExtResource("ext_resource_010")
 
-[node name="Prop15" type="StaticBody2D" parent="Map/Props" unique_id=1800000049 instance=ExtResource("ext_resource_009")]
+[node name="Prop20" type="StaticBody2D" parent="Map/Props" unique_id=1800000054 instance=ExtResource("ext_resource_009")]
 position = Vector2(1064, 1864)
 scale = Vector2(0.45, 0.45)
 
-[node name="FogOccluder" type="Node" parent="Map/Props/Prop15" unique_id=1800000050]
+[node name="FogOccluder" type="Node" parent="Map/Props/Prop20" unique_id=1800000055]
 script = ExtResource("ext_resource_010")
 
-[node name="SpawnPoints" type="Node2D" parent="Map" unique_id=1800000051]
+[node name="SpawnPoints" type="Node2D" parent="Map" unique_id=1800000056]
 
-[node name="AttackerSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1800000052]
+[node name="AttackerSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1800000057]
 
-[node name="Spawn1" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000053]
+[node name="Spawn1" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000058]
 position = Vector2(232, 648)
 
-[node name="Spawn2" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000054]
+[node name="Spawn2" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000059]
 position = Vector2(232, 744)
 
-[node name="Spawn3" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000055]
+[node name="Spawn3" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000060]
 position = Vector2(232, 840)
 
-[node name="Spawn4" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000056]
+[node name="Spawn4" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000061]
 position = Vector2(232, 936)
 
-[node name="Spawn5" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000057]
+[node name="Spawn5" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000062]
 position = Vector2(232, 1032)
 
-[node name="DefenderSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1800000058]
+[node name="DefenderSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1800000063]
 
-[node name="Spawn1" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000059]
+[node name="Spawn1" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000064]
 position = Vector2(2856, 792)
 
-[node name="Spawn2" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000060]
+[node name="Spawn2" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000065]
 position = Vector2(2952, 792)
 
-[node name="Spawn3" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000061]
+[node name="Spawn3" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000066]
 position = Vector2(2856, 904)
 
-[node name="Spawn4" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000062]
+[node name="Spawn4" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000067]
 position = Vector2(2952, 904)
 
-[node name="Spawn5" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000063]
+[node name="Spawn5" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000068]
 position = Vector2(2904, 1240)
 
-[node name="ObjectiveZone" type="Area2D" parent="Map" unique_id=1800000064 instance=ExtResource("ext_resource_015")]
+[node name="ObjectiveZone" type="Area2D" parent="Map" unique_id=1800000069 instance=ExtResource("ext_resource_020")]
 position = Vector2(2584, 872)
 collision_layer = 4
 collision_mask = 2
-script = ExtResource("ext_resource_016")
+script = ExtResource("ext_resource_021")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/ObjectiveZone" unique_id=1800000065]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/ObjectiveZone" unique_id=1800000070]
 shape = SubResource("sub_resource_003")
 
-[node name="Fill" type="Polygon2D" parent="Map/ObjectiveZone" unique_id=1800000066]
+[node name="Fill" type="Polygon2D" parent="Map/ObjectiveZone" unique_id=1800000071]
 color = Color(0.32, 0.76, 0.74, 0.16)
 polygon = PackedVector2Array(-104, -88, 104, -88, 104, 88, -104, 88)
 
-[node name="Outline" type="Line2D" parent="Map/ObjectiveZone" unique_id=1800000067]
+[node name="Outline" type="Line2D" parent="Map/ObjectiveZone" unique_id=1800000072]
 points = PackedVector2Array(-104, -88, 104, -88, 104, 88, -104, 88, -104, -88)
 width = 3.0
 default_color = Color(0.32, 0.76, 0.74, 0.8)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1800000068]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1800000073]
 
-[node name="FogOfWar" type="Sprite2D" parent="CanvasLayer" unique_id=1800000069]
-material = ExtResource("ext_resource_017")
+[node name="FogOfWar" type="Sprite2D" parent="CanvasLayer" unique_id=1800000074]
+material = ExtResource("ext_resource_022")
 texture = SubResource("sub_resource_004")
 centered = false
 
-[node name="DestructionService" type="Node" parent="." unique_id=1800000070]
-script = ExtResource("ext_resource_018")
+[node name="DestructionService" type="Node" parent="." unique_id=1800000075]
+script = ExtResource("ext_resource_023")
 
-[node name="RoundGameMode" type="Node" parent="." unique_id=1800000071 node_paths=PackedStringArray("map", "spawn_point_container", "leaderboard", "match_timer_label", "timer_touch_toggle_button", "match_result_overlay", "match_result_label", "leave_game_button") instance=ExtResource("ext_resource_019")]
-script = ExtResource("ext_resource_020")
-player_scene = ExtResource("ext_resource_021")
+[node name="RoundGameMode" type="Node" parent="." unique_id=1800000076 node_paths=PackedStringArray("map", "spawn_point_container", "leaderboard", "match_timer_label", "timer_touch_toggle_button", "match_result_overlay", "match_result_label", "leave_game_button") instance=ExtResource("ext_resource_024")]
+script = ExtResource("ext_resource_025")
+player_scene = ExtResource("ext_resource_026")
 map = NodePath("../Map")
 spawn_point_container = NodePath("../Map/SpawnPoints")
 leaderboard = NodePath("MatchResultLayer/Control/Leaderboard")
@@ -321,14 +356,14 @@ match_result_overlay = NodePath("MatchResultLayer/MatchResultOverlay")
 match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
 leave_game_button = NodePath("MatchResultLayer/Control/LeaveGameButtonAnchor/LeaveGameButton")
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000072]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000077]
 _spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
 spawn_path = NodePath("../Map")
 
-[node name="PickupSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000073]
+[node name="PickupSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000078]
 _spawnable_scenes = PackedStringArray("uid://cy2enpfy31fdt", "uid://djd5057n31hec", "uid://bt7txyxfcccff")
 spawn_path = NodePath("../Map")
 
-[node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000074]
+[node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000079]
 _spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "uid://dh2nskt0itnox", "uid://cpo2ct5tbyue3")
 spawn_path = NodePath("../Map")
