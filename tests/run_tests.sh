@@ -4,7 +4,7 @@
 #   tests/run_tests.sh                 # everything
 #   tests/run_tests.sh unit sync       # only these suites
 #
-# Suites: unit, sync, visibility, firing, match.
+# Suites: unit, sync, visibility, firing, match, bots, teams, destruction, doors, rounds, cqc, host_visibility.
 # Godot binary: $GODOT, else godot4 / godot on PATH, else the macOS app.
 # Logs go to $TEST_LOG_DIR (default: a new temp dir), printed at the end.
 # Tests run with --ephemeral-profile, so your saved profile is never touched,
@@ -32,7 +32,7 @@ fi
 
 LOG_DIR="${TEST_LOG_DIR:-$(mktemp -d -t greyline-tests.XXXXXX)}"
 mkdir -p "$LOG_DIR"
-ALL_SUITES=(unit sync visibility firing match)
+ALL_SUITES=(unit sync visibility firing match bots teams destruction doors rounds cqc host_visibility)
 if [ "$#" -gt 0 ]; then SUITES=("$@"); else SUITES=("${ALL_SUITES[@]}"); fi
 
 failed=()
@@ -82,6 +82,11 @@ for suite in "${SUITES[@]}"; do
 	fi
 	echo "== $suite (host + client on port $port)"
 	args=(--headless --path . res://tests/net/net_test.tscn -- --ephemeral-profile "--net-test=$suite" "--port=$port")
+	if [ "$suite" = "rounds" ]; then
+		args+=(--map=res://scenes/maps/map_1/map_1_rounds.tscn)
+	elif [ "$suite" = "cqc" ]; then
+		args+=(--map=res://scenes/maps/cqc_1/cqc_1.tscn)
+	fi
 	run_with_timeout 120 "$GODOT_BIN" "${args[@]}" --role=host >"$LOG_DIR/$suite.host.log" 2>&1 &
 	host_runner=$!
 	sleep 1

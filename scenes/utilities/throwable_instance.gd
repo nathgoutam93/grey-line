@@ -27,7 +27,7 @@ func equip() -> void:
 
 
 func start_use() -> void:
-	if is_locked:
+	if is_locked or (player != null and player.actions_locked):
 		return
 	if data == null or data.projectile_scene == null or player == null:
 		return

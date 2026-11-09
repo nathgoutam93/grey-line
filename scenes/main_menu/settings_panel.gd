@@ -28,6 +28,7 @@ const TOUCH_CONTROL_IDS: Array[String] = [
 	"Shoot",
 	"Headshot",
 	"Reload",
+	"Walk",
 	"TouchAimZone",
 ]
 
@@ -66,11 +67,21 @@ func _ready() -> void:
 	if _profile == null:
 		return
 
+	_create_walk_layout_row()
 	_resolve_control_maps()
 	_connect_signals()
 	_load_profile_into_ui()
 	_refresh_onboarding_gate(true)
 	set_process_unhandled_input(true)
+
+func _create_walk_layout_row() -> void:
+	var controls := _tabs.get_node("TouchControls") as VBoxContainer
+	var row := controls.get_node("Reload").duplicate() as HBoxContainer
+	row.name = "Walk"
+	var label := row.get_node("Name") as Label
+	label.text = "Walk"
+	controls.add_child(row)
+	controls.move_child(row, controls.get_node("TouchAimZone").get_index())
 
 func _resolve_control_maps() -> void:
 	for action in ACTIONS:

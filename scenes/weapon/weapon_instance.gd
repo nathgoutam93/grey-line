@@ -102,10 +102,20 @@ func _shoot_raycast() -> void:
 		var hit_player := _resolve_hit_player(hurtbox_result.get("collider"))
 		if hit_player != null and hit_player != player and not hit_player.is_dead:
 			var is_head_hit := shot_intent == PlayerController.ShotIntent.HEAD
-			if player.can_register_hit(is_head_hit):
+			if player.can_register_hit(is_head_hit) and Teams.can_damage(player.team, hit_player.team,
+				player.owner_peer_id, hit_player.owner_peer_id, MatchGameMode.is_friendly_fire_enabled(get_tree())):
 				hit_player.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
 
 	if multiplayer.is_server():
+		if not has_unoccluded_hurtbox_hit and not occlusion_result.is_empty():
+			# Walls are indestructible; only doors and breakable props take structure damage.
+			var kind := DestructionMaterial.KIND_BULLET if data.uses_ammo else DestructionMaterial.KIND_MELEE
+			var prop := occlusion_result.get("collider") as BreakableProp
+			var door := occlusion_result.get("collider") as Door
+			if prop != null:
+				prop.apply_damage(data.wall_damage if data.uses_ammo else data.melee_wall_damage, kind)
+			elif door != null:
+				door.apply_damage(data.wall_damage if data.uses_ammo else 60, kind, player)
 		LagCompensationService.restore_players(saved_transforms)
 
 func _build_self_exclude_list() -> Array:
@@ -196,7 +206,7 @@ func equip() -> void:
 
 
 func start_use() -> void:
-	if is_locked:
+	if is_locked or (player != null and player.actions_locked):
 		return
 
 	is_firing = true
@@ -210,7 +220,7 @@ func start_fire() -> void:
 
 
 func reload(auto: bool = false) -> void:
-	if is_locked or not data.is_reloadable:
+	if is_locked or (player != null and player.actions_locked) or not data.is_reloadable:
 		return
 	if data.uses_ammo:
 		if ammo_in_mag >= data.mag_size:
@@ -243,7 +253,7 @@ func stop_fire() -> void:
 	stop_use()
 
 func _single_shot() -> bool:
-	if is_locked:
+	if is_locked or (player != null and player.actions_locked):
 		return false
 
 	# compute cooldown data and log everything for diagnosis

@@ -16,6 +16,7 @@ class_name WorldSnapshotService
 
 ## 2 ticks at 60 Hz = 30 snapshots per second.
 const SEND_INTERVAL_TICKS := 2
+const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_WORLD := 1
 
 # Packet layout (Array):
@@ -27,12 +28,14 @@ const P_ROTATIONS := 4 # PackedFloat32Array
 const P_ACK_TICK := 5 # receiver's own player: last applied input tick
 const P_LEAD_TICK := 6 # receiver's own player: input lead sample tick
 const P_INPUT_LEAD := 7 # receiver's own player: input lead in ticks
-const P_FLAGS := 8 # PackedByteArray, per entry: FLAG_VISIBLE or 0 (audio only)
+const P_FLAGS := 8 # PackedByteArray, per entry: visibility and noise bits
 const P_WEAPON_SLOT := 9 # receiver's own player: selected (or switching-to) slot
 const P_WEAPON_AMMO := 10 # receiver's own player: PackedInt32Array [mag, reserve] per weapon slot
 const PACKET_SIZE := 11
 
 const FLAG_VISIBLE := 1
+const FLAG_FOOTSTEPS := 2
+const FLAG_SPOTTED := 4 # Reserved for optional teammate spotting.
 ## Keep sending a player as visible this long after it leaves view, so the
 ## client never hides something its own fog of war is still fading out.
 const VISIBLE_GRACE_TICKS := 15
@@ -45,6 +48,25 @@ var _last_sent_tick := 0
 ## physics frame, so under load it can be fewer than one per send interval.
 var packets_sent := {}
 
+## Input RPCs use this persistent path: in-flight packets can arrive while
+## MultiplayerSpawner replaces every player at a round boundary.
+@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
+func submit_player_input(life_id: int, packed_frames: Array) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender <= 1 or not multiplayer.get_peers().has(sender):
+		return
+	_receive_player_input(sender, life_id, packed_frames)
+
+func _receive_player_input(sender: int, life_id: int, packed_frames: Array) -> void:
+	if not multiplayer.is_server():
+		return
+	var player := _find_owned_player(sender)
+	if player == null or player.is_dead or life_id == 0 or player.net_sync.life_id != life_id:
+		return
+	player.net_sync.server_receive_input(packed_frames, sender)
+
 func _physics_process(_delta: float) -> void:
 	if not _is_server():
 		return
@@ -53,18 +75,43 @@ func _physics_process(_delta: float) -> void:
 		return
 	_last_sent_tick = tick
 	var peers := multiplayer.get_peers()
-	if peers.is_empty():
-		return
 	var players := _live_players()
 	if players.is_empty():
 		return # lobby / between matches
 	var smoke := VisibilityQuery.collect_smoke_blockers(get_tree())
+	var active_views: Dictionary = {}
+	var viewers := Array(peers)
+	if not OS.has_feature("dedicated_server"):
+		viewers.append(multiplayer.get_unique_id())
+	for peer_id in viewers:
+		var viewer := _find_player_node(peer_id)
+		if viewer != null:
+			active_views[viewer.owner_peer_id] = true
 	for key in _last_visible_tick.keys():
-		if not peers.has(key):
+		if not active_views.has(key):
 			_last_visible_tick.erase(key)
+	if not OS.has_feature("dedicated_server"):
+		# The host owns every authoritative node, but draws the same filtered
+		# view as a client (including the selected teammate while spectating).
+		var packet := _packet_for_peer(tick, players, multiplayer.get_unique_id(), smoke)
+		_apply_host_presence(packet, players)
 	for peer_id in peers:
 		_receive_world_snapshot.rpc_id(peer_id, _packet_for_peer(tick, players, peer_id, smoke))
 		packets_sent[peer_id] = int(packets_sent.get(peer_id, 0)) + 1
+
+func _apply_host_presence(packet: Array, players: Array[PlayerController]) -> void:
+	var ids: PackedInt32Array = packet[P_IDS]
+	var flags: PackedByteArray = packet[P_FLAGS]
+	for player in players:
+		if player.owner_peer_id == multiplayer.get_unique_id():
+			continue
+		var index := ids.find(player.owner_peer_id)
+		var presence := PlayerNetSync.NetPresence.CULLED
+		if index >= 0:
+			presence = PlayerNetSync.NetPresence.VISIBLE if (flags[index] & FLAG_VISIBLE) != 0 else PlayerNetSync.NetPresence.AUDIBLE
+		player.net_sync.set_net_presence(presence)
+		# Same footstep gate a client applies, so the host hears no more than its packet.
+		player.net_sync.net_footsteps = index >= 0 and (flags[index] & FLAG_FOOTSTEPS) != 0
 
 ## Builds the packet a given peer would receive right now (also used by tooling).
 func build_packet(peer_id: int) -> Array:
@@ -83,13 +130,15 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 	var weapon_slot := -1
 	var weapon_ammo := PackedInt32Array()
 
-	# The viewer may be dead (hidden, about to despawn): it still sees and
-	# hears from where it fell. With no player node at all, nothing is sent.
+	# Rounds use the selected teammate's view after death. Deathmatch retains
+	# the fallen player's view until despawn; a missing viewer receives no players.
 	var viewer := _find_player_node(peer_id)
 	if viewer != null:
-		if not _last_visible_tick.has(peer_id):
-			_last_visible_tick[peer_id] = {}
-		var seen: Dictionary = _last_visible_tick[peer_id]
+		# Spectators share the target's visibility history, including grace, rather than retaining corpse sight.
+		var view_id := viewer.owner_peer_id
+		if not _last_visible_tick.has(view_id):
+			_last_visible_tick[view_id] = {}
+		var seen: Dictionary = _last_visible_tick[view_id]
 		for target in players:
 			var flag := -1
 			if target == viewer:
@@ -100,6 +149,8 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 				input_lead = owner_fields[2]
 				weapon_slot = owner_fields[3]
 				weapon_ammo = owner_fields[4]
+			elif Teams.is_teammate(viewer, target):
+				flag = FLAG_VISIBLE
 			elif VisibilityQuery.can_see(viewer, target, smoke):
 				seen[target.owner_peer_id] = tick
 				flag = FLAG_VISIBLE
@@ -109,14 +160,26 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 				flag = 0
 			if flag < 0:
 				continue
+			var bits := 0
+			if (flag & FLAG_VISIBLE) != 0:
+				bits |= FLAG_VISIBLE
+			if target.net_sync.is_making_footstep_noise():
+				bits |= FLAG_FOOTSTEPS
 			ids.append(target.owner_peer_id)
 			positions.append(target.global_position)
 			velocities.append(target.velocity)
 			rotations.append(target.rotation)
-			flags.append(flag)
+			flags.append(bits)
 	return [tick, ids, positions, velocities, rotations, ack_tick, lead_tick, input_lead, flags, weapon_slot, weapon_ammo]
 
 func _find_player_node(peer_id: int) -> PlayerController:
+	var mode := MatchGameMode.current(get_tree()) as RoundGameMode
+	var player := _find_owned_player(peer_id)
+	if mode != null and (player == null or player.is_dead):
+		return mode.spectator_player_for(peer_id)
+	return player
+
+func _find_owned_player(peer_id: int) -> PlayerController:
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player != null and player.is_inside_tree() and player.owner_peer_id == peer_id:
@@ -162,8 +225,9 @@ func _receive_world_snapshot(packet: Array) -> void:
 		if player == null or not is_instance_valid(player):
 			continue
 		present[player] = true
+		player.net_sync.net_footsteps = (flags[i] & FLAG_FOOTSTEPS) != 0
 		if ids[i] != local_peer_id:
-			player.net_sync.set_net_presence(PlayerNetSync.NetPresence.VISIBLE if flags[i] == FLAG_VISIBLE else PlayerNetSync.NetPresence.AUDIBLE)
+			player.net_sync.set_net_presence(PlayerNetSync.NetPresence.VISIBLE if (flags[i] & FLAG_VISIBLE) != 0 else PlayerNetSync.NetPresence.AUDIBLE)
 		var snapshot := {
 			"tick": tick,
 			"position": positions[i],

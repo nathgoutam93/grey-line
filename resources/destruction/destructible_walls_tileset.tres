@@ -1,0 +1,38 @@
+[gd_resource type="TileSet" format=3 uid="uid://dpojotycqwr"]
+
+[ext_resource type="Texture2D" path="res://resources/destruction/walls_atlas.png" id="1_jb418"]
+
+[sub_resource type="OccluderPolygon2D" id="WallOccluder0"]
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[sub_resource type="OccluderPolygon2D" id="WallOccluder1"]
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[sub_resource type="OccluderPolygon2D" id="WallOccluder2"]
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[sub_resource type="TileSetAtlasSource" id="WallsAtlas"]
+texture = ExtResource("1_jb418")
+0:0/0 = 0
+0:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("WallOccluder0")
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+0:0/0/custom_data_1 = 40
+1:0/0 = 0
+1:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("WallOccluder1")
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:0/0/custom_data_0 = 1
+1:0/0/custom_data_1 = 150
+2:0/0 = 0
+2:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("WallOccluder2")
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+2:0/0/custom_data_0 = 2
+
+[resource]
+occlusion_layer_0/light_mask = 1
+physics_layer_0/collision_layer = 1
+physics_layer_0/collision_mask = 0
+custom_data_layer_0/name = "material"
+custom_data_layer_0/type = 2
+custom_data_layer_1/name = "max_hp"
+custom_data_layer_1/type = 2
+sources/0 = SubResource("WallsAtlas")

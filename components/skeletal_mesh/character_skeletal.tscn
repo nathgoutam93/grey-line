@@ -3168,6 +3168,7 @@ rotation = 0.12
 rest = Transform2D(1, 0, 0, 1, -30, 28)
 
 [node name="polygons" type="Node2D" parent="." unique_id=2047498411]
+use_parent_material = true
 
 [node name="foot_l" type="Polygon2D" parent="polygons" unique_id=780007532]
 use_parent_material = true

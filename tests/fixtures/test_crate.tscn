@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/crates/crate.tscn" id="1_crate"]
+[ext_resource type="Script" path="res://components/fog_of_war_mask_view/prop_fog_occluder.gd" id="2_fog"]
+
+[node name="TestCrate" unique_id=1592840911 instance=ExtResource("1_crate")]
+scale = Vector2(0.45, 0.45)
+
+[node name="FogOccluder" type="Node" parent="." unique_id=1592840912]
+script = ExtResource("2_fog")

@@ -17,6 +17,7 @@ const HARD_TIMEOUT_SECONDS := 90.0
 var role := ""
 var test_name := ""
 var port := 3300
+var selected_map := ""
 var results: TestLog
 var ticks := 0
 
@@ -32,6 +33,8 @@ func _ready() -> void:
 			test_name = arg.trim_prefix("--net-test=")
 		elif arg.begins_with("--port="):
 			port = int(arg.trim_prefix("--port="))
+		elif arg.begins_with("--map="):
+			selected_map = arg.trim_prefix("--map=")
 	results = TestLog.new("%s:%s" % [test_name, role])
 	if PlayerProfile.persistence_enabled:
 		# Never let a test rewrite the real profile.
@@ -57,6 +60,9 @@ func _start_host() -> void:
 	MultiplayerSession.host_game()
 	await multiplayer.peer_connected
 	await get_tree().create_timer(1.5).timeout
+	await run_host_lobby()
+	if not selected_map.is_empty():
+		MultiplayerSession.set_selected_map_scene_path(selected_map)
 	MultiplayerSession.start_match()
 	if not await wait_until(func(): return player(client_peer()) != null and player(1) != null, 15.0):
 		finish_with_failure("setup", "players did not spawn on the host")
@@ -79,6 +85,10 @@ func _start_client() -> void:
 	# Stay connected until the host has checked everything we reported.
 	await wait_for("done", 60.0)
 	_quit()
+
+## Override: host-side lobby checks before the map starts.
+func run_host_lobby() -> void:
+	pass
 
 ## Override: host-side scenario and checks.
 func run_host() -> void:
@@ -150,6 +160,22 @@ func _hard_timeout() -> void:
 func hold(seconds: float) -> void:
 	await get_tree().create_timer(seconds).timeout
 
+## Optional real-renderer captures when running a scenario without --headless.
+func capture_frame(label: String) -> void:
+	var output_dir := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--capture-dir="):
+			output_dir = arg.trim_prefix("--capture-dir=")
+	if output_dir.is_empty() or DisplayServer.get_name() == "headless":
+		return
+	DirAccess.make_dir_recursive_absolute(output_dir)
+	await get_tree().process_frame
+	RenderingServer.force_draw(false) # Idle/occluded windows must still render the checkpoint.
+	var path := output_dir.path_join("%s-%s-%s.png" % [test_name, role, label])
+	var error := get_viewport().get_texture().get_image().save_png(path)
+	if error != OK:
+		results.fail("capture", "could not save %s: %s" % [path, error_string(error)])
+
 func tap(action: String, seconds: float = 0.1) -> void:
 	Input.action_press(action)
 	await hold(seconds)
@@ -159,6 +185,19 @@ func client_peer() -> int:
 	for id in multiplayer.get_peers():
 		return id
 	return -1
+
+## Host only: add a puppet during a match and wait for its player setup.
+## Returns 0 and records a failure if registration or spawning fails.
+func add_bot() -> int:
+	var bot_id := MultiplayerSession.add_bot()
+	if bot_id >= 0 or not await wait_until(func(): return player(bot_id) != null and bot(bot_id) != null, 8.0):
+		results.fail("add_bot", "bot registration or spawn failed (id %d)" % bot_id)
+		return 0
+	return bot_id
+
+func bot(bot_id: int) -> BotBrain:
+	var puppet := player(bot_id)
+	return puppet.net_sync.bot_brain if puppet != null else null
 
 ## Live player whose node is named after `owner_id`.
 func player(owner_id: int) -> PlayerController:
@@ -176,8 +215,7 @@ func local_player() -> PlayerController:
 	return null
 
 func game_mode() -> Node:
-	var scene := get_tree().current_scene
-	return scene.find_child("DeathmatchGameMode", true, false) if scene else null
+	return get_tree().get_first_node_in_group("game_mode")
 
 func ray_clear(from: Vector2, to: Vector2, exclude: Array[RID] = []) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(from, to, 1, exclude)
@@ -201,3 +239,24 @@ func find_open_spot(facing: Vector2, clearance: float) -> Vector2:
 			if spot_free(p) and ray_clear(p, p + facing * clearance) and ray_clear(p, p - facing * clearance) and ray_clear(p, p + facing.orthogonal() * 120.0):
 				return p
 	return Vector2.INF
+
+## [viewer_pos, target_pos]: the viewer faces a building 220-400 px ahead and
+## the target stands right behind it with all three sight rays blocked.
+func find_wall_setup(facing: Vector2) -> Array:
+	var space := get_viewport().world_2d.direct_space_state
+	for gx in range(-30, 31):
+		for gy in range(-30, 31):
+			var p := Vector2(gx * 80.0, gy * 80.0)
+			if not spot_free(p):
+				continue
+			var hit := space.intersect_ray(PhysicsRayQueryParameters2D.create(p, p + facing * 500.0, 1))
+			if hit.is_empty():
+				continue
+			var d := p.distance_to(hit.position)
+			if d < 220.0 or d > 400.0:
+				continue
+			var t: Vector2 = hit.position + facing * 160.0
+			var side := facing.orthogonal() * 40.0
+			if spot_free(t) and not ray_clear(p, t) and not ray_clear(p, t + side) and not ray_clear(p, t - side):
+				return [p, t]
+	return []

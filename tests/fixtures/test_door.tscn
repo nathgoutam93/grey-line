@@ -1,0 +1,5 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/door/door.tscn" id="1_door"]
+
+[node name="TestDoor" unique_id=1670294538 instance=ExtResource("1_door")]

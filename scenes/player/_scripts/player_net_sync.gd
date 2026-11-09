@@ -31,7 +31,6 @@ const DEFAULT_INTERP_DELAY_TICKS := 4
 # Max rewind = one-way latency + interpolation delay; 12 ticks = 200 ms.
 const MAX_LAG_COMP_REWIND_TICKS := 12
 const TICK_OFFSET_SMOOTHING := 0.1
-const RPC_CHANNEL_INPUT := 0
 const RPC_CHANNEL_UI := 2
 
 # Every input packet carries the last N frames so a single lost packet does not
@@ -71,6 +70,7 @@ var _last_stamped_tick := 0
 var _carry_actions: PlayerInputFrame = null
 
 # Server state
+var bot_brain: BotBrain = null
 var _input_queue: Dictionary = {}
 var _last_input: PlayerInputFrame
 var _last_applied_input_tick := 0
@@ -85,12 +85,15 @@ var _noise_radius := 0.0
 var _noise_until_tick := 0
 
 # Shared / proxy state
+var net_footsteps := false
 var _reconciler := ClientReconciler.new()
 var _interpolator := RemoteInterpolator.new()
 var _tick_offset := 0.0
 var _last_received_snapshot_tick := 0
 ## Client: snapshots accepted for this player (diagnostics and tests).
 var snapshots_received := 0
+## Server-issued identity of this spawned life; rejects input left over from a previous round.
+var life_id := 0
 var _is_firing_net := false
 var _last_reload_request_tick := -1
 var _net_presence := NetPresence.VISIBLE
@@ -135,6 +138,7 @@ func reset_state() -> void:
 	_last_reload_request_tick = -1
 	_interpolator.snapshot_buffer.clear()
 	_net_presence = NetPresence.VISIBLE
+	net_footsteps = false
 	_snap_next_snapshot = false
 	_deferred_actions.clear()
 
@@ -143,6 +147,9 @@ func is_server_role() -> bool:
 
 func is_owner_role() -> bool:
 	return player.owner_peer_id == multiplayer.get_unique_id()
+
+func is_proxy() -> bool:
+	return not is_server_role() and not is_owner_role()
 
 func _is_predicting_owner() -> bool:
 	return is_owner_role() and not multiplayer.is_server()
@@ -192,7 +199,7 @@ func _owner_tick(local_tick: int) -> void:
 			for fill_tick in range(_last_stamped_tick + 1, stamp):
 				_predict_owner_frame(frame.copy_continuous(fill_tick))
 	_predict_owner_frame(frame)
-	server_receive_input.rpc_id(1, _send_history.duplicate())
+	WorldSnapshots.submit_player_input.rpc_id(1, life_id, _send_history.duplicate())
 
 func _predict_owner_frame(frame: PlayerInputFrame) -> void:
 	_input_buffer[frame.tick] = frame
@@ -232,7 +239,11 @@ func _server_tick(tick: int) -> void:
 			queued.merge_actions_from(frame)
 		frame = queued
 
-	if frame != null:
+	if bot_brain != null:
+		frame = bot_brain.build_input_frame(tick)
+		_last_applied_input_tick = tick
+		_last_input = frame
+	elif frame != null:
 		_last_applied_input_tick = frame.tick
 		_last_input = frame
 	elif is_owner_role() and is_instance_valid(player.player_input):
@@ -275,6 +286,9 @@ func _proxy_tick(server_tick: int) -> void:
 func _apply_input_actions(frame: PlayerInputFrame) -> void:
 	player.is_slow_walking = frame.slow_walk_held
 	player.current_shot_intent = frame.shot_intent
+	if player.actions_locked:
+		cancel_locked_actions()
+		return
 
 	# The owning client predicts fire/reload/switch immediately; the server
 	# (authoritative) executes everything and broadcasts via _remote_* RPCs,
@@ -314,6 +328,10 @@ func _apply_input_actions(frame: PlayerInputFrame) -> void:
 		_is_firing_net = false
 		_remote_stop_fire.rpc()
 
+func cancel_locked_actions() -> void:
+	_is_firing_net = false
+	_deferred_actions.clear()
+
 func _predict_owner_actions(frame: PlayerInputFrame) -> void:
 	if frame.reload_pressed and frame.tick > _last_reload_request_tick:
 		_last_reload_request_tick = frame.tick
@@ -333,11 +351,9 @@ func _predict_owner_actions(frame: PlayerInputFrame) -> void:
 		_is_firing_net = false
 		_do_stop_fire()
 
-@rpc("any_peer", "call_remote", "unreliable", RPC_CHANNEL_INPUT)
-func server_receive_input(packed_frames: Array) -> void:
+func server_receive_input(packed_frames: Array, sender_id: int) -> void:
 	if not is_server_role():
 		return
-	var sender_id := multiplayer.get_remote_sender_id()
 	if sender_id != player.owner_peer_id:
 		return
 	var server_tick := NetworkTick.tick
@@ -491,8 +507,11 @@ func _reconcile_weapon_state(ack_tick: int, server_slot: int, server_ammo: Packe
 
 # --- fog-of-war presence (proxies) ------------------------------------------
 
-## Client only: called by WorldSnapshots for every remote player each packet.
+## Local presentation: clients use received packets; the host uses its own
+## filtered packet without changing authoritative simulation or world state.
 func set_net_presence(presence: NetPresence) -> void:
+	if presence == NetPresence.CULLED:
+		net_footsteps = false
 	if presence == _net_presence:
 		return
 	var was_culled := _net_presence == NetPresence.CULLED
@@ -552,6 +571,11 @@ func report_noise(max_distance: float, seconds: float) -> void:
 		_noise_radius = maxf(_noise_radius, max_distance)
 	_noise_until_tick = maxi(_noise_until_tick, until_tick)
 
+## Authoritative footstep rule, independent of weapon speed multipliers.
+func is_making_footstep_noise() -> bool:
+	return not player.is_dead and not player.is_slow_walking \
+		and player.velocity.length() > PlayerController.FOOTSTEP_SPEED_THRESHOLD
+
 ## Server only: how far the player can be heard right now.
 func get_noise_radius() -> float:
 	if player.is_dead:
@@ -560,7 +584,7 @@ func get_noise_radius() -> float:
 	if NetworkTick.tick < _noise_until_tick:
 		radius = _noise_radius
 	# Same rule the client uses to play footsteps.
-	if player.footstep_player and player.velocity.length() > PlayerController.FOOTSTEP_SPEED_THRESHOLD:
+	if player.footstep_player and is_making_footstep_noise():
 		radius = maxf(radius, player.footstep_player.max_distance)
 	return radius
 
@@ -598,11 +622,11 @@ func request_pickup(pickup_path: NodePath) -> void:
 
 @rpc("authority", "call_local", "unreliable", RPC_CHANNEL_UI)
 func _remote_interact(target_path: NodePath):
-	if target_path == NodePath(""):
+	if player.actions_locked or not multiplayer.is_server() or target_path == NodePath(""):
 		return
-	var interactable = get_node_or_null(target_path)
-	if interactable and interactable.owner_ref and interactable.owner_ref.has_method("on_interact"):
-		interactable.owner_ref.on_interact(player)
+	var interactable := get_node_or_null(target_path) as Interactable
+	if interactable != null:
+		interactable.on_interact(player)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_start_fire(shot_intent: int = PlayerController.ShotIntent.BODY):
@@ -613,6 +637,8 @@ func _remote_start_fire(shot_intent: int = PlayerController.ShotIntent.BODY):
 	_do_start_fire(shot_intent)
 
 func _do_start_fire(shot_intent: int) -> void:
+	if player.actions_locked:
+		return
 	if shot_intent != PlayerController.ShotIntent.BODY and shot_intent != PlayerController.ShotIntent.HEAD:
 		shot_intent = PlayerController.ShotIntent.BODY
 	player.current_shot_intent = shot_intent
@@ -642,12 +668,16 @@ func _remote_reload():
 	_do_reload()
 
 func _do_reload() -> void:
+	if player.actions_locked:
+		return
 	var weapon := player.get_current_equipment() as WeaponInstance
 	if weapon:
 		weapon.reload()
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon():
+	if player.actions_locked:
+		return
 	if _is_predicting_owner():
 		return
 	if _defer_until_located(_remote_switch_weapon):
@@ -657,6 +687,8 @@ func _remote_switch_weapon():
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_previous():
+	if player.actions_locked:
+		return
 	if _is_predicting_owner():
 		return
 	if _defer_until_located(_remote_switch_weapon_previous):
@@ -666,6 +698,8 @@ func _remote_switch_weapon_previous():
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_switch_weapon_slot(slot: int):
+	if player.actions_locked:
+		return
 	if _is_predicting_owner():
 		return
 	if _defer_until_located(_remote_switch_weapon_slot.bind(slot)):
@@ -675,6 +709,8 @@ func _remote_switch_weapon_slot(slot: int):
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _remote_drop_weapon():
+	if player.actions_locked:
+		return
 	if _defer_until_located(_remote_drop_weapon):
 		return
 	_predicted_weapon_states.clear() # weapon instances change

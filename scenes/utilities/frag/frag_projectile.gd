@@ -6,6 +6,7 @@ const RPC_CHANNEL_UI := 2
 @export var explosion_radius: float = 320.0
 @export var max_force: float = 680.0
 @export var max_damage: int = 95
+@export var wall_damage: int = 200
 @export var min_damage: int = 15
 @export var speed: float = 760.0
 @export var max_travel_distance: float = 900.0
@@ -86,7 +87,7 @@ func _stop_motion_on_impact(impact_pos: Vector2) -> void:
 
 
 func _detonate() -> void:
-	if _detonated:
+	if not multiplayer.is_server() or _detonated:
 		return
 	_detonated = true
 	_is_server_simulating = false
@@ -106,6 +107,16 @@ func _detonate() -> void:
 	)
 
 	var effective_radius := maxf(explosion_radius, 1.0)
+	var service := DestructionService.current(get_tree())
+	if service != null:
+		var source: PlayerController
+		for node in get_tree().get_nodes_in_group("Player"):
+			var candidate := node as PlayerController
+			if candidate != null and candidate.owner_peer_id == instigator_peer_id and not candidate.is_dead:
+				source = candidate
+				break
+		service.apply_explosion(global_position, effective_radius, wall_damage, source)
+	var space := get_world_2d().direct_space_state
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player == null or player.is_dead:
@@ -118,11 +129,14 @@ func _detonate() -> void:
 		var factor := clampf(1.0 - (distance / effective_radius), 0.0, 1.0)
 		if factor <= 0.0:
 			continue
+		if not DestructionService.blast_line_clear(space, global_position, player.global_position):
+			continue
 
 		player.apply_explosion_force(global_position, maxf(max_force, 0.0) * factor)
 
 		var damage_falloff := lerpf(float(min_damage), float(max_damage), factor)
 		var final_damage := maxi(0, int(round(damage_falloff)))
+		# Explosives can hurt teammates even when weapon friendly fire is off.
 		if final_damage > 0 and player.health_component:
 			player.health_component.take_damage(final_damage, instigator_peer_id, false)
 

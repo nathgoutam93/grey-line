@@ -1,4 +1,5 @@
-extends Node
+extends MatchGameMode
+class_name DeathmatchGameMode
 
 ## Deathmatch rules and match flow: timer, score limit, end of match, the
 ## result overlay and returning to the lobby.
@@ -22,6 +23,7 @@ extends Node
 
 @onready var spawning: MatchPlayerSpawner = $Spawning
 @onready var scoreboard: MatchScoreboard = $Scoreboard
+@onready var destruction: DestructionService = get_tree().get_first_node_in_group(DestructionService.GROUP)
 
 const TIMER_REFRESH_INTERVAL := 1.0
 const RESYNC_REQUEST_DELAY_SECONDS := 0.75
@@ -30,6 +32,7 @@ const RPC_CHANNEL_UI := 2
 var match_time_remaining := 0.0
 var match_ended := false
 var winning_peer_id := -1
+var winning_team := Teams.NONE
 var touch_leaderboard_visible := false
 var post_match_transition_started := false
 var post_match_transition_deadline_msec := -1
@@ -37,10 +40,12 @@ var post_match_scene_change_requested := false
 var _timer_refresh_elapsed := 0.0
 
 func _ready():
+	add_to_group("game_mode")
 	spawning.setup(map, spawn_point_container, player_scene)
-	scoreboard.setup(map, leaderboard, score_limit)
+	scoreboard.setup(map, leaderboard, score_limit, teams_enabled)
 	spawning.player_setup.connect(scoreboard.track_player)
 	scoreboard.score_limit_reached.connect(func(peer_id: int): _end_match(peer_id, "score limit"))
+	scoreboard.team_score_limit_reached.connect(func(team: int): _end_match(team, "team score limit"))
 
 	if is_instance_valid(leaderboard):
 		leaderboard.visible = false
@@ -69,6 +74,8 @@ func _ready():
 
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	MultiplayerSession.bot_added.connect(spawning.spawn_player_if_missing)
+	MultiplayerSession.bot_removed.connect(scoreboard.remove_peer)
 	_update_match_timer_ui.rpc(_format_match_time(match_time_remaining))
 	spawning.call_deferred("spawn_initial_connected_players")
 
@@ -133,7 +140,8 @@ func _sync_match_state_to_peer(peer_id: int) -> void:
 	scoreboard.send_stats_to(peer_id)
 	if match_ended:
 		_update_match_timer_ui.rpc_id(peer_id, "")
-		_show_match_end_ui_and_return.rpc_id(peer_id, winning_peer_id, scoreboard.player_stats)
+		var winner := winning_team if teams_enabled else winning_peer_id
+		_show_match_end_ui_and_return.rpc_id(peer_id, winner, scoreboard.player_stats, scoreboard.team_scores)
 		return
 	_update_match_timer_ui.rpc_id(peer_id, _format_match_time(match_time_remaining))
 
@@ -176,30 +184,40 @@ func _format_match_time(total_seconds: float) -> String:
 func _end_match(winner_id: int, reason: String) -> void:
 	if match_ended:
 		return
-	if winner_id <= 0:
+	if teams_enabled and winner_id not in [Teams.ALPHA, Teams.BRAVO]:
+		winner_id = scoreboard.resolve_winning_team()
+	elif not teams_enabled and winner_id <= 0:
 		winner_id = scoreboard.resolve_top_scorer()
 
 	match_ended = true
-	winning_peer_id = winner_id
+	if teams_enabled:
+		winning_team = winner_id
+	else:
+		winning_peer_id = winner_id
 	spawning.spawning_enabled = false
 	scoreboard.active = false
 
 	scoreboard.refresh_all_combat_data()
 	var final_stats := scoreboard.final_stats()
-	print("Match ended by %s. Winner: %s" % [reason, scoreboard.winner_name(winner_id)])
+	var winner_name := Teams.display_name(winner_id) if teams_enabled else scoreboard.winner_name(winner_id)
+	print("Match ended by %s. Winner: %s" % [reason, winner_name])
 	scoreboard.broadcast_stats(final_stats)
 	_update_match_timer_ui.rpc("")
-	_show_match_end_ui_and_return.rpc(winner_id, final_stats)
+	_show_match_end_ui_and_return.rpc(winner_id, final_stats, scoreboard.team_scores)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> void:
+func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary, team_scores: Dictionary) -> void:
 	if post_match_transition_started:
 		return
 	post_match_transition_started = true
+	if teams_enabled:
+		winning_team = winner_id
+	else:
+		winning_peer_id = winner_id
 	post_match_transition_deadline_msec = Time.get_ticks_msec() + int(post_match_result_duration_seconds * 1000.0)
 
 	if is_instance_valid(leaderboard):
-		leaderboard.populate_leaderboard(final_stats)
+		leaderboard.populate_leaderboard(final_stats, team_scores)
 		leaderboard.visible = false
 	touch_leaderboard_visible = false
 	if is_instance_valid(leave_game_button):
@@ -214,6 +232,10 @@ func _show_match_end_ui_and_return(winner_id: int, final_stats: Dictionary) -> v
 	_try_execute_post_match_transition()
 
 func _local_match_result_text(winner_id: int) -> String:
+	if teams_enabled:
+		if winner_id != Teams.NONE and MultiplayerSession.get_team(multiplayer.get_unique_id()) == winner_id:
+			return "VICTORY"
+		return "DEFEAT"
 	if winner_id > 0 and NetUtil.has_active_peer(multiplayer) and multiplayer.get_unique_id() == winner_id:
 		return "VICTORY"
 	return "DEFEAT"

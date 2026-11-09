@@ -8,6 +8,7 @@ class_name MatchScoreboard
 
 ## Server only: a kill took `peer_id` to the score limit.
 signal score_limit_reached(peer_id: int)
+signal team_score_limit_reached(team: int)
 
 const STATS_REFRESH_INTERVAL := 0.35
 const PING_PROBE_INTERVAL := 1.0
@@ -15,19 +16,23 @@ const RPC_CHANNEL_UI := 2
 
 ## Server only: cleared when the match ends (stops scoring and refreshes).
 var active := true
+var round_scoring := false
 ## { peer_id: { "player_identifier", "kills", "deaths", "ping_ms", "loadout", "current_weapon" } }
 var player_stats := {}
+var team_scores := {Teams.ALPHA: 0, Teams.BRAVO: 0}
 
 var _map: Node2D
 var _leaderboard: DeathmatchLeaderboard
 var _score_limit := 25
+var _teams_enabled := true
 var _stats_refresh_elapsed := 0.0
 var _ping_probe_elapsed := 0.0
 
-func setup(map: Node2D, leaderboard: DeathmatchLeaderboard, score_limit: int) -> void:
+func setup(map: Node2D, leaderboard: DeathmatchLeaderboard, score_limit: int, teams_enabled: bool = true) -> void:
 	_map = map
 	_leaderboard = leaderboard
 	_score_limit = score_limit
+	_teams_enabled = teams_enabled
 
 func _process(delta: float) -> void:
 	if not NetUtil.has_active_peer(multiplayer):
@@ -62,24 +67,31 @@ func remove_peer(peer_id: int) -> void:
 	broadcast_stats()
 
 func broadcast_stats(stats: Dictionary = player_stats) -> void:
-	_update_stats.rpc(stats)
+	_update_stats.rpc(stats, team_scores)
 
 func send_stats_to(peer_id: int) -> void:
-	_update_stats.rpc_id(peer_id, player_stats)
+	_update_stats.rpc_id(peer_id, player_stats, team_scores)
 
 func register_death(victim_id: int, killer_id: int, is_headshot: bool = false) -> void:
 	if not multiplayer.is_server() or not active:
 		return
 
-	var killer_name := player_identifier(killer_id) if killer_id > 0 else "Unknown"
+	var killer_name := player_identifier(killer_id) if player_stats.has(killer_id) else "Unknown"
 	var victim_name := player_identifier(victim_id)
 
 	if player_stats.has(victim_id):
 		player_stats[victim_id]["deaths"] += 1
 	if player_stats.has(killer_id) and killer_id != victim_id:
 		player_stats[killer_id]["kills"] += 1
-		_notify_local_kill_feedback.rpc_id(killer_id, is_headshot)
-		if int(player_stats[killer_id].get("kills", 0)) >= _score_limit:
+		if not MultiplayerSession.is_bot(killer_id):
+			_notify_local_kill_feedback.rpc_id(killer_id, is_headshot)
+		var killer_team := MultiplayerSession.get_team(killer_id)
+		var victim_team := MultiplayerSession.get_team(victim_id)
+		if _teams_enabled and not round_scoring and team_scores.has(killer_team) and killer_team != victim_team:
+			team_scores[killer_team] += 1
+			if int(team_scores[killer_team]) >= _score_limit:
+				team_score_limit_reached.emit(killer_team)
+		elif not _teams_enabled and int(player_stats[killer_id].get("kills", 0)) >= _score_limit:
 			score_limit_reached.emit(killer_id)
 
 	_notify_kill_feed.rpc(killer_name, victim_name)
@@ -98,6 +110,11 @@ func refresh_all_combat_data() -> bool:
 
 func final_stats() -> Dictionary:
 	return player_stats.duplicate(true)
+
+func resolve_winning_team() -> int:
+	if team_scores[Teams.ALPHA] == team_scores[Teams.BRAVO]:
+		return Teams.NONE
+	return Teams.ALPHA if team_scores[Teams.ALPHA] > team_scores[Teams.BRAVO] else Teams.BRAVO
 
 ## Most kills wins; -1 on a tie (time limit).
 func resolve_top_scorer() -> int:
@@ -136,9 +153,12 @@ func player_identifier(peer_id: int) -> String:
 # --- display (all peers) ----------------------------------------------------
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
-func _update_stats(stats: Dictionary):
+func _update_stats(stats: Dictionary, scores: Dictionary) -> void:
+	if not multiplayer.is_server():
+		player_stats = stats.duplicate(true)
+		team_scores = scores.duplicate(true)
 	if is_instance_valid(_leaderboard):
-		_leaderboard.populate_leaderboard(stats)
+		_leaderboard.populate_leaderboard(stats, scores)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _notify_local_kill_feedback(is_headshot: bool = false) -> void:
@@ -200,6 +220,7 @@ func _report_client_ping(rtt_ms: int) -> void:
 func _new_player_stats(peer_id: int) -> Dictionary:
 	return {
 		"player_identifier": player_identifier(peer_id),
+		"team": MultiplayerSession.get_team(peer_id),
 		"kills": 0,
 		"deaths": 0,
 		"ping_ms": 0,
@@ -259,6 +280,10 @@ func _refresh_combat_data(peer_id: int, player: PlayerController = null) -> bool
 
 	var stats: Dictionary = player_stats[peer_id]
 	var has_changed := false
+	var team := player.team if player != null else MultiplayerSession.get_team(peer_id)
+	if int(stats.get("team", Teams.NONE)) != team:
+		stats["team"] = team
+		has_changed = true
 	var identifier := player_identifier(peer_id)
 	if stats.get("player_identifier", "") != identifier:
 		stats["player_identifier"] = identifier

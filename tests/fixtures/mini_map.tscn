@@ -1,0 +1,183 @@
+[gd_scene format=4]
+
+[ext_resource type="Script" path="res://components/fog_of_war_mask_view/fow_viewport_controller.gd" id="ext_resource_001"]
+[ext_resource type="Material" path="res://materials/all_white.tres" id="ext_resource_002"]
+[ext_resource type="Texture2D" path="res://assets/textures/110_deg_cone.png" id="ext_resource_003"]
+[ext_resource type="TileSet" path="res://resources/destruction/destructible_walls_tileset.tres" id="ext_resource_004"]
+[ext_resource type="Script" path="res://components/destruction/destructible_walls.gd" id="ext_resource_005"]
+[ext_resource type="PackedScene" path="res://scenes/props/door/door.tscn" id="ext_resource_006"]
+[ext_resource type="Script" path="res://scenes/props/door/door.gd" id="ext_resource_007"]
+[ext_resource type="PackedScene" path="res://scenes/props/crates/crate.tscn" id="ext_resource_008"]
+[ext_resource type="Script" path="res://components/fog_of_war_mask_view/prop_fog_occluder.gd" id="ext_resource_009"]
+[ext_resource type="PackedScene" path="res://components/round_mode/objective_zone.tscn" id="ext_resource_010"]
+[ext_resource type="Script" path="res://components/round_mode/objective_zone.gd" id="ext_resource_011"]
+[ext_resource type="Material" path="res://materials/los_material.tres" id="ext_resource_012"]
+[ext_resource type="Script" path="res://components/destruction/destruction_service.gd" id="ext_resource_013"]
+[ext_resource type="PackedScene" path="res://components/round_mode/round_game_mode.tscn" id="ext_resource_014"]
+[ext_resource type="Script" path="res://components/round_mode/round_mode.gd" id="ext_resource_015"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="ext_resource_016"]
+
+[sub_resource type="Gradient" id="sub_resource_001"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.477912)
+colors = PackedColorArray(0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="sub_resource_002"]
+gradient = SubResource("sub_resource_001")
+
+[sub_resource type="RectangleShape2D" id="sub_resource_003"]
+size = Vector2(64, 64)
+
+[sub_resource type="ViewportTexture" id="sub_resource_004"]
+viewport_path = NodePath("FowMaskView")
+
+[node name="World" type="Node2D" unique_id=1800000000]
+metadata/layout_path = "res://tests/fixtures/mini_layout.txt"
+metadata/layout_size = Vector2i(32, 24)
+
+[node name="FowMaskView" type="SubViewport" parent="." unique_id=1800000001 node_paths=PackedStringArray("los")]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("ext_resource_001")
+los = NodePath("LOS")
+
+[node name="Level" type="Node2D" parent="FowMaskView" unique_id=1800000002]
+
+[node name="Sprite2D" type="Sprite2D" parent="FowMaskView/Level" unique_id=1800000003]
+material = ExtResource("ext_resource_002")
+position = Vector2(256, 192)
+scale = Vector2(72, 70)
+texture = SubResource("sub_resource_002")
+
+[node name="LOS" type="PointLight2D" parent="FowMaskView" unique_id=1800000004]
+blend_mode = 1
+shadow_enabled = true
+texture = ExtResource("ext_resource_003")
+
+[node name="Camera2D" type="Camera2D" parent="FowMaskView" unique_id=1800000005]
+
+[node name="Map" type="Node2D" parent="." unique_id=1800000006]
+
+[node name="Floor" type="ColorRect" parent="Map" unique_id=1800000007]
+offset_right = 512.0
+offset_bottom = 384.0
+mouse_filter = 2
+color = Color(0.16, 0.2, 0.22, 1)
+
+[node name="DestructibleWalls" type="TileMapLayer" parent="Map" unique_id=1800000008]
+tile_map_data = PackedByteArray("AAAAAAAAAAACAAAAAAABAAAAAAACAAAAAAACAAAAAAACAAAAAAADAAAAAAACAAAAAAAEAAAAAAACAAAAAAAFAAAAAAACAAAAAAAGAAAAAAACAAAAAAAHAAAAAAACAAAAAAAIAAAAAAACAAAAAAAJAAAAAAACAAAAAAAKAAAAAAACAAAAAAALAAAAAAACAAAAAAAMAAAAAAACAAAAAAANAAAAAAACAAAAAAAOAAAAAAACAAAAAAAPAAAAAAACAAAAAAAQAAAAAAACAAAAAAARAAAAAAACAAAAAAASAAAAAAACAAAAAAATAAAAAAACAAAAAAAUAAAAAAACAAAAAAAVAAAAAAACAAAAAAAWAAAAAAACAAAAAAAXAAAAAAACAAAAAAAYAAAAAAACAAAAAAAZAAAAAAACAAAAAAAaAAAAAAACAAAAAAAbAAAAAAACAAAAAAAcAAAAAAACAAAAAAAdAAAAAAACAAAAAAAeAAAAAAACAAAAAAAfAAAAAAACAAAAAAAAAAEAAAACAAAAAAAfAAEAAAACAAAAAAAAAAIAAAACAAAAAAAfAAIAAAACAAAAAAAAAAMAAAACAAAAAAAfAAMAAAACAAAAAAAAAAQAAAACAAAAAAAfAAQAAAACAAAAAAAAAAUAAAACAAAAAAAfAAUAAAACAAAAAAAAAAYAAAACAAAAAAAfAAYAAAACAAAAAAAAAAcAAAACAAAAAAAKAAcAAAABAAAAAAALAAcAAAABAAAAAAAMAAcAAAABAAAAAAANAAcAAAABAAAAAAASAAcAAAABAAAAAAATAAcAAAABAAAAAAAUAAcAAAABAAAAAAAVAAcAAAABAAAAAAAWAAcAAAABAAAAAAAfAAcAAAACAAAAAAAAAAgAAAACAAAAAAAKAAgAAAABAAAAAAAWAAgAAAABAAAAAAAfAAgAAAACAAAAAAAAAAkAAAACAAAAAAAKAAkAAAABAAAAAAAWAAkAAAABAAAAAAAfAAkAAAACAAAAAAAAAAoAAAACAAAAAAAKAAoAAAABAAAAAAAWAAoAAAABAAAAAAAfAAoAAAACAAAAAAAAAAsAAAACAAAAAAAKAAsAAAABAAAAAAAWAAsAAAABAAAAAAAfAAsAAAACAAAAAAAAAAwAAAACAAAAAAAWAAwAAAABAAAAAAAfAAwAAAACAAAAAAAAAA0AAAACAAAAAAAWAA0AAAABAAAAAAAfAA0AAAACAAAAAAAAAA4AAAACAAAAAAAWAA4AAAABAAAAAAAfAA4AAAACAAAAAAAAAA8AAAACAAAAAAAWAA8AAAABAAAAAAAfAA8AAAACAAAAAAAAABAAAAACAAAAAAAKABAAAAABAAAAAAAWABAAAAABAAAAAAAfABAAAAACAAAAAAAAABEAAAACAAAAAAAKABEAAAABAAAAAAAWABEAAAABAAAAAAAfABEAAAACAAAAAAAAABIAAAACAAAAAAAKABIAAAABAAAAAAALABIAAAAAAAAAAAAMABIAAAAAAAAAAAANABIAAAAAAAAAAAAOABIAAAAAAAAAAAAPABIAAAACAAAAAAAQABIAAAAAAAAAAAARABIAAAAAAAAAAAASABIAAAAAAAAAAAATABIAAAAAAAAAAAAUABIAAAAAAAAAAAAVABIAAAAAAAAAAAAWABIAAAABAAAAAAAfABIAAAACAAAAAAAAABMAAAACAAAAAAAfABMAAAACAAAAAAAAABQAAAACAAAAAAAfABQAAAACAAAAAAAAABUAAAACAAAAAAAfABUAAAACAAAAAAAAABYAAAACAAAAAAAfABYAAAACAAAAAAAAABcAAAACAAAAAAABABcAAAACAAAAAAACABcAAAACAAAAAAADABcAAAACAAAAAAAEABcAAAACAAAAAAAFABcAAAACAAAAAAAGABcAAAACAAAAAAAHABcAAAACAAAAAAAIABcAAAACAAAAAAAJABcAAAACAAAAAAAKABcAAAACAAAAAAALABcAAAACAAAAAAAMABcAAAACAAAAAAANABcAAAACAAAAAAAOABcAAAACAAAAAAAPABcAAAACAAAAAAAQABcAAAACAAAAAAARABcAAAACAAAAAAASABcAAAACAAAAAAATABcAAAACAAAAAAAUABcAAAACAAAAAAAVABcAAAACAAAAAAAWABcAAAACAAAAAAAXABcAAAACAAAAAAAYABcAAAACAAAAAAAZABcAAAACAAAAAAAaABcAAAACAAAAAAAbABcAAAACAAAAAAAcABcAAAACAAAAAAAdABcAAAACAAAAAAAeABcAAAACAAAAAAAfABcAAAACAAAAAAA=")
+tile_set = ExtResource("ext_resource_004")
+occlusion_enabled = false
+physics_quadrant_size = 1
+script = ExtResource("ext_resource_005")
+
+[node name="Doors" type="Node2D" parent="Map" unique_id=1800000009]
+
+[node name="Door1" type="StaticBody2D" parent="Map/Doors" unique_id=1800000010 instance=ExtResource("ext_resource_006")]
+position = Vector2(256, 120)
+collision_mask = 0
+script = ExtResource("ext_resource_007")
+
+[node name="Door2" type="StaticBody2D" parent="Map/Doors" unique_id=1800000011 instance=ExtResource("ext_resource_006")]
+position = Vector2(168, 224)
+rotation = 1.5707964
+collision_mask = 0
+script = ExtResource("ext_resource_007")
+
+[node name="Props" type="Node2D" parent="Map" unique_id=1800000012]
+
+[node name="Prop1" type="StaticBody2D" parent="Map/Props" unique_id=1800000013 instance=ExtResource("ext_resource_008")]
+position = Vector2(440, 312)
+scale = Vector2(0.19, 0.19)
+
+[node name="FogOccluder" type="Node" parent="Map/Props/Prop1" unique_id=1800000014]
+script = ExtResource("ext_resource_009")
+
+[node name="SpawnPoints" type="Node2D" parent="Map" unique_id=1800000015]
+
+[node name="AttackerSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1800000016]
+
+[node name="Spawn1" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000017]
+position = Vector2(56, 56)
+
+[node name="Spawn2" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000018]
+position = Vector2(56, 104)
+
+[node name="Spawn3" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000019]
+position = Vector2(56, 152)
+
+[node name="Spawn4" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000020]
+position = Vector2(56, 200)
+
+[node name="Spawn5" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1800000021]
+position = Vector2(56, 248)
+
+[node name="DefenderSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1800000022]
+
+[node name="Spawn1" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000023]
+position = Vector2(440, 56)
+
+[node name="Spawn2" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000024]
+position = Vector2(440, 104)
+
+[node name="Spawn3" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000025]
+position = Vector2(440, 152)
+
+[node name="Spawn4" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000026]
+position = Vector2(440, 200)
+
+[node name="Spawn5" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1800000027]
+position = Vector2(440, 248)
+
+[node name="ObjectiveZone" type="Area2D" parent="Map" unique_id=1800000028 instance=ExtResource("ext_resource_010")]
+position = Vector2(256, 192)
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("ext_resource_011")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/ObjectiveZone" unique_id=1800000029]
+shape = SubResource("sub_resource_003")
+
+[node name="Fill" type="Polygon2D" parent="Map/ObjectiveZone" unique_id=1800000030]
+color = Color(0.32, 0.76, 0.74, 0.16)
+polygon = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+
+[node name="Outline" type="Line2D" parent="Map/ObjectiveZone" unique_id=1800000031]
+points = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32, -32, -32)
+width = 3.0
+default_color = Color(0.32, 0.76, 0.74, 0.8)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1800000032]
+
+[node name="FogOfWar" type="Sprite2D" parent="CanvasLayer" unique_id=1800000033]
+material = ExtResource("ext_resource_012")
+texture = SubResource("sub_resource_004")
+centered = false
+
+[node name="DestructionService" type="Node" parent="." unique_id=1800000034]
+script = ExtResource("ext_resource_013")
+
+[node name="RoundGameMode" type="Node" parent="." unique_id=1800000035 node_paths=PackedStringArray("map", "spawn_point_container", "leaderboard", "match_timer_label", "timer_touch_toggle_button", "match_result_overlay", "match_result_label", "leave_game_button") instance=ExtResource("ext_resource_014")]
+script = ExtResource("ext_resource_015")
+player_scene = ExtResource("ext_resource_016")
+map = NodePath("../Map")
+spawn_point_container = NodePath("../Map/SpawnPoints")
+leaderboard = NodePath("MatchResultLayer/Control/Leaderboard")
+match_timer_label = NodePath("MatchResultLayer/Control/Timer/MatchTimerLabel")
+timer_touch_toggle_button = NodePath("MatchResultLayer/Control/Timer/TouchScreenButton")
+match_result_overlay = NodePath("MatchResultLayer/MatchResultOverlay")
+match_result_label = NodePath("MatchResultLayer/MatchResultOverlay/ResultLabel")
+leave_game_button = NodePath("MatchResultLayer/Control/LeaveGameButtonAnchor/LeaveGameButton")
+
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000036]
+_spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
+spawn_path = NodePath("../Map")
+
+[node name="PickupSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000037]
+_spawnable_scenes = PackedStringArray("uid://cy2enpfy31fdt", "uid://djd5057n31hec", "uid://bt7txyxfcccff")
+spawn_path = NodePath("../Map")
+
+[node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1800000038]
+_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "uid://dh2nskt0itnox", "uid://cpo2ct5tbyue3")
+spawn_path = NodePath("../Map")

@@ -48,7 +48,36 @@ static func can_hear(listener: PlayerController, source: PlayerController) -> bo
 	var radius := source.net_sync.get_noise_radius()
 	if radius <= 0.0:
 		return false
+	if listener.global_position.distance_squared_to(source.global_position) > radius * radius:
+		return false
+	radius *= occlusion_factor(listener.global_position, source.global_position, listener.get_world_2d().direct_space_state)
 	return listener.global_position.distance_squared_to(source.global_position) <= radius * radius
+
+static func occlusion_factor(from: Vector2, to: Vector2, space: PhysicsDirectSpaceState2D) -> float:
+	var offset := to - from
+	var distance := offset.length()
+	if distance < 0.001:
+		return 1.0
+	var direction := offset / distance
+	var cursor := from
+	var factor := 1.0
+	for _hit_index in range(4):
+		var hit := space.intersect_ray(PhysicsRayQueryParameters2D.create(cursor, to, ENVIRONMENT_MASK))
+		if hit.is_empty():
+			break
+		var walls := hit.get("collider") as DestructibleWalls
+		var door := hit.get("collider") as Door
+		if walls != null:
+			factor *= DestructionMaterial.sound_factor(walls.cell_material(walls.cell_from_hit(hit)))
+		elif door != null:
+			factor *= 0.7 if door.state == Door.State.CLOSED else 1.0
+		else:
+			factor *= 0.35
+		var travelled: float = (hit.position - from).dot(direction) + 17.0
+		if travelled >= distance:
+			break
+		cursor = from + direction * travelled
+	return factor
 
 ## Active smoke clouds as [center: Vector2, radius: float] pairs.
 static func collect_smoke_blockers(tree: SceneTree) -> Array:

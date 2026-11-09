@@ -17,6 +17,7 @@ enum InputMode {
 
 var input_vector := Vector2.ZERO
 var mouse_pos := Vector2.ZERO
+var touch_slow_walk := false
 
 var _aim_screen_pos := Vector2.ZERO
 var _aim_initialized := false
@@ -134,7 +135,7 @@ func build_input_frame(tick: int) -> PlayerInputFrame:
 	if _pending_slot_select_ticks == 0:
 		_pending_slot_select_value = -1
 
-	frame.slow_walk_held = false if touch_mode else Input.is_action_pressed("slow_walk")
+	frame.slow_walk_held = touch_slow_walk if touch_mode else Input.is_action_pressed("slow_walk")
 	return frame
 
 func _resolve_touch_aim_zone() -> TouchAimZone:
@@ -162,6 +163,7 @@ func _is_touch_mode() -> bool:
 	return input_mode == InputMode.TOUCH
 
 func _apply_input_mode() -> void:
+	touch_slow_walk = false
 	_aim_initialized = false
 	_touch_aim_dir = Vector2.RIGHT
 	_touch_look_start_angle = 0.0
@@ -228,7 +230,7 @@ func _can_control_mouse_capture() -> bool:
 func _set_touch_controls_visible(is_visible: bool) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(player.hud):
 		return
-	var touch_nodes := ["MovementJoystick", "Shoot", "Reload", "Headshot", "TouchAimZone"]
+	var touch_nodes := ["MovementJoystick", "Shoot", "Reload", "Headshot", "TouchAimZone", "Walk"]
 	for node_name in touch_nodes:
 		var node := player.hud.get_node_or_null("Controls/%s" % node_name)
 		if node is CanvasItem:

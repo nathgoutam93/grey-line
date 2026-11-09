@@ -35,13 +35,37 @@ enum ShotIntent {
 @export var is_slow_walking := false
 
 var owner_peer_id: int = 1
+var team: int = Teams.NONE
 var current_shot_intent: int = ShotIntent.BODY
 
 var interactables: Array[Interactable]
 var is_dead := false
 var is_local_player := false
+var actions_locked := false:
+	set(value):
+		if actions_locked == value:
+			return
+		actions_locked = value
+		if value:
+			velocity = Vector2.ZERO
+			if movement_component != null:
+				movement_component.external_velocity = Vector2.ZERO
+				movement_component.is_moving = false
+			if equipment_manager != null:
+				for item in equipment_manager.equipped_items.values():
+					var equipment := item as EquipmentInstance
+					if equipment != null:
+						equipment.force_interrupt()
+			if net_sync != null:
+				net_sync.cancel_locked_actions()
+
+var movement_locked: bool:
+	get:
+		var mode := MatchGameMode.current(get_tree())
+		return actions_locked and (mode == null or mode.is_movement_locked())
 
 var _death_sequence_id := 0
+var _fog_material: Material
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
 const RPC_CHANNEL_UI := 2
 
@@ -53,6 +77,8 @@ var _footstep_moving := false
 const FOOTSTEP_SPEED_THRESHOLD := 40.0
 
 func _ready():
+	if skeletal_character != null:
+		_fog_material = skeletal_character.material
 	if health_component and not health_component.is_connected("die", _on_die):
 		health_component.connect("die", _on_die)
 
@@ -84,6 +110,15 @@ func get_current_equipment() -> EquipmentInstance:
 	if equipment_manager == null:
 		return null
 	return equipment_manager.get_current_item()
+
+func apply_team_visuals(local_team: int) -> void:
+	if skeletal_character == null:
+		return
+	var local := owner_peer_id == multiplayer.get_unique_id()
+	var teammate := not local and team != Teams.NONE and team == local_team
+	skeletal_character.material = null if local or teammate else _fog_material
+	var tint: Color = Teams.COLORS.get(team, Color.WHITE)
+	skeletal_character.modulate = tint.lerp(Color.WHITE, 0.6) if teammate else Color.WHITE
 
 
 func get_speed() -> float:
@@ -151,19 +186,22 @@ func _update_footstep_audio(delta: float) -> void:
 	if delta <= 0.0:
 		return
 
-	var is_moving_now := _footstep_moving
-
-	if movement_component != null and movement_component.is_moving:
-		is_moving_now = true
-	if is_dead:
-		is_moving_now = false
-
-	if is_moving_now:
+	if should_play_footsteps():
 		if not footstep_player.playing:
 			footstep_player.play()
 		return
 	if footstep_player.playing:
 		footstep_player.stop()
+
+## Only the local player's own steps use local movement. Everyone else, on
+## clients and on the host alike, is heard only when the filtered world packet
+## carries their footstep bit, so walls and slow-walk hide steps equally.
+func should_play_footsteps() -> bool:
+	if is_dead:
+		return false
+	if net_sync != null and not net_sync.is_owner_role():
+		return _footstep_moving and net_sync.net_footsteps
+	return (_footstep_moving or (movement_component != null and movement_component.is_moving)) and not is_slow_walking
 
 func _on_network_tick(_tick: int) -> void:
 	if is_dead:
@@ -220,6 +258,10 @@ func _remote_die(global_pos: Vector2):
 	dead_scene.global_position = global_pos
 	get_tree().current_scene.add_child(dead_scene)
 
+	# MultiplayerSpawner owns removal on clients. A local death timer can race
+	# its authoritative despawn, especially when the next round starts at 5 s.
+	if not multiplayer.is_server():
+		return
 	var despawn_ticks := maxi(1, int(round(DEATH_DESPAWN_DELAY_SECONDS * float(NetworkTick.tick_rate))))
 	await _wait_network_ticks(despawn_ticks)
 	if death_sequence != _death_sequence_id:
@@ -237,6 +279,7 @@ func _disable_hurtbox(hurtbox: Area2D) -> void:
 func reset_for_respawn() -> void:
 	_death_sequence_id += 1
 	is_dead = false
+	actions_locked = false
 	is_slow_walking = false
 	if net_sync:
 		net_sync.reset_state()

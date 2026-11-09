@@ -6,6 +6,8 @@ enum WeaponType {PRIMARY, SECONDARY, MELEE}
 @export var weapon_type: WeaponType = WeaponType.SECONDARY
 
 @export var damage := 0
+@export var wall_damage := 10
+@export var melee_wall_damage := 20
 @export var d_range := 1000.0
 
 @export var mag_size := 0
@@ -56,6 +58,8 @@ func to_dict() -> Dictionary:
 		"name": name,
 		"weapon_type": weapon_type,
 		"damage": damage,
+		"wall_damage": wall_damage,
+		"melee_wall_damage": melee_wall_damage,
 		"d_range": d_range,
 		"mag_size": mag_size,
 		"mag_count": mag_count,
@@ -78,6 +82,8 @@ static func new_from_dict(dict: Dictionary) -> Weapon:
 	w.name = dict["name"]
 	w.weapon_type = dict["weapon_type"]
 	w.damage = dict["damage"]
+	w.wall_damage = dict.get("wall_damage", 10)
+	w.melee_wall_damage = dict.get("melee_wall_damage", 20)
 	w.d_range = dict["d_range"]
 	w.mag_size = dict["mag_size"]
 	w.mag_count = dict.get("mag_count", 4)

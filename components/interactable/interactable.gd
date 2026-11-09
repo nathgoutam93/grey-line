@@ -4,8 +4,7 @@ class_name Interactable
 signal player_entered(player: PlayerController)
 signal player_exited(player: PlayerController)
 
-var owner_ref
-var player_ref = null
+var owner_ref: Node
 
 func _ready():
 	owner_ref = get_parent()
@@ -13,18 +12,23 @@ func _ready():
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
-func _on_body_entered(body):
-	if body.is_in_group("Player"):
-		player_ref = body
-		player_ref.add_interactable(self)
-		emit_signal("player_entered", body)
+func _on_body_entered(body: Node2D) -> void:
+	var player := body as PlayerController
+	if player != null:
+		if not player.interactables.has(self):
+			player.add_interactable(self)
+		player_entered.emit(player)
 
-func _on_body_exited(body):
-	if body == player_ref:
-		player_ref.remove_interactable(self)
-		emit_signal("player_exited", body)
-		player_ref = null
+func _on_body_exited(body: Node2D) -> void:
+	var player := body as PlayerController
+	if player != null:
+		player.remove_interactable(self)
+		player_exited.emit(player)
 
-func on_interact():
-	if owner_ref and owner_ref.has_method("on_interact"):
-		owner_ref.on_interact(player_ref)
+func on_interact(player: PlayerController) -> void:
+	if not multiplayer.is_server() or not is_instance_valid(player) or player.is_dead or not player.interactables.has(self):
+		return
+	if owner_ref is Door:
+		(owner_ref as Door).on_interact(player)
+	elif owner_ref is WeaponPickup:
+		(owner_ref as WeaponPickup).on_interact(player)

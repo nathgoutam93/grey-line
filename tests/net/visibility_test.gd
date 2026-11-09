@@ -6,8 +6,11 @@ extends "res://tests/net/net_test_base.gd"
 ##   in view            -> VISIBLE, drawn
 ##   behind, silent     -> CULLED, not drawn
 ##   behind, walking    -> AUDIBLE, not drawn, footsteps playing, true position
+##   behind, slow-walk  -> CULLED, not drawn, no footsteps
+##   in view, slow-walk -> VISIBLE, drawn, no footsteps
+##   in view, running   -> VISIBLE, drawn, footsteps playing
 ##   behind, shooting   -> the shot plays from the true position
-##   behind a wall      -> CULLED; walking there -> AUDIBLE with footsteps
+##   behind a wall      -> CULLED; distant walking stays CULLED, nearby walking is AUDIBLE
 ##   smoke in between   -> CULLED
 ##   back in view       -> VISIBLE
 
@@ -50,6 +53,7 @@ func on_message(key: String, value: Variant) -> void:
 				"drawn": host_player.visible,
 				"position": host_player.global_position,
 				"footsteps": host_player.footstep_player.playing,
+				"footstep_flag": host_player.net_sync.net_footsteps,
 				"sounds": sounds,
 			}
 		send("result:" + key.trim_prefix("sample:"), reply)
@@ -74,8 +78,8 @@ func _expect(scenario: String, reply: Dictionary, presence: PlayerNetSync.NetPre
 	var ok: bool = got == presence and bool(reply["drawn"]) == drawn
 	var detail := "presence=%s drawn=%s" % [PlayerNetSync.NetPresence.keys()[got], reply["drawn"]]
 	if footsteps != null:
-		ok = ok and bool(reply["footsteps"]) == footsteps
-		detail += " footsteps=%s" % reply["footsteps"]
+		ok = ok and bool(reply["footsteps"]) == footsteps and bool(reply["footstep_flag"]) == footsteps
+		detail += " footsteps=%s flag=%s" % [reply["footsteps"], reply["footstep_flag"]]
 	if true_pos != null:
 		var off: float = (reply["position"] as Vector2).distance_to(true_pos)
 		ok = ok and off <= AUDIBLE_POSITION_TOLERANCE
@@ -111,6 +115,24 @@ func run_host() -> void:
 	Input.action_release("move_left")
 	await hold(0.3)
 
+	me.global_position = behind
+	Input.action_press("slow_walk")
+	Input.action_press("move_left")
+	await hold(0.7)
+	_expect("behind_and_slow_walking_is_culled", await _sample("slow_behind"), PlayerNetSync.NetPresence.CULLED, false, false)
+	Input.action_release("move_left")
+
+	me.global_position = front
+	Input.action_press("move_left")
+	await hold(0.7)
+	_expect("visible_slow_walker_is_silent", await _sample("slow_front"), PlayerNetSync.NetPresence.VISIBLE, true, false, me.global_position)
+	Input.action_release("slow_walk")
+	me.global_position = front
+	await hold(0.7)
+	_expect("visible_runner_has_footsteps", await _sample("run_front"), PlayerNetSync.NetPresence.VISIBLE, true, true, me.global_position)
+	Input.action_release("move_left")
+	await hold(0.3)
+
 	# Switch to the pistol (shots carry 1200 px), go quiet, then shoot.
 	await tap("secondary")
 	var shoot_from := open - facing * 450.0
@@ -118,6 +140,7 @@ func run_host() -> void:
 	await hold(1.2)
 	var quiet := await _sample("quiet")
 	check("hidden_shooter_is_culled_before_shooting", not quiet.is_empty() and int(quiet["presence"]) == PlayerNetSync.NetPresence.CULLED, "presence=%s" % [PlayerNetSync.NetPresence.keys()[int(quiet.get("presence", 0))]])
+	Input.action_press("slow_walk") # equipment noise must remain audible in walk mode
 	await tap("shoot", 0.25)
 	await hold(0.8)
 	_inbox.erase("result:shot")
@@ -129,8 +152,9 @@ func run_host() -> void:
 		var off: float = (shot["position"] as Vector2).distance_to(shoot_from)
 		check("hidden_shot_heard_from_true_position", int(shot["presence"]) != PlayerNetSync.NetPresence.CULLED and off < 1.0,
 			"presence=%s, %.2f px from the shooter" % [PlayerNetSync.NetPresence.keys()[int(shot["presence"])], off])
+	Input.action_release("slow_walk")
 
-	var wall_setup := _find_wall_setup(facing)
+	var wall_setup := find_wall_setup(facing)
 	if wall_setup.is_empty():
 		results.fail("behind_wall_is_culled", "no wall setup found on the map")
 	else:
@@ -140,8 +164,33 @@ func run_host() -> void:
 		_expect("behind_wall_is_culled", await _sample("wall"), PlayerNetSync.NetPresence.CULLED, false)
 		Input.action_press("move_up")
 		await hold(0.6)
-		_expect("walking_behind_wall_is_audible", await _sample("wall_walk"), PlayerNetSync.NetPresence.AUDIBLE, false, true)
+		_expect("distant_walking_behind_wall_is_culled", await _sample("wall_walk"), PlayerNetSync.NetPresence.CULLED, false, false)
 		Input.action_release("move_up")
+		viewer.global_position = open
+		await hold(1.0)
+
+	# Keep the audible-through-cover check inside the attenuated 800 * 0.35 = 280 px radius.
+	var close_open := find_open_spot(Vector2.RIGHT, 300.0)
+	if close_open == Vector2.INF:
+		results.fail("walking_behind_wall_is_audible", "no nearby wall setup found")
+	else:
+		var close_wall := StaticBody2D.new()
+		close_wall.collision_layer = 1
+		var shape := CollisionShape2D.new()
+		var rectangle := RectangleShape2D.new()
+		rectangle.size = Vector2(8, 400)
+		shape.shape = rectangle
+		close_wall.add_child(shape)
+		close_wall.position = close_open + Vector2(50, 0)
+		game_mode().map.add_child(close_wall)
+		viewer.global_position = close_open
+		me.global_position = close_open + Vector2(100, 0)
+		await hold(0.5)
+		Input.action_press("move_up")
+		await hold(0.4)
+		_expect("walking_behind_wall_is_audible", await _sample("close_wall_walk"), PlayerNetSync.NetPresence.AUDIBLE, false, true)
+		Input.action_release("move_up")
+		close_wall.queue_free()
 		viewer.global_position = open
 		await hold(1.0)
 
@@ -156,24 +205,3 @@ func run_host() -> void:
 	smoke.queue_free()
 	await hold(1.2)
 	_expect("back_in_view_is_visible", await _sample("back"), PlayerNetSync.NetPresence.VISIBLE, true)
-
-## [viewer_pos, target_pos]: the viewer faces a building 220-400 px ahead and
-## the target stands right behind it with all three sight rays blocked.
-func _find_wall_setup(facing: Vector2) -> Array:
-	var space := get_viewport().world_2d.direct_space_state
-	for gx in range(-30, 31):
-		for gy in range(-30, 31):
-			var p := Vector2(gx * 80.0, gy * 80.0)
-			if not spot_free(p):
-				continue
-			var hit := space.intersect_ray(PhysicsRayQueryParameters2D.create(p, p + facing * 500.0, 1))
-			if hit.is_empty():
-				continue
-			var d := p.distance_to(hit.position)
-			if d < 220.0 or d > 400.0:
-				continue
-			var t: Vector2 = hit.position + facing * 160.0
-			var side := facing.orthogonal() * 40.0
-			if spot_free(t) and not ray_clear(p, t) and not ray_clear(p, t + side) and not ray_clear(p, t - side):
-				return [p, t]
-	return []
