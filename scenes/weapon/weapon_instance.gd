@@ -103,7 +103,7 @@ func _shoot_raycast() -> void:
 		if hit_player != null and hit_player != player and not hit_player.is_dead:
 			var is_head_hit := shot_intent == PlayerController.ShotIntent.HEAD
 			if player.can_register_hit(is_head_hit) and Teams.can_damage(player.team, hit_player.team,
-				player.owner_peer_id, hit_player.owner_peer_id, DeathmatchGameMode.is_friendly_fire_enabled(get_tree())):
+				player.owner_peer_id, hit_player.owner_peer_id, MatchGameMode.is_friendly_fire_enabled(get_tree())):
 				hit_player.health_component.take_damage(data.damage, player.owner_peer_id, is_head_hit)
 
 	if multiplayer.is_server():

@@ -222,7 +222,7 @@ func get_player_name(peer_id: int) -> String:
 	return String(player_names.get(peer_id, "Player %d" % peer_id))
 
 func get_team(peer_id: int) -> int:
-	var mode := DeathmatchGameMode.current(get_tree())
+	var mode := MatchGameMode.current(get_tree())
 	if mode != null and not mode.teams_enabled:
 		return Teams.NONE
 	return int(player_teams.get(peer_id, Teams.NONE))

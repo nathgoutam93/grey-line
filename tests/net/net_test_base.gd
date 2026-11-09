@@ -209,8 +209,7 @@ func local_player() -> PlayerController:
 	return null
 
 func game_mode() -> Node:
-	var scene := get_tree().current_scene
-	return scene.find_child("DeathmatchGameMode", true, false) if scene else null
+	return get_tree().get_first_node_in_group("game_mode")
 
 func ray_clear(from: Vector2, to: Vector2, exclude: Array[RID] = []) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(from, to, 1, exclude)

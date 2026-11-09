@@ -1,4 +1,4 @@
-extends Node
+extends MatchGameMode
 class_name DeathmatchGameMode
 
 ## Deathmatch rules and match flow: timer, score limit, end of match, the
@@ -9,8 +9,6 @@ class_name DeathmatchGameMode
 ## - Scoreboard (MatchScoreboard): kills, deaths, ping, kill feed, leaderboard.
 
 @export var player_scene: PackedScene
-@export var teams_enabled := true
-@export var friendly_fire := false
 @export var leaderboard: DeathmatchLeaderboard
 @export var map: Node2D
 @export var spawn_point_container: Node
@@ -110,13 +108,6 @@ func _process(delta: float) -> void:
 		_end_match(-1, "time limit")
 
 # --- connection -------------------------------------------------------------
-
-static func current(tree: SceneTree) -> DeathmatchGameMode:
-	return tree.get_first_node_in_group("game_mode") as DeathmatchGameMode
-
-static func is_friendly_fire_enabled(tree: SceneTree) -> bool:
-	var mode := current(tree)
-	return mode.friendly_fire if mode != null else false
 
 func _on_connected():
 	print("Connected to server.")

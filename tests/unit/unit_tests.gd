@@ -77,6 +77,19 @@ func _destructible_wall(at: Vector2, cells: Array[Vector2i], material: int = Des
 
 # --- Destruction ------------------------------------------------------------
 
+func test_game_mode_lookup_uses_group() -> void:
+	var mode := MatchGameMode.new()
+	mode.name = "CustomRules"
+	add_child(mode)
+	mode.add_to_group("game_mode")
+	mode.teams_enabled = false
+	mode.friendly_fire = true
+	check(MatchGameMode.current(get_tree()) == mode, "game mode lookup depends on deathmatch name or type")
+	check(MatchGameMode.is_friendly_fire_enabled(get_tree()), "generic mode friendly-fire rule ignored")
+	check(MultiplayerSession.get_team(1) == Teams.NONE, "generic FFA mode did not disable team assignment")
+	mode.queue_free()
+	await get_tree().process_frame
+
 func test_weapon_wall_damage_survives_pickups() -> void:
 	var weapon := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon
 	weapon.wall_damage = 17
