@@ -12,6 +12,24 @@ func _mode() -> RoundGameMode:
 func _walls() -> DestructibleWalls:
 	return _mode().map.get_node("DestructibleWalls") as DestructibleWalls
 
+func _crates() -> Array[BreakableProp]:
+	var crates: Array[BreakableProp] = []
+	for node in _mode().map.get_node("Props").get_children():
+		var crate := node as BreakableProp
+		if crate != null:
+			crates.append(crate)
+	return crates
+
+func _prop_report() -> Dictionary:
+	var broken := 0
+	var fog_blocking := 0
+	for crate in _crates():
+		if crate.broken and crate.collision_layer == 0:
+			broken += 1
+		if not crate._fog_occluders.is_empty() and crate._fog_occluders.all(func(occluder: LightOccluder2D): return occluder.visible):
+			fog_blocking += 1
+	return {"crates": _crates().size(), "broken": broken, "fog_blocking": fog_blocking}
+
 func run_host_lobby() -> void:
 	_bot_id = MultiplayerSession.add_bot()
 	MultiplayerSession.set_team(1, Teams.ALPHA)
@@ -41,10 +59,12 @@ func _report(tag: String, options: Dictionary) -> void:
 		await wait_until(func(): return _walls().get_used_cells().size() == int(options.cells), 3.0)
 	if options.has("phase"):
 		await wait_until(func(): return _mode().phase == int(options.phase), 3.0)
+	if options.has("broken"):
+		await wait_until(func(): return _prop_report().broken == int(options.broken), 3.0)
 	var states: Array[int] = []
 	for door in _mode().map.get_node("Doors").get_children():
 		states.append((door as Door).state)
-	send("state:" + tag, {"map": MultiplayerSession.map_scene_path, "cells": _walls().get_used_cells().size(), "fog": _walls().mirror.get_used_cells().size(), "doors": states, "phase": _mode().phase, "winner": _mode().winner_team, "scores": _mode().team_scores.duplicate(), "progress": _mode().objective_bar.value})
+	send("state:" + tag, {"map": MultiplayerSession.map_scene_path, "cells": _walls().get_used_cells().size(), "fog": _walls().mirror.get_used_cells().size(), "doors": states, "phase": _mode().phase, "winner": _mode().winner_team, "scores": _mode().team_scores.duplicate(), "progress": _mode().objective_bar.value, "props": _prop_report()})
 	await capture_frame(tag)
 	send("captured:" + tag)
 
@@ -83,16 +103,19 @@ func run_host() -> void:
 		finish_with_failure("phase", "CQC did not unlock")
 		return
 	var service := DestructionService.current(get_tree())
-	for cell in [Vector2i(134, 49), Vector2i(134, 50), Vector2i(134, 51)]:
-		service.apply_cell_damage(_walls(), cell, 40, DestructionMaterial.KIND_BULLET)
-	service.apply_cell_damage(_walls(), Vector2i.ZERO, 500, DestructionMaterial.KIND_EXPLOSIVE)
+	var soft := Vector2i(134, 50)
 	var reinforced := Vector2i(188, 64)
-	service.apply_cell_damage(_walls(), reinforced, 200, DestructionMaterial.KIND_BULLET)
-	var reinforced_resists := _walls().has_wall(reinforced)
-	service.apply_cell_damage(_walls(), reinforced, 200, DestructionMaterial.KIND_EXPLOSIVE)
-	check("cqc_materials_and_breach", _walls().has_wall(Vector2i.ZERO) and reinforced_resists and not _walls().has_wall(reinforced), "hard boundary survives; reinforced resists bullets and breaches to explosives")
-	var breached := await _sample("breached", {"cells": _baseline - 4})
-	check("cqc_breach_and_fog_replicate", breached.get("cells") == _baseline - 4 and breached.get("fog") == _baseline - 4, "three soft holes and reinforced breach match client collision/fog")
+	for cell in [soft, reinforced, Vector2i.ZERO]:
+		for kind in [DestructionMaterial.KIND_BULLET, DestructionMaterial.KIND_MELEE, DestructionMaterial.KIND_EXPLOSIVE]:
+			service.apply_cell_damage(_walls(), cell, 1000, kind)
+	service.apply_explosion(_walls().to_global(_walls().map_to_local(soft)) + Vector2(-24, 0), 320.0, 200)
+	check("cqc_walls_indestructible", _walls().get_used_cells().size() == _baseline and _walls().has_wall(soft) and _walls().has_wall(reinforced), "soft, reinforced and hard cells ignore bullets, melee and explosions")
+	var crates := _crates()
+	for crate in crates:
+		crate.apply_damage(crate.max_hp, DestructionMaterial.KIND_BULLET)
+	var broken := await _sample("crates-broken", {"broken": crates.size()})
+	var props: Dictionary = broken.get("props", {})
+	check("cqc_crates_break_and_replicate", crates.size() > 0 and props.get("crates") == crates.size() and props.get("broken") == crates.size() and props.get("fog_blocking") == 0 and broken.get("cells") == _baseline and broken.get("fog") == _baseline, "%d crates broke with collision and fog on the client; walls unchanged: %s" % [crates.size(), broken])
 	for door in mode.map.get_node("Doors").get_children():
 		(door as Door).on_interact(player(1))
 	var opened := await _sample("doors-open")
@@ -122,9 +145,10 @@ func run_host() -> void:
 	if not await wait_until(func(): return mode.phase == RoundGameMode.Phase.FREEZE, 8.0):
 		finish_with_failure("reset", "next CQC round did not start")
 		return
-	var reset := await _sample("reset", {"cells": _baseline, "phase": RoundGameMode.Phase.FREEZE})
+	var reset := await _sample("reset", {"cells": _baseline, "phase": RoundGameMode.Phase.FREEZE, "broken": 0})
 	states = reset.get("doors", [])
 	var restored := true
 	for id in [1, client_peer(), _bot_id]:
 		restored = restored and player(id) != null and player(id).health_component.current_health == 100
-	check("cqc_round_restores_map", restored and reset.get("cells") == _baseline and reset.get("fog") == _baseline and states.size() == 9 and states.all(func(value): return value == Door.State.CLOSED), "fresh lives, all wall cells, automatic fog and closed doors reset together")
+	var reset_props: Dictionary = reset.get("props", {})
+	check("cqc_round_restores_map", restored and reset.get("cells") == _baseline and reset.get("fog") == _baseline and reset_props.get("broken") == 0 and reset_props.get("fog_blocking") == crates.size() and states.size() == 9 and states.all(func(value): return value == Door.State.CLOSED), "fresh lives, walls, crates with fog, and closed doors reset together: %s" % [reset])

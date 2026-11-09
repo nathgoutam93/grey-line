@@ -1,9 +1,9 @@
 extends "res://tests/net/net_test_base.gd"
 
-const WALL := preload("res://tests/fixtures/test_wall.tscn")
+const COVER := preload("res://tests/fixtures/test_crate.tscn")
 var _ally_id := 0
 var _enemy_id := 0
-var _wall: DestructibleWalls
+var _cover: BreakableProp
 
 func run_host_lobby() -> void:
 	_ally_id = MultiplayerSession.add_bot()
@@ -14,17 +14,17 @@ func run_host_lobby() -> void:
 		MultiplayerSession.set_team(id, Teams.BRAVO)
 	MultiplayerSession.set_selected_map_scene_path("res://scenes/maps/map_1/map_1_rounds.tscn")
 
-func _spawn_wall(pose: Vector2) -> void:
-	_wall = WALL.instantiate() as DestructibleWalls
-	_wall.name = "HostVisibilityWall"
-	_wall.position = pose
-	game_mode().map.add_child(_wall)
+func _spawn_cover(pose: Vector2) -> void:
+	_cover = COVER.instantiate() as BreakableProp
+	_cover.name = "HostVisibilityCover"
+	_cover.position = pose
+	game_mode().map.add_child(_cover)
 
 func on_message(key: String, value: Variant) -> void:
 	if role != "client":
 		return
 	if key == "wall":
-		_spawn_wall(value)
+		_spawn_cover(value)
 		send("wall_ready")
 	elif key.begins_with("probe:"):
 		var target := player(int(value))
@@ -89,8 +89,8 @@ func run_host() -> void:
 	for actor in [enemy, ally]:
 		actor.reset_footstep_tracking()
 		bot(actor.owner_peer_id).stop()
-	_spawn_wall(origin + Vector2(192, -96))
-	send("wall", _wall.position)
+	_spawn_cover(origin + Vector2(200, 0))
+	send("wall", _cover.position)
 	if await wait_for("wall_ready", 4.0) == null:
 		finish_with_failure("setup", "client wall missing")
 		return
@@ -115,11 +115,9 @@ func run_host() -> void:
 	await hold(0.1)
 	check("host_audible_enemy_stays_hidden", enemy.net_sync._net_presence == PlayerNetSync.NetPresence.AUDIBLE and not enemy.visible, "hearing the enemy does not reveal its body")
 
-	var service := DestructionService.current(get_tree())
-	for cell in [Vector2i(0, 4), Vector2i(0, 5), Vector2i(0, 6)]:
-		service.apply_cell_damage(_wall, cell, 40, DestructionMaterial.KIND_BULLET)
+	_cover.apply_damage(_cover.max_hp, DestructionMaterial.KIND_BULLET)
 	await hold(0.3)
-	check("host_enemy_reappears_through_breach", VisibilityQuery.can_see(host, enemy, []) and enemy.visible, "host reveals the enemy when the wall opens")
+	check("host_enemy_reappears_when_cover_breaks", VisibilityQuery.can_see(host, enemy, []) and enemy.visible, "host reveals the enemy when the crate breaks")
 	await capture_frame("breached")
 	if DisplayServer.get_name() != "headless":
 		var pixels := await _mesh_pixel_difference(enemy)

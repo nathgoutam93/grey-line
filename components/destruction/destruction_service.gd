@@ -37,39 +37,34 @@ func apply_cell_damage(walls: DestructibleWalls, cell: Vector2i, amount: int, ki
 	_pending[path] = pending
 	cells_destroyed.emit(cells)
 
+## Walls are indestructible, so a blast damages only doors and breakable props
+## it has a clear line to. Every target is chosen against the intact geometry
+## before any damage applies, so iteration order cannot open extra lines.
 func apply_explosion(center: Vector2, radius: float, max_damage: int, source: PlayerController = null) -> void:
 	if not multiplayer.is_server() or radius <= 0.0 or max_damage <= 0:
 		return
 	var space := get_viewport().world_2d.direct_space_state
-	var damage_events: Array[Dictionary] = []
 	var door_events: Array[Dictionary] = []
-	for walls in _walls_nodes():
-		var low := walls.cell_at_world(center)
-		var high := low
-		for offset in [Vector2(-radius, -radius), Vector2(radius, -radius), Vector2(radius, radius), Vector2(-radius, radius)]:
-			var cell := walls.cell_at_world(center + offset)
-			low = low.min(cell)
-			high = high.max(cell)
-		for x in range(low.x, high.x + 1):
-			for y in range(low.y, high.y + 1):
-				var cell := Vector2i(x, y)
-				if not DestructionMaterial.can_damage(walls.cell_material(cell), DestructionMaterial.KIND_EXPLOSIVE):
-					continue
-				var target := walls.to_global(walls.map_to_local(cell))
-				var amount := roundi(max_damage * maxf(1.0 - center.distance_to(target) / radius, 0.0))
-				if amount > 0 and blast_line_clear(space, center, target, walls, cell):
-					damage_events.append({"walls": walls, "cell": cell, "amount": amount})
+	var prop_events: Array[Dictionary] = []
 	for door in _door_nodes():
 		if door.state == Door.State.BROKEN:
 			continue
-		var amount := roundi(max_damage * maxf(1.0 - center.distance_to(door.global_position) / radius, 0.0))
+		var amount := _blast_amount(center, door.global_position, radius, max_damage)
 		if amount > 0 and blast_line_clear(space, center, door.global_position, null, Vector2i.ZERO, door):
 			door_events.append({"door": door, "amount": amount})
-	# Resolve against the intact geometry first, so iteration order cannot send a blast through extra layers.
-	for event in damage_events:
-		apply_cell_damage(event.walls, event.cell, event.amount, DestructionMaterial.KIND_EXPLOSIVE)
+	for prop in _prop_nodes():
+		if prop.broken:
+			continue
+		var amount := _blast_amount(center, prop.global_position, radius, max_damage)
+		if amount > 0 and blast_line_clear(space, center, prop.global_position, null, Vector2i.ZERO, prop):
+			prop_events.append({"prop": prop, "amount": amount})
 	for event in door_events:
 		(event.door as Door).apply_damage(event.amount, DestructionMaterial.KIND_EXPLOSIVE, source)
+	for event in prop_events:
+		(event.prop as BreakableProp).apply_damage(event.amount, DestructionMaterial.KIND_EXPLOSIVE)
+
+static func _blast_amount(center: Vector2, target: Vector2, radius: float, max_damage: int) -> int:
+	return roundi(max_damage * maxf(1.0 - center.distance_to(target) / radius, 0.0))
 
 static func blast_line_clear(space: PhysicsDirectSpaceState2D, from: Vector2, to: Vector2, walls: DestructibleWalls = null, cell: Vector2i = Vector2i.ZERO, target_body: CollisionObject2D = null) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(from, to, 1)
@@ -116,10 +111,13 @@ func request_state() -> void:
 	var door_states: Dictionary = {}
 	for door in _door_nodes():
 		door_states[get_parent().get_path_to(door)] = door.state
-	_full_state.rpc_id(sender, walls_state, door_states)
+	var prop_states: Dictionary = {}
+	for prop in _prop_nodes():
+		prop_states[get_parent().get_path_to(prop)] = prop.broken
+	_full_state.rpc_id(sender, walls_state, door_states, prop_states)
 
 @rpc("authority", "call_remote", "reliable", RPC_CHANNEL_DESTRUCTION)
-func _full_state(walls_state: Dictionary, door_states: Dictionary) -> void:
+func _full_state(walls_state: Dictionary, door_states: Dictionary, prop_states: Dictionary = {}) -> void:
 	for path: NodePath in walls_state:
 		var walls := get_parent().get_node_or_null(path) as DestructibleWalls
 		if walls != null:
@@ -129,6 +127,10 @@ func _full_state(walls_state: Dictionary, door_states: Dictionary) -> void:
 		var door := get_parent().get_node_or_null(path) as Door
 		if door != null:
 			door.set_state_local(int(door_states[path]) as Door.State)
+	for path: NodePath in prop_states:
+		var prop := get_parent().get_node_or_null(path) as BreakableProp
+		if prop != null:
+			prop.set_broken_local(bool(prop_states[path]))
 
 func reset_all() -> void:
 	if not multiplayer.is_server():
@@ -145,6 +147,8 @@ func _reset_event() -> void:
 		walls.restore_all()
 	for door in _door_nodes():
 		door.restore_all()
+	for prop in _prop_nodes():
+		prop.restore_all()
 
 func _door_nodes() -> Array[Door]:
 	var doors: Array[Door] = []
@@ -153,6 +157,14 @@ func _door_nodes() -> Array[Door]:
 		if door != null and get_parent().is_ancestor_of(door):
 			doors.append(door)
 	return doors
+
+func _prop_nodes() -> Array[BreakableProp]:
+	var props: Array[BreakableProp] = []
+	for node in get_tree().get_nodes_in_group(BreakableProp.GROUP):
+		var prop := node as BreakableProp
+		if prop != null and get_parent().is_ancestor_of(prop):
+			props.append(prop)
+	return props
 
 func _walls_nodes() -> Array[DestructibleWalls]:
 	var walls_nodes: Array[DestructibleWalls] = []

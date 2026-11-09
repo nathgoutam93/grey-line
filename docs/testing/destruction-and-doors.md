@@ -1,5 +1,7 @@
 # Destruction and doors validation
 
+> Walls are now indestructible; doors and breakable crates are the destructibles. Older notes below about wall breaches describe the previous design.
+
 Step 4 uses 16 px cells: SOFT has 40 HP, REINFORCED 150 HP, and HARD is indestructible. Frags use the approved **200 maximum wall damage**, with distance falloff. Player blast damage retains its previous values and includes teammates and the thrower when exposed.
 
 ## Automated coverage
@@ -8,9 +10,9 @@ Run `tests/run_tests.sh` twice before completing the step. The pre-commit hook a
 
 | Suite | Checks added for Step 4 |
 |---|---|
-| `unit` | Material rules, exact ray-to-cell mapping, immediate collision/fog removal, restore, HP/reset, pickup serialization, real bullet/knife hits, blast shielding, reinforced breaches, same-blast player exposure, door states/combat/full state, pickup interaction, multiple nearby players, hearing materials/stacking/holes/doors/hit limit |
+| `unit` | Every wall material rejects damage, exact ray-to-cell mapping, immediate collision/fog removal, restore, wall state full-state/reset, pickup serialization, real bullet/knife hits breaking crates but not walls, blast shielding, reinforced walls surviving frags, same-blast exposure through a broken crate, crate HP/fog linking/full state/reset, door states/combat/full state, pickup interaction, multiple nearby players, hearing materials/stacking/holes/doors/hit limit |
 | `visibility` | Distant footsteps suppressed by hard cover; nearby footsteps still audible through cover |
-| `destruction` | Client authority guard, intact-wall culling, three holes and fog mirror replicated within 30 network ticks, sight through the breach, repeated full state repairing missing and extra holes, reset restoring all 12 cells |
+| `destruction` | Client authority guard, intact-crate culling, crate break (collision, sprite, fog) replicated within 30 network ticks, sight where the crate stood, repeated full state repairing a missed break, reset restoring HP, collision and fog |
 | `doors` | Client authority guard, closed-door culling, quiet server interaction, normal puppet knife input breaking a door, hidden source AUDIBLE at 600 px with 900 px noise, full-state repair, HP/collision/fog reset |
 | Existing suites | Movement sync, firing prediction/ammo, scoring/respawn, puppets, teams and teammate frag damage remain covered |
 

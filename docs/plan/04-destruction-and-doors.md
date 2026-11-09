@@ -1,5 +1,7 @@
 # Step 4: Destructible walls and doors
 
+> **Changed after implementation:** walls are indestructible. Only doors and breakable props (crates) take damage; wall materials still set sound attenuation. See `AGENTS.md` for the current rules.
+
 ## Goal
 
 Interior walls are built from **destructible cells** that bullets, explosions and melee can break. Holes open sight lines (fog of war, both client and server), movement paths and sound. **Doors** can be opened quietly, kicked open loudly, or destroyed. Everything is server-authoritative and replicated to every peer, including late joiners.

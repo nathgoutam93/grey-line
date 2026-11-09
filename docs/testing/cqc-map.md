@@ -14,7 +14,7 @@ The generator uses `round_map_template.tscn` and normalizes generated resource/n
 
 ![Generated CQC 1 layout](../../scenes/maps/cqc_1/preview.png)
 
-The 200×130-cell map is 3200×2080 px. Dark walls are hard, slate walls reinforced, light walls soft, tan gaps doors, orange markers attacker spawns, blue markers defender spawns and teal the objective. There are six rooms, three exterior doors, six interior doors, two soft exterior breach sections and five spawns per role. Outdoor cover instances retain their own collision; their fog occluders are derived from those shapes. All structural walls use one tile layer and its automatic fog mirror.
+The 200×130-cell map is 3200×2080 px. Dark walls are hard, slate walls reinforced, light walls soft, tan gaps doors, orange markers attacker spawns, blue markers defender spawns and teal the objective. There are six rooms, three exterior doors, six interior doors and five spawns per role. Wall materials only affect how much sound passes; no wall can be destroyed. Outdoor cover instances retain their own collision; their fog occluders are derived from those shapes. All structural walls use one tile layer and its automatic fog mirror.
 
 ## Measured tuning
 
@@ -37,7 +37,7 @@ The approaches were shortened against the actual running speed, then sight break
 - Unit checks reject malformed layouts, check CLI failure status, verify saved objective size and both door orientations, and compare deterministic generated output.
 - Every lobby round map is checked for required services, five clear spawns per role (24 px radius), attacker distance of at least 1400 px, one objective and known wall materials. Generated cells, objective size, doors, props and spawn transforms are compared with fresh generation. Deliberately blocked spawns and stale cells must fail validation.
 - The legacy dev round map now has five clear spawns per role. Its second attacker spawn is repositioned to meet the objective-distance requirement.
-- The `cqc` host/client scenario verifies map selection, hard/reinforced damage rules, soft/reinforced breach and fog replication, all nine doors, host teammate spectating, actual running time, objective capture and round reset of players, walls, fog and doors.
+- The `cqc` host/client scenario verifies map selection, that no wall material takes bullet, melee or explosive damage, crate break and fog replication, all nine doors, host teammate spectating, actual running time, objective capture and round reset of players, walls, crates with fog, and doors.
 - The same eight network checks pass in two graphical Godot processes on one Mac. Inspected frames cover the lobby preview, spawn view, breach, open doors, spectating the approach, objective capture and reset. The capture helper explicitly requests a draw for idle/occluded windows; image work stays outside movement timing.
 
 Reproduce the rendered scenario in two terminals, substituting an available Godot binary:
@@ -52,4 +52,4 @@ godot4 --path . res://tests/net/net_test.tscn -- --ephemeral-profile --net-test=
 
 ## Remaining human playtest
 
-A two-human playtest on separate machines has not been performed here. Full rounds still need a balance/feel pass with two humans plus puppets: attack each entrance and breach section, hold the objective as defender, judge sound cues during pushes, confirm spawn privacy in play, and walk every wall to look for awkward corners. The automated route and rendered loopback checks do not replace that checklist.
+A two-human playtest on separate machines has not been performed here. Full rounds still need a balance/feel pass with two humans plus puppets: attack each entrance, shoot through crate cover, hold the objective as defender, judge sound cues during pushes, confirm spawn privacy in play, and walk every wall to look for awkward corners. The automated route and rendered loopback checks do not replace that checklist.

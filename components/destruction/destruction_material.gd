@@ -8,10 +8,13 @@ const KIND_BULLET := 0
 const KIND_EXPLOSIVE := 1
 const KIND_MELEE := 2
 
-static func can_damage(material: int, kind: int) -> bool:
-	if kind not in [KIND_BULLET, KIND_EXPLOSIVE, KIND_MELEE]:
-		return false
-	return material == SOFT or (material == REINFORCED and kind == KIND_EXPLOSIVE)
+static func is_valid_kind(kind: int) -> bool:
+	return kind in [KIND_BULLET, KIND_EXPLOSIVE, KIND_MELEE]
+
+## Walls never take damage. Materials still decide how much sound passes
+## through (sound_factor); doors and breakable props are the destructibles.
+static func can_damage(_material: int, _kind: int) -> bool:
+	return false
 
 static func sound_factor(material: int) -> float:
 	match material:

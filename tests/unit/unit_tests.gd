@@ -75,6 +75,13 @@ func _destructible_wall(at: Vector2, cells: Array[Vector2i], material: int = Des
 	add_child(walls)
 	return walls
 
+func _crate(at: Vector2) -> BreakableProp:
+	var crate := (load("res://scenes/props/crates/crate.tscn") as PackedScene).instantiate() as BreakableProp
+	crate.position = at
+	crate.scale = Vector2.ONE * 0.19 # 96 px, the generated-map crate size
+	add_child(crate)
+	return crate
+
 # --- Destruction ------------------------------------------------------------
 
 func test_input_ingress_rejects_missing_dead_and_previous_lives() -> void:
@@ -235,6 +242,8 @@ func test_round_respawn_restores_loadout_walls_and_role_spawns() -> void:
 	fixture.add_child(service)
 	var walls := _destructible_wall(Vector2(-2200, -2500), [Vector2i.ZERO])
 	walls.reparent(map)
+	var crate := _crate(Vector2(-2200, -2700))
+	crate.reparent(map)
 	var mode := (load("res://components/round_mode/round_game_mode.tscn") as PackedScene).instantiate() as RoundGameMode
 	mode.map = map
 	mode.spawn_point_container = spawns
@@ -252,7 +261,9 @@ func test_round_respawn_restores_loadout_walls_and_role_spawns() -> void:
 	check(host.global_position == points[0].global_position and host.actions_locked, "attacker spawn or initial freeze lock wrong")
 	host.health_component.current_health = 25
 	(host.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance).ammo_in_mag = 2
-	service.apply_cell_damage(walls, Vector2i.ZERO, 40, DestructionMaterial.KIND_BULLET)
+	walls.destroy_cells([Vector2i.ZERO]) # replicated wall state still resets, though damage cannot remove cells
+	crate.apply_damage(crate.max_hp, DestructionMaterial.KIND_BULLET)
+	check(crate.broken, "crate fixture did not break")
 	mode.attacking_team = Teams.BRAVO
 	check(mode.spawning.spawn_point_for(1) == points[1], "role change did not switch Alpha's spawn pool")
 	mode._start_round()
@@ -268,6 +279,7 @@ func test_round_respawn_restores_loadout_walls_and_role_spawns() -> void:
 	check(host.get_instance_id() != original_id and host.health_component.current_health == 100, "round reset reused a damaged life")
 	check(rifle != null and rifle.ammo_in_mag == rifle.data.mag_size, "round reset did not restore default ammo")
 	check(walls.has_wall(Vector2i.ZERO), "round reset did not restore destroyed cell")
+	check(not crate.broken and crate.hp() == crate.max_hp and crate.collision_layer == 1, "round reset did not restore the broken crate")
 	check(host.global_position == points[1].global_position and not mode.spawning.spawning_enabled, "new role spawn or no-respawn flag wrong")
 	MultiplayerSession.player_names = saved_names
 	MultiplayerSession.player_teams = saved_teams
@@ -372,7 +384,6 @@ func test_round_mutual_elimination_counts_every_death_and_defenders_win() -> voi
 	check(mode.team_scores[mode.defending_team()] == 1 and mode.team_scores[mode.attacking_team] == 0, "mutual elimination scored more than one round")
 	await _free_round_fixture(fixture)
 
-
 func test_host_footsteps_follow_its_filtered_packet() -> void:
 	var fixture := await _round_fixture()
 	var host := fixture.map.get_node("1") as PlayerController
@@ -395,7 +406,6 @@ func test_host_footsteps_follow_its_filtered_packet() -> void:
 	WorldSnapshots._apply_host_presence(packet, players)
 	check(enemy.should_play_footsteps() and not enemy.visible, "audible enemy footsteps missing on the host, or the body was revealed")
 	await _free_round_fixture(fixture)
-
 
 func test_objective_counts_contest_pause_and_accumulated_capture() -> void:
 	var fixture := await _round_fixture()
@@ -740,21 +750,26 @@ func test_bullet_damage_rules() -> void:
 	walls.update_internals()
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	for hit in range(3):
-		rifle._shoot_raycast()
-		check(walls.has_wall(Vector2i.ZERO), "soft cell broke before fourth bullet")
-	rifle._shoot_raycast()
-	check(not walls.has_wall(Vector2i.ZERO), "four bullets did not break soft cell")
-	check(walls.has_wall(Vector2i(1, 0)), "bullet penetrated into the next cell")
 	for hit in range(20):
 		rifle._shoot_raycast()
-	check(walls.has_wall(Vector2i(1, 0)), "bullets broke reinforced cell")
+	check(walls.has_wall(Vector2i.ZERO) and walls.has_wall(Vector2i(1, 0)) and service._cell_hp.is_empty(), "bullets damaged an indestructible wall")
 	walls.queue_free()
+	await get_tree().process_frame
+	var crate := _crate(rifle.global_position + Vector2(148, 0))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var hits := ceili(float(crate.max_hp) / rifle.data.wall_damage)
+	for hit in range(hits - 1):
+		rifle._shoot_raycast()
+	check(not crate.broken and crate.hp() == crate.max_hp - (hits - 1) * rifle.data.wall_damage, "crate hp=%d after %d bullets" % [crate.hp(), hits - 1])
+	rifle._shoot_raycast()
+	check(crate.broken and crate.collision_layer == 0 and not crate.visible, "bullets did not break the crate")
+	crate.queue_free()
 	service.queue_free()
 	shooter.queue_free()
 	await get_tree().process_frame
 
-func test_melee_damages_soft_wall() -> void:
+func test_melee_damages_crates_not_walls() -> void:
 	var shooter := await _spawn_player(Vector2(-2400, -2400))
 	shooter.rotation = 0.0
 	var knife := shooter.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.MELEE) as WeaponInstance
@@ -763,35 +778,53 @@ func test_melee_damages_soft_wall() -> void:
 	var walls := _destructible_wall(knife.global_position + Vector2(20, -8), [Vector2i.ZERO])
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	knife._shoot_raycast()
-	check(walls.has_wall(Vector2i.ZERO), "one knife hit broke 40 HP cell")
-	knife._shoot_raycast()
-	check(not walls.has_wall(Vector2i.ZERO), "two knife hits did not break soft cell")
+	for hit in range(5):
+		knife._shoot_raycast()
+	check(walls.has_wall(Vector2i.ZERO), "knife hits broke a soft wall cell")
 	walls.queue_free()
+	await get_tree().process_frame
+	var crate := _crate(knife.global_position + Vector2(68, 0))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var hits := ceili(float(crate.max_hp) / knife.data.melee_wall_damage)
+	for hit in range(hits - 1):
+		knife._shoot_raycast()
+	check(not crate.broken, "crate broke before %d knife hits" % hits)
+	knife._shoot_raycast()
+	check(crate.broken, "%d knife hits did not break the crate (hp=%d)" % [hits, crate.hp()])
+	crate.queue_free()
 	service.queue_free()
 	shooter.queue_free()
 	await get_tree().process_frame
 
-func test_explosion_shielded_by_hard_wall() -> void:
+func test_explosion_spares_walls_and_respects_cover() -> void:
 	var service := DestructionService.new()
 	add_child(service)
-	var walls := _destructible_wall(Vector2(-2400, -2400), [Vector2i.ZERO], DestructionMaterial.HARD)
-	walls.set_cell(Vector2i(2, 0), 0, Vector2i.ZERO)
+	var walls := _destructible_wall(Vector2(-2400, -2400), [Vector2i.ZERO, Vector2i(2, 0)], DestructionMaterial.SOFT)
+	walls.set_cell(Vector2i(1, 0), 0, Vector2i(DestructionMaterial.REINFORCED, 0))
 	walls.update_internals()
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	var blast := walls.global_position + Vector2(-24, 8)
 	service.apply_explosion(blast, 320.0, 200)
-	check(walls.has_wall(Vector2i.ZERO), "hard cell was destroyed")
-	check(walls.has_wall(Vector2i(2, 0)) and service._cell_hp.is_empty(), "hard cell failed to shield soft cell")
-	walls.destroy_cells([Vector2i.ZERO])
-	service.apply_explosion(blast, 320.0, 200)
-	check(not walls.has_wall(Vector2i(2, 0)), "exposed soft cell was not damaged")
+	check(walls.get_used_cells().size() == 3 and service._cell_hp.is_empty(), "explosion damaged indestructible walls")
 	walls.queue_free()
+	var crate := _crate(blast + Vector2(150, 0))
+	var shield := _wall(blast + Vector2(60, 0), Vector2(16, 300))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	service.apply_explosion(blast, 320.0, 200)
+	check(crate.hp() == crate.max_hp, "hard cover failed to shield the crate")
+	shield.queue_free()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	service.apply_explosion(blast, 320.0, 200)
+	check(crate.broken, "exposed crate survived the blast (hp=%d)" % crate.hp())
+	crate.queue_free()
 	service.queue_free()
 	await get_tree().process_frame
 
-func test_frag_respects_cover_and_breaches_reinforced() -> void:
+func test_frag_respects_cover_and_breaks_crate_cover() -> void:
 	var service := DestructionService.new()
 	add_child(service)
 	var protected := await _spawn_player(Vector2(-2200, -2400))
@@ -812,16 +845,28 @@ func test_frag_respects_cover_and_breaches_reinforced() -> void:
 	var walls := _destructible_wall(Vector2(-2320, -2416), [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)], DestructionMaterial.REINFORCED)
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	var breach_frag := FragProjectile.new()
-	breach_frag.position = Vector2(-2350, -2400)
-	breach_frag.detonate_smoke_scene = null
-	add_child(breach_frag)
-	breach_frag._detonate()
-	check(walls.destroyed_cells().size() == 3, "200 wall damage failed to breach nearby reinforced cells")
-	check(protected.health_component.current_health < 100, "new breach failed to expose the player in the same blast")
+	var wall_frag := FragProjectile.new()
+	wall_frag.position = Vector2(-2350, -2400)
+	wall_frag.detonate_smoke_scene = null
+	add_child(wall_frag)
+	wall_frag._detonate()
+	check(walls.destroyed_cells().is_empty(), "frag breached a reinforced wall")
+	check(protected.health_component.current_health == 100, "frag damaged a player behind an intact reinforced wall")
+	walls.queue_free()
+	await get_tree().process_frame
+	var crate := _crate(Vector2(-2280, -2400))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var crate_frag := FragProjectile.new()
+	crate_frag.position = Vector2(-2350, -2400)
+	crate_frag.detonate_smoke_scene = null
+	add_child(crate_frag)
+	crate_frag._detonate()
+	check(crate.broken, "frag did not break nearby crate cover")
+	check(protected.health_component.current_health < 100, "broken crate failed to expose the player in the same blast")
 	protected.queue_free()
 	exposed.queue_free()
-	walls.queue_free()
+	crate.queue_free()
 	service.queue_free()
 	await get_tree().process_frame
 
@@ -1010,37 +1055,72 @@ func test_wall_damage_state_and_reset() -> void:
 	add_child(service)
 	var events: Array = []
 	service.cells_destroyed.connect(func(cells: Array[Vector2i]): events.append(cells))
+	for material in range(3):
+		for kind in [DestructionMaterial.KIND_BULLET, DestructionMaterial.KIND_MELEE, DestructionMaterial.KIND_EXPLOSIVE]:
+			service.apply_cell_damage(walls, Vector2i(material, 0), 1000, kind)
+	check(walls.get_used_cells().size() == 3 and events.is_empty() and service._pending.is_empty(), "a wall material accepted damage")
+	# Full-state repair and reset still apply replicated wall state.
 	var soft := Vector2i.ZERO
-	var reinforced := Vector2i(1, 0)
-	var hard := Vector2i(2, 0)
-	service.apply_cell_damage(walls, soft, 10, DestructionMaterial.KIND_BULLET)
-	check(walls.has_wall(soft), "partial damage destroyed cell")
-	service.apply_cell_damage(walls, soft, 30, DestructionMaterial.KIND_BULLET)
-	service.apply_cell_damage(walls, soft, 100, DestructionMaterial.KIND_BULLET)
-	check(not walls.has_wall(soft) and events.size() == 1, "destruction missing or emitted twice")
-	check(service._pending.size() == 1, "destruction not batched by wall path")
-	service.apply_cell_damage(walls, reinforced, 1000, DestructionMaterial.KIND_BULLET)
-	service.apply_cell_damage(walls, hard, 1000, DestructionMaterial.KIND_EXPLOSIVE)
-	check(walls.has_wall(reinforced) and walls.has_wall(hard), "material damage rules bypassed")
 	var path := get_path_to(walls)
 	var state := {path: PackedVector2Array([Vector2(soft)])}
-	walls.restore_all()
 	service._full_state(state, {})
 	service._full_state(state, {})
 	check(walls.destroyed_cells() == [soft], "full state is not idempotent")
-	service.apply_cell_damage(walls, reinforced, 100, DestructionMaterial.KIND_EXPLOSIVE)
 	service.reset_all()
 	check(walls.get_used_cells().size() == 3 and service._pending.is_empty(), "reset did not restore grid and clear pending events")
-	service.apply_cell_damage(walls, reinforced, 60, DestructionMaterial.KIND_EXPLOSIVE)
-	check(walls.has_wall(reinforced), "reset retained previous partial HP damage")
-	service.apply_cell_damage(walls, reinforced, 90, DestructionMaterial.KIND_EXPLOSIVE)
-	check(not walls.has_wall(reinforced), "reinforced explosive damage did not accumulate")
 	walls.queue_free()
 	service.queue_free()
 	await get_tree().process_frame
 
-# --- PlayerInputFrame -------------------------------------------------------
+func test_breakable_prop_damage_state_fog_and_reset() -> void:
+	var old_viewport := MaskViewProvider.viewport
+	var viewport := FowViewportController.new()
+	var level := Node2D.new()
+	level.name = "Level"
+	viewport.add_child(level)
+	add_child(viewport)
+	# A baked occluder over the crate (as in map_1) and one beside it.
+	var inside := LightOccluder2D.new()
+	inside.occluder = OccluderPolygon2D.new()
+	inside.occluder.polygon = PackedVector2Array([Vector2(-46, -46), Vector2(46, -46), Vector2(46, 46), Vector2(-46, 46)])
+	inside.position = Vector2(-2200, -2400)
+	level.add_child(inside)
+	var outside := LightOccluder2D.new()
+	outside.occluder = OccluderPolygon2D.new()
+	outside.occluder.polygon = inside.occluder.polygon
+	outside.position = Vector2(-2000, -2400)
+	level.add_child(outside)
+	var service := DestructionService.new()
+	add_child(service)
+	var crate := _crate(Vector2(-2200, -2400))
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var space := get_viewport().world_2d.direct_space_state
+	var ray := PhysicsRayQueryParameters2D.create(crate.global_position - Vector2(80, 0), crate.global_position + Vector2(80, 0), 1)
+	check(crate._fog_occluders == [inside], "crate linked fog occluders %s" % [crate._fog_occluders])
+	crate.apply_damage(crate.max_hp - 1, DestructionMaterial.KIND_BULLET)
+	crate.apply_damage(5, -7)
+	check(not crate.broken and crate.hp() == 1 and not space.intersect_ray(ray).is_empty(), "partial or invalid damage broke the crate")
+	crate.apply_damage(1, DestructionMaterial.KIND_MELEE)
+	check(crate.broken and space.intersect_ray(ray).is_empty() and not crate.visible and not inside.visible and outside.visible, "broken crate kept collision, sprite or its fog")
+	var path := get_path_to(crate)
+	service._full_state({}, {}, {path: false})
+	service._full_state({}, {}, {path: false})
+	check(not crate.broken and crate.visible and inside.visible, "full state did not restore the crate idempotently")
+	service._full_state({}, {}, {path: true})
+	check(crate.broken and not inside.visible, "full state did not break the crate")
+	service.reset_all()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(not crate.broken and crate.hp() == crate.max_hp and not space.intersect_ray(ray).is_empty() and inside.visible, "reset did not restore crate HP, collision and fog")
+	crate.queue_free()
+	service.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(old_viewport)
+	viewport.queue_free()
 
+
+# --- PlayerInputFrame -------------------------------------------------------
 func test_input_frame_round_trip() -> void:
 	var f := PlayerInputFrame.new()
 	f.tick = 123
@@ -1083,13 +1163,10 @@ func test_input_frame_copy_and_merge() -> void:
 # --- Teams ------------------------------------------------------------------
 
 func test_destruction_material_damage_rules() -> void:
-	for kind in [DestructionMaterial.KIND_BULLET, DestructionMaterial.KIND_EXPLOSIVE, DestructionMaterial.KIND_MELEE]:
-		check(DestructionMaterial.can_damage(DestructionMaterial.SOFT, kind), "soft wall rejected damage")
-		check(not DestructionMaterial.can_damage(DestructionMaterial.HARD, kind), "hard wall accepted damage")
-	check(DestructionMaterial.can_damage(DestructionMaterial.REINFORCED, DestructionMaterial.KIND_EXPLOSIVE), "reinforced wall rejected explosive damage")
-	check(not DestructionMaterial.can_damage(DestructionMaterial.REINFORCED, DestructionMaterial.KIND_BULLET), "bullet damaged reinforced wall")
-	check(not DestructionMaterial.can_damage(DestructionMaterial.REINFORCED, DestructionMaterial.KIND_MELEE), "melee damaged reinforced wall")
-	check(not DestructionMaterial.can_damage(-1, DestructionMaterial.KIND_EXPLOSIVE), "invalid material accepted damage")
+	for material in [DestructionMaterial.SOFT, DestructionMaterial.REINFORCED, DestructionMaterial.HARD, -1]:
+		for kind in [DestructionMaterial.KIND_BULLET, DestructionMaterial.KIND_EXPLOSIVE, DestructionMaterial.KIND_MELEE]:
+			check(not DestructionMaterial.can_damage(material, kind), "wall material %d accepted damage kind %d" % [material, kind])
+	check(DestructionMaterial.is_valid_kind(DestructionMaterial.KIND_EXPLOSIVE) and not DestructionMaterial.is_valid_kind(-1), "damage kind validation wrong")
 
 func test_teams_damage_rules() -> void:
 	check(not Teams.can_damage(Teams.ALPHA, Teams.ALPHA, 1, 2, false), "friendly fire allowed")

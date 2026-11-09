@@ -1,9 +1,9 @@
 extends "res://tests/net/net_test_base.gd"
 
-const WALL := preload("res://tests/fixtures/test_wall.tscn")
+const CRATE := preload("res://tests/fixtures/test_crate.tscn")
 var _bot_id := 0
 var _spectator_ally := 0
-var _walls: DestructibleWalls
+var _crate: BreakableProp
 
 func _mode() -> RoundGameMode:
 	return game_mode() as RoundGameMode
@@ -34,11 +34,11 @@ func _configure_mode(node: Node) -> void:
 	mode.rounds_to_win = 2
 	get_tree().node_added.disconnect(_configure_mode)
 
-func _spawn_wall(position: Vector2) -> void:
-	_walls = WALL.instantiate() as DestructibleWalls
-	_walls.name = "RoundTestWall"
-	_walls.position = position
-	_mode().map.add_child(_walls)
+func _spawn_crate(position: Vector2) -> void:
+	_crate = CRATE.instantiate() as BreakableProp
+	_crate.name = "RoundTestCrate"
+	_crate.position = position
+	_mode().map.add_child(_crate)
 
 func on_message(key: String, value: Variant) -> void:
 	if role != "client":
@@ -46,7 +46,7 @@ func on_message(key: String, value: Variant) -> void:
 	if key == "lobby_probe":
 		_lobby_probe()
 	elif key == "fixture":
-		_spawn_wall(value)
+		_spawn_crate(value)
 		send("fixture_ready")
 	elif key == "freeze_hold":
 		_hold_during_freeze()
@@ -80,8 +80,8 @@ func _reply_state(tag: String, options: Dictionary) -> void:
 	if options.has("spectate"):
 		await wait_until(func(): return mode.local_spectate_target == int(options.spectate), 1.0)
 		mode.request_spectate_next.rpc_id(1)
-	if options.has("tiles"):
-		await wait_until(func(): return _walls != null and _walls.get_used_cells().size() == int(options.tiles), 1.0)
+	if options.has("broken"):
+		await wait_until(func(): return _crate != null and _crate.broken == bool(options.broken), 1.0)
 	if options.get("progress", false):
 		await wait_until(func(): return mode.objective_bar.visible and mode.objective_bar.value > 0.0, 1.0)
 	var mask_owner := 0
@@ -95,7 +95,7 @@ func _reply_state(tag: String, options: Dictionary) -> void:
 		"role": mode.role_label.text, "bar": mode.objective_bar.visible,
 		"progress": mode.objective_bar.value, "spectate": mode.local_spectate_target,
 		"mask_owner": mask_owner, "camera": target.camera.is_current() if target != null else false,
-		"tiles": _walls.get_used_cells().size() if is_instance_valid(_walls) else -1,
+		"broken": _crate.broken if is_instance_valid(_crate) else null,
 	})
 	await capture_frame(tag)
 	send("captured:" + tag)
@@ -123,10 +123,10 @@ func run_host() -> void:
 		return
 	# Align the short test freeze after both renderers and input owners are ready.
 	mode._publish_phase(RoundGameMode.Phase.FREEZE, mode.freeze_seconds)
-	_spawn_wall(Vector2(-2400, -2100))
+	_spawn_crate(Vector2(-2400, -2100))
 	send("fixture", Vector2(-2400, -2100))
 	if await wait_for("fixture_ready", 3.0) == null:
-		finish_with_failure("setup", "client wall fixture missing")
+		finish_with_failure("setup", "client crate fixture missing")
 		return
 	var client_id := client_peer()
 	var start := player(client_id).global_position
@@ -136,10 +136,8 @@ func run_host() -> void:
 	await _sample("freeze", {"phase": RoundGameMode.Phase.FREEZE})
 	if not await _phase(RoundGameMode.Phase.LIVE):
 		return
-	var service := DestructionService.current(get_tree())
-	for cell in [Vector2i(0, 4), Vector2i(0, 5)]:
-		service.apply_cell_damage(_walls, cell, 40, DestructionMaterial.KIND_BULLET)
-	await _sample("breached", {"tiles": 10})
+	_crate.apply_damage(_crate.max_hp, DestructionMaterial.KIND_BULLET)
+	await _sample("breached", {"broken": true})
 	player(1).health_component.take_damage(30, client_id)
 	(player(1).equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance).ammo_in_mag = 1
 	player(client_id).health_component.take_damage(500, 1)
@@ -155,7 +153,7 @@ func run_host() -> void:
 	if not await _phase(RoundGameMode.Phase.FREEZE):
 		return
 	await hold(0.2) # Default loadouts are constructed after player readiness.
-	var reset := await _sample("reset", {"tiles": 12})
+	var reset := await _sample("reset", {"broken": false})
 	var fresh := true
 	for id in [1, client_id, _bot_id]:
 		var actor := player(id)
@@ -168,7 +166,7 @@ func run_host() -> void:
 			at_spawn = at_spawn or actor.global_position.distance_to(point.global_position) < 2.0
 		var rifle := actor.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance
 		fresh = fresh and at_spawn and actor.health_component.current_health == 100 and rifle != null and rifle.ammo_in_mag == rifle.data.mag_size
-	check("round_reset", fresh and _walls.get_used_cells().size() == 12 and reset.get("tiles") == 12 and mode.attacking_team == Teams.BRAVO, "all three lives, health, ammo, role spawns and breached cells reset at halftime")
+	check("round_reset", fresh and not _crate.broken and reset.get("broken") == false and mode.attacking_team == Teams.BRAVO, "all three lives, health, ammo, role spawns and the broken crate reset at halftime")
 	if not await _phase(RoundGameMode.Phase.LIVE):
 		return
 	var timer := await _sample("timer", {"phase": RoundGameMode.Phase.LIVE})

@@ -1,21 +1,22 @@
 extends "res://tests/net/net_test_base.gd"
 
-const FIXTURE := preload("res://tests/fixtures/test_wall.tscn")
-const HOLE_CELLS: Array[Vector2i] = [Vector2i(0, 4), Vector2i(0, 5), Vector2i(0, 6)]
-var _walls: DestructibleWalls
+## Walls are indestructible; doors (doors suite) and breakable props are the
+## destructibles. This suite covers a crate between the client and the host.
+const FIXTURE := preload("res://tests/fixtures/test_crate.tscn")
+var _crate: BreakableProp
 
 func _spawn_fixture(pose: Array) -> void:
-	_walls = FIXTURE.instantiate() as DestructibleWalls
-	_walls.name = "TestWall"
-	_walls.position = pose[0]
-	_walls.rotation = pose[1]
-	game_mode().map.add_child(_walls)
+	_crate = FIXTURE.instantiate() as BreakableProp
+	_crate.name = "TestCrate"
+	_crate.position = pose[0]
+	_crate.rotation = pose[1]
+	game_mode().map.add_child(_crate)
 
-func _has_holes(cells: Array) -> bool:
-	if cells.size() != HOLE_CELLS.size():
+func _fog_blocking() -> bool:
+	if _crate._fog_occluders.is_empty():
 		return false
-	for cell in HOLE_CELLS:
-		if not cells.has(cell):
+	for occluder in _crate._fog_occluders:
+		if not occluder.visible:
 			return false
 	return true
 
@@ -24,35 +25,36 @@ func on_message(key: String, value: Variant) -> void:
 		return
 	if key == "spawn_fixture":
 		_spawn_fixture(value)
+		await get_tree().process_frame # fog occluders link deferred
 		send("fixture_ready")
 	elif key == "attempt_damage":
-		var service := DestructionService.current(get_tree())
-		service.apply_cell_damage(_walls, Vector2i.ZERO, 1000, DestructionMaterial.KIND_BULLET)
-		service.reset_all()
-		send("authority_guard", _walls.get_used_cells().size() == 12)
+		_crate.apply_damage(1000, DestructionMaterial.KIND_BULLET)
+		DestructionService.current(get_tree()).reset_all()
+		send("authority_guard", not _crate.broken and _crate.collision_layer == 1)
 	elif key.begins_with("sample:"):
 		_reply_sample(key.trim_prefix("sample:"))
 
 func _reply_sample(tag: String) -> void:
-	if tag == "holes":
-		await wait_until(func(): return _has_holes(_walls.destroyed_cells()), 0.45)
+	if tag == "broken":
+		await wait_until(func(): return _crate.broken, 0.45)
 	elif tag == "visible":
 		await wait_until(func(): return player(1).net_sync._net_presence == PlayerNetSync.NetPresence.VISIBLE, 0.5)
 	elif tag == "resync":
-		# Simulate a stale map: both missing authoritative holes and an extra local hole.
-		_walls.restore_all()
-		_walls.destroy_cells([Vector2i.ZERO])
+		# Simulate a stale map: the client missed the break event.
+		_crate.set_broken_local(false)
 		var service := DestructionService.current(get_tree())
 		service.request_state.rpc_id(1)
 		service.request_state.rpc_id(1)
-		await wait_until(func(): return _has_holes(_walls.destroyed_cells()), 1.0)
+		await wait_until(func(): return _crate.broken, 1.0)
 	elif tag == "reset":
-		await wait_until(func(): return _walls.get_used_cells().size() == 12, 0.5)
+		await wait_until(func(): return not _crate.broken, 0.5)
 	var host_player := player(1)
 	send("result:" + tag, {
-		"cells": _walls.destroyed_cells(),
-		"count": _walls.get_used_cells().size(),
-		"mirror_count": _walls.mirror.get_used_cells().size() if is_instance_valid(_walls.mirror) else -1,
+		"broken": _crate.broken,
+		"collision": _crate.collision_layer,
+		"drawn_crate": _crate.visible,
+		"fog": _fog_blocking(),
+		"fog_count": _crate._fog_occluders.size(),
 		"presence": host_player.net_sync._net_presence if host_player != null else -1,
 		"drawn": host_player.visible if host_player != null else false,
 	})
@@ -80,31 +82,29 @@ func run_host() -> void:
 	viewer.global_position = open
 	await hold(0.8)
 	facing = Vector2.RIGHT.rotated(viewer.rotation)
-	var center := open + facing * 120
-	var pose := [center - facing * 8 - Vector2.DOWN.rotated(facing.angle()) * 96, facing.angle()]
+	var center := open + facing * 160
+	var pose := [center, facing.angle()]
 	_spawn_fixture(pose)
 	send("spawn_fixture", pose)
 	if await wait_for("fixture_ready", 5.0) == null:
 		finish_with_failure("setup", "client fixture missing")
 		return
-	me.global_position = center + facing * 120
+	me.global_position = center + facing * 160
 	await hold(1.0)
 	send("attempt_damage")
 	var guarded: Variant = await wait_for("authority_guard", 3.0)
-	check("client_cannot_damage_or_reset_walls", guarded == true and _walls.get_used_cells().size() == 12, "client damage and reset calls left both grids intact")
+	check("client_cannot_damage_or_reset_props", guarded == true and not _crate.broken and _crate.hp() == _crate.max_hp, "client damage and reset calls left the crate intact on both peers")
 	var intact := await _sample("intact")
-	check("intact_wall_blocks_vision", intact.get("presence") == PlayerNetSync.NetPresence.CULLED and not intact.get("drawn", true), "client=%s server_see=%s noise=%.1f viewer=%s host=%s wall=%s" % [intact, VisibilityQuery.can_see(viewer, me, []), me.net_sync.get_noise_radius(), viewer.global_position, me.global_position, _walls.global_transform])
-	var service := DestructionService.current(get_tree())
+	check("intact_crate_blocks_vision", intact.get("presence") == PlayerNetSync.NetPresence.CULLED and not intact.get("drawn", true) and intact.get("fog", false), "client=%s server_see=%s viewer=%s host=%s crate=%s" % [intact, VisibilityQuery.can_see(viewer, me, []), viewer.global_position, me.global_position, _crate.global_transform])
 	var start_tick := NetworkTick.tick
-	for cell in HOLE_CELLS:
-		service.apply_cell_damage(_walls, cell, 40, DestructionMaterial.KIND_BULLET)
-	var holes := await _sample("holes")
-	var elapsed := int(holes.get("received_tick", NetworkTick.tick)) - start_tick
-	check("destroyed_cells_replicate", _has_holes(holes.get("cells", [])) and holes.get("mirror_count") == 9 and elapsed <= 30, "three holes and fog mirror replicated in %d ticks" % elapsed)
+	_crate.apply_damage(_crate.max_hp, DestructionMaterial.KIND_BULLET)
+	var broken := await _sample("broken")
+	var elapsed := int(broken.get("received_tick", NetworkTick.tick)) - start_tick
+	check("broken_prop_replicates", broken.get("broken", false) and broken.get("collision") == 0 and not broken.get("drawn_crate", true) and not broken.get("fog", true) and elapsed <= 30, "break, collision, sprite and fog replicated in %d ticks: %s" % [elapsed, broken])
 	var visible := await _sample("visible")
-	check("hole_opens_server_sight", visible.get("presence") == PlayerNetSync.NetPresence.VISIBLE and visible.get("drawn", false), "host becomes visible through the breach")
+	check("broken_prop_opens_server_sight", visible.get("presence") == PlayerNetSync.NetPresence.VISIBLE and visible.get("drawn", false), "host becomes visible where the crate stood")
 	var resync := await _sample("resync")
-	check("late_state_resync", _has_holes(resync.get("cells", [])) and resync.get("mirror_count") == 9, "repeated full state repairs missing and extra holes")
-	service.reset_all()
+	check("late_state_resync", resync.get("broken", false) and resync.get("collision") == 0 and not resync.get("fog", true), "repeated full state repairs a missed break")
+	DestructionService.current(get_tree()).reset_all()
 	var reset := await _sample("reset")
-	check("reset_restores_walls", reset.get("count") == 12 and reset.get("mirror_count") == 12 and _walls.get_used_cells().size() == 12, "all twelve cells restored on both peers and in fog mirror")
+	check("reset_restores_props", not reset.get("broken", true) and reset.get("collision") == 1 and reset.get("drawn_crate", false) and reset.get("fog", false) and not _crate.broken and _crate.hp() == _crate.max_hp, "crate HP, collision, sprite and fog restored on both peers")

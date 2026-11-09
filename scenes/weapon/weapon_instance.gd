@@ -108,13 +108,12 @@ func _shoot_raycast() -> void:
 
 	if multiplayer.is_server():
 		if not has_unoccluded_hurtbox_hit and not occlusion_result.is_empty():
+			# Walls are indestructible; only doors and breakable props take structure damage.
 			var kind := DestructionMaterial.KIND_BULLET if data.uses_ammo else DestructionMaterial.KIND_MELEE
-			var walls := occlusion_result.get("collider") as DestructibleWalls
+			var prop := occlusion_result.get("collider") as BreakableProp
 			var door := occlusion_result.get("collider") as Door
-			var service := DestructionService.current(get_tree())
-			if walls != null and service != null:
-				var amount := data.wall_damage if data.uses_ammo else data.melee_wall_damage
-				service.apply_cell_damage(walls, walls.cell_from_hit(occlusion_result), amount, kind)
+			if prop != null:
+				prop.apply_damage(data.wall_damage if data.uses_ammo else data.melee_wall_damage, kind)
 			elif door != null:
 				door.apply_damage(data.wall_damage if data.uses_ammo else 60, kind, player)
 		LagCompensationService.restore_players(saved_transforms)

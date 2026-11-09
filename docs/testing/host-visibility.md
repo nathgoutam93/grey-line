@@ -15,7 +15,7 @@ the fog material; allied bodies remain unmasked.
 Run `tests/run_tests.sh unit host_visibility` for the no-client host regression,
 material inheritance and two-process visibility scenario. The network scenario
 checks hidden enemies behind cover, visible allies, independent client visibility,
-hidden movement/damage, audible-only enemies, breaches, private teammate sight,
+hidden movement/damage, audible-only enemies, cover breaking, private teammate sight,
 spectator sight and no remaining teammate vision.
 
 Run the `host_visibility` scenario without `--headless` to add rendered pixel
