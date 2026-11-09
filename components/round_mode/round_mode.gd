@@ -104,6 +104,8 @@ func spawn_pool_for(team: int) -> int:
 
 func configure_player(player: PlayerController) -> void:
 	player.actions_locked = is_actions_locked()
+	if player.hud != null:
+		player.hud.kill_feed_container.offset_top = 210.0
 
 func _roster_ready() -> bool:
 	var counts := {Teams.ALPHA: 0, Teams.BRAVO: 0}
