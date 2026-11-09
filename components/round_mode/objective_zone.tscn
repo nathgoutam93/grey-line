@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://components/round_mode/objective_zone.gd" id="1_zone"]
+
+[sub_resource type="RectangleShape2D" id="ObjectiveShape"]
+size = Vector2(240, 240)
+
+[node name="ObjectiveZone" type="Area2D" unique_id=1862903745]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_zone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1364795028]
+shape = SubResource("ObjectiveShape")
+
+[node name="Fill" type="Polygon2D" parent="." unique_id=1598043762]
+color = Color(0.32, 0.76, 0.74, 0.16)
+polygon = PackedVector2Array(-120, -120, 120, -120, 120, 120, -120, 120)
+
+[node name="Outline" type="Line2D" parent="." unique_id=1473890265]
+points = PackedVector2Array(-120, -120, 120, -120, 120, 120, -120, 120, -120, -120)
+width = 3.0
+default_color = Color(0.32, 0.76, 0.74, 0.8)

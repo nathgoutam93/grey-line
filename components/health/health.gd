@@ -22,6 +22,9 @@ func take_damage(amount: int, killer_id: int, is_headshot: bool = false):
 		return
 	if amount <= 0:
 		return
+	var mode := MatchGameMode.current(get_tree())
+	if get_parent() is PlayerController and mode != null and not mode.allows_damage():
+		return
 	current_health -= amount
 	current_health = maxi(current_health, 0)
 

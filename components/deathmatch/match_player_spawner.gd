@@ -40,7 +40,9 @@ func setup(map: Node2D, spawn_point_container: Node, player_scene: PackedScene) 
 
 ## Prefer an unoccupied point with the greatest distance to the nearest enemy.
 func choose_spawn_point(team: int) -> Node2D:
-	var points: Array[Node2D] = _role_spawn_points.get(team, _spawn_points)
+	var mode := get_parent() as MatchGameMode
+	var pool := mode.spawn_pool_for(team) if mode != null else team
+	var points: Array[Node2D] = _role_spawn_points.get(pool, _spawn_points)
 	if points.is_empty():
 		return null
 	var best: Node2D = null
@@ -89,9 +91,9 @@ func spawn_player_if_missing(peer_id: int) -> void:
 func spawn_player(peer_id: int) -> void:
 	if not spawning_enabled or not is_instance_valid(_map):
 		return
-	var spawn_point := choose_spawn_point(MultiplayerSession.get_team(peer_id))
+	var spawn_point := spawn_point_for(peer_id)
 	if spawn_point == null:
-		push_warning("No spawn points configured. Set Deathmatch.spawn_point_container in the editor.")
+		push_warning("No spawn points configured. Set the game mode's spawn_point_container in the editor.")
 		return
 
 	var player_instance := _player_scene.instantiate() as PlayerController
@@ -107,6 +109,23 @@ func spawn_player(peer_id: int) -> void:
 	player_instance.ready.connect(func(): _setup_player.rpc(peer_id, player_instance.get_path(), spawn_point.global_position, NetworkTick.tick, player_instance.team))
 	_map.add_child(player_instance, true)
 	print("Spawned player for peer %d at %s" % [peer_id, spawn_point.global_position])
+
+func spawn_point_for(peer_id: int) -> Node2D:
+	return choose_spawn_point(MultiplayerSession.get_team(peer_id))
+
+func respawn_everyone() -> void:
+	if not multiplayer.is_server() or not is_instance_valid(_map):
+		return
+	spawning_enabled = false
+	for child in _map.get_children():
+		if child is PlayerController:
+			child.queue_free()
+	await get_tree().process_frame
+	if not is_inside_tree() or not is_instance_valid(_map):
+		return
+	spawning_enabled = true
+	spawn_initial_connected_players()
+	spawning_enabled = false
 
 ## Server only: tell a (late-joining) peer about every existing player.
 func sync_existing_players_to_peer(peer_id: int) -> void:
@@ -140,7 +159,8 @@ func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2,
 		if get_node_or_null(player_path) as PlayerController != null:
 			break
 		await get_tree().process_frame
-	if not spawning_enabled or not is_instance_valid(_map):
+	var mode := get_parent() as MatchGameMode
+	if not is_instance_valid(_map) or (not spawning_enabled and (mode == null or not mode.uses_round_respawns())):
 		return
 
 	var player := get_node_or_null(player_path) as PlayerController
@@ -159,6 +179,8 @@ func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2,
 			# Player can despawn before setup RPC executes (e.g. match end or disconnect).
 			return
 
+	if player.is_dead:
+		return # A delayed setup/resync must not resurrect a round's eliminated player.
 	player.reset_for_respawn()
 	player.global_position = spawn_position
 	player.set_multiplayer_authority(1)
@@ -175,11 +197,14 @@ func _setup_player(peer_id: int, player_path: NodePath, spawn_position: Vector2,
 
 	if NetUtil.has_active_peer(multiplayer) and peer_id == multiplayer.get_unique_id():
 		player.setup_locals()
-		MaskViewProvider.viewport.player_camera = player.camera
-		MaskViewProvider.viewport.player = player
+		if is_instance_valid(MaskViewProvider.viewport):
+			MaskViewProvider.viewport.player_camera = player.camera
+			MaskViewProvider.viewport.player = player
 		var destruction := DestructionService.current(get_tree())
 		if destruction != null:
 			destruction.request_initial_state()
+	if mode != null:
+		mode.configure_player(player)
 	for node in get_tree().get_nodes_in_group("Player"):
 		var teammate := node as PlayerController
 		if teammate != null:

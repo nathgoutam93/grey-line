@@ -49,7 +49,7 @@ Client:
 
 **Locking players during FREEZE.**
 - `PlayerController.actions_locked: bool`.
-- `MovementCompoent.simulate` uses `move = Vector2.ZERO` when locked (aim still turns).
+- `MovementCompoent.simulate` uses `move = Vector2.ZERO` when movement is locked (aim still turns). Movement is locked in WAITING, FREEZE and MATCH_END; the ROUND_END exception allows movement while actions remain locked.
 - `PlayerNetSync._apply_input_actions` skips fire, reload, switch, drop and interact when locked.
 
 Set it on the server by the mode, and on clients from the phase event, so owner prediction agrees. A small mismatch at unlock is corrected by the normal reconciliation.

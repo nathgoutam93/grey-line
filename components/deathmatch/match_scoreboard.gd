@@ -16,6 +16,7 @@ const RPC_CHANNEL_UI := 2
 
 ## Server only: cleared when the match ends (stops scoring and refreshes).
 var active := true
+var round_scoring := false
 ## { peer_id: { "player_identifier", "kills", "deaths", "ping_ms", "loadout", "current_weapon" } }
 var player_stats := {}
 var team_scores := {Teams.ALPHA: 0, Teams.BRAVO: 0}
@@ -86,7 +87,7 @@ func register_death(victim_id: int, killer_id: int, is_headshot: bool = false) -
 			_notify_local_kill_feedback.rpc_id(killer_id, is_headshot)
 		var killer_team := MultiplayerSession.get_team(killer_id)
 		var victim_team := MultiplayerSession.get_team(victim_id)
-		if _teams_enabled and team_scores.has(killer_team) and killer_team != victim_team:
+		if _teams_enabled and not round_scoring and team_scores.has(killer_team) and killer_team != victim_team:
 			team_scores[killer_team] += 1
 			if int(team_scores[killer_team]) >= _score_limit:
 				team_score_limit_reached.emit(killer_team)

@@ -156,6 +156,242 @@ func test_action_lock_cancels_and_blocks_combat_and_interactions() -> void:
 	player.queue_free()
 	await get_tree().process_frame
 
+func test_round_phase_clock_and_round_end_movement() -> void:
+	var mode := (load("res://components/round_mode/round_game_mode.tscn") as PackedScene).instantiate() as RoundGameMode
+	add_child(mode)
+	mode.set_process(false)
+	mode.freeze_seconds = 2.0
+	mode.round_seconds = 3.0
+	mode._clock_tick = 100
+	mode._publish_phase(RoundGameMode.Phase.FREEZE, 2.0)
+	check(mode.phase_end_tick == 220 and mode.displayed_seconds() == 2, "freeze end tick or countdown wrong")
+	check(mode.local_end_tick - NetworkTick.tick == 120, "client-style countdown did not use relative end tick")
+	mode._on_network_tick(220)
+	check(mode.phase == RoundGameMode.Phase.LIVE and mode.phase_end_tick == 400, "freeze did not become live on its end tick")
+	mode._on_network_tick(400)
+	check(mode.phase == RoundGameMode.Phase.ROUND_END and mode.team_scores[Teams.BRAVO] == 1, "timeout did not award defender round")
+	check(mode.is_actions_locked() and not mode.is_movement_locked(), "ROUND_END did not retain the movement exception")
+	var player := await _spawn_player(Vector2(-2400, -2400))
+	mode.configure_player(player)
+	var start := player.global_position
+	PlayerSimulation.simulate(player, player.movement_component, _move_frame(NetworkTick.tick, Vector2(0, -1)))
+	check(player.actions_locked and player.global_position.distance_to(start) > 0.1, "ROUND_END blocked walking or unlocked combat")
+	mode._on_network_tick(mode.phase_end_tick)
+	check(mode.phase == RoundGameMode.Phase.WAITING, "empty team did not leave next round waiting")
+	player.queue_free()
+	mode.queue_free()
+	await get_tree().process_frame
+
+func test_round_respawn_restores_loadout_walls_and_role_spawns() -> void:
+	var saved_names := MultiplayerSession.player_names.duplicate()
+	var saved_teams := MultiplayerSession.player_teams.duplicate()
+	var saved_bots := MultiplayerSession.bot_ids.duplicate()
+	MultiplayerSession.player_names = {1: "Host", -1: "Puppet"}
+	MultiplayerSession.player_teams = {1: Teams.ALPHA, -1: Teams.BRAVO}
+	MultiplayerSession.bot_ids = [-1]
+	var fixture := Node2D.new()
+	add_child(fixture)
+	var map := Node2D.new()
+	map.name = "Map"
+	fixture.add_child(map)
+	var spawns := Node2D.new()
+	map.add_child(spawns)
+	var points: Array[Node2D] = []
+	for role_name in ["AttackerSpawns", "DefenderSpawns"]:
+		var container := Node2D.new()
+		container.name = role_name
+		spawns.add_child(container)
+		var point := Node2D.new()
+		point.position = Vector2(-2400 if role_name == "AttackerSpawns" else -2000, -2400)
+		container.add_child(point)
+		points.append(point)
+	var service := DestructionService.new()
+	fixture.add_child(service)
+	var walls := _destructible_wall(Vector2(-2200, -2500), [Vector2i.ZERO])
+	walls.reparent(map)
+	var mode := (load("res://components/round_mode/round_game_mode.tscn") as PackedScene).instantiate() as RoundGameMode
+	mode.map = map
+	mode.spawn_point_container = spawns
+	mode.freeze_seconds = 100.0
+	fixture.add_child(mode)
+	for frame in range(60):
+		await get_tree().process_frame
+		if mode.phase == RoundGameMode.Phase.FREEZE and map.has_node("1") and map.has_node("-1"):
+			break
+	check(mode.phase == RoundGameMode.Phase.FREEZE, "round did not spawn a ready roster")
+	await get_tree().process_frame
+	await get_tree().process_frame # Default equipment is built after the player's ready callback.
+	var host := map.get_node("1") as PlayerController
+	var original_id := host.get_instance_id()
+	check(host.global_position == points[0].global_position and host.actions_locked, "attacker spawn or initial freeze lock wrong")
+	host.health_component.current_health = 25
+	(host.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance).ammo_in_mag = 2
+	service.apply_cell_damage(walls, Vector2i.ZERO, 40, DestructionMaterial.KIND_BULLET)
+	mode.attacking_team = Teams.BRAVO
+	check(mode.spawning.spawn_point_for(1) == points[1], "role change did not switch Alpha's spawn pool")
+	mode._start_round()
+	for frame in range(60):
+		await get_tree().process_frame
+		var current := map.get_node_or_null("1") as PlayerController
+		if current != null and current.get_instance_id() != original_id and not mode._starting_round:
+			break
+	await get_tree().process_frame
+	await get_tree().process_frame
+	host = map.get_node("1") as PlayerController
+	var rifle := host.equipment_manager.get_item_in_slot(EquipmentManager.EquipmentSlot.PRIMARY) as WeaponInstance
+	check(host.get_instance_id() != original_id and host.health_component.current_health == 100, "round reset reused a damaged life")
+	check(rifle != null and rifle.ammo_in_mag == rifle.data.mag_size, "round reset did not restore default ammo")
+	check(walls.has_wall(Vector2i.ZERO), "round reset did not restore destroyed cell")
+	check(host.global_position == points[1].global_position and not mode.spawning.spawning_enabled, "new role spawn or no-respawn flag wrong")
+	MultiplayerSession.player_names = saved_names
+	MultiplayerSession.player_teams = saved_teams
+	MultiplayerSession.bot_ids = saved_bots
+	fixture.queue_free()
+	await get_tree().process_frame
+
+func _round_fixture() -> Dictionary:
+	var saved := {"names": MultiplayerSession.player_names.duplicate(), "teams": MultiplayerSession.player_teams.duplicate(), "bots": MultiplayerSession.bot_ids.duplicate()}
+	MultiplayerSession.player_names = {1: "Host", -1: "Ally", -2: "Enemy"}
+	MultiplayerSession.player_teams = {1: Teams.ALPHA, -1: Teams.ALPHA, -2: Teams.BRAVO}
+	MultiplayerSession.bot_ids = [-1, -2]
+	var root := Node2D.new()
+	add_child(root)
+	var map := Node2D.new()
+	map.name = "Map"
+	root.add_child(map)
+	var spawns := Node2D.new()
+	map.add_child(spawns)
+	for role_name in ["AttackerSpawns", "DefenderSpawns"]:
+		var container := Node2D.new()
+		container.name = role_name
+		spawns.add_child(container)
+		for i in range(3):
+			var point := Node2D.new()
+			point.position = Vector2((-2400 - i * 100) if role_name == "AttackerSpawns" else (-1800 + i * 100), -2400)
+			container.add_child(point)
+	var zone := (load("res://components/round_mode/objective_zone.tscn") as PackedScene).instantiate() as ObjectiveZone
+	zone.position = Vector2(-2100, -2000)
+	map.add_child(zone)
+	var mode := (load("res://components/round_mode/round_game_mode.tscn") as PackedScene).instantiate() as RoundGameMode
+	mode.map = map
+	mode.spawn_point_container = spawns
+	mode.freeze_seconds = 100
+	mode.round_seconds = 100
+	mode.round_end_seconds = 100
+	root.add_child(mode)
+	for frame in range(60):
+		await get_tree().process_frame
+		if mode.phase == RoundGameMode.Phase.FREEZE:
+			break
+	await get_tree().process_frame
+	await get_tree().process_frame
+	NetworkTick.tick_started.disconnect(mode._on_network_tick)
+	mode.set_process(false)
+	return {"root": root, "map": map, "mode": mode, "zone": zone, "saved": saved}
+
+func _free_round_fixture(fixture: Dictionary) -> void:
+	MultiplayerSession.player_names = fixture.saved.names
+	MultiplayerSession.player_teams = fixture.saved.teams
+	MultiplayerSession.bot_ids = fixture.saved.bots
+	fixture.root.queue_free()
+	await get_tree().process_frame
+
+func _flush_area_monitoring() -> void:
+	# Teleports are submitted to physics, then overlap notifications are flushed to Area2D.
+	for frame in range(3):
+		await get_tree().physics_frame
+	await get_tree().process_frame
+
+func test_round_elimination_scores_once_and_blocks_round_end_damage() -> void:
+	var fixture := await _round_fixture()
+	var mode: RoundGameMode = fixture.mode
+	mode._publish_phase(RoundGameMode.Phase.LIVE, 100)
+	var enemy := fixture.map.get_node("-2") as PlayerController
+	enemy.health_component.take_damage(500, 1)
+	check(mode.phase == RoundGameMode.Phase.ROUND_END and mode.winner_team == Teams.ALPHA, "elimination did not finish round for survivors")
+	check(mode.team_scores[Teams.ALPHA] == 1 and mode.scoreboard.player_stats[1]["kills"] == 1, "kill changed round score more than once or lost kill stats")
+	var survivor := fixture.map.get_node("1") as PlayerController
+	survivor.health_component.take_damage(500, -2)
+	check(survivor.health_component.current_health == 100, "ROUND_END allowed damage")
+	enemy.queue_free() # Exercise the same exit callback used by delayed death despawn.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	check(not fixture.map.has_node("-2"), "eliminated player respawned during the round")
+	await _free_round_fixture(fixture)
+
+func test_objective_counts_contest_pause_and_accumulated_capture() -> void:
+	var fixture := await _round_fixture()
+	var mode: RoundGameMode = fixture.mode
+	var zone: ObjectiveZone = fixture.zone
+	mode.objective_hold_seconds = 1.0
+	mode._publish_phase(RoundGameMode.Phase.LIVE, 100)
+	var attacker := fixture.map.get_node("-1") as PlayerController
+	var defender := fixture.map.get_node("-2") as PlayerController
+	attacker.global_position = zone.global_position
+	await _flush_area_monitoring()
+	check(zone.living_counts(Teams.ALPHA) == Vector2i(1, 0), "zone count=%s attacker_team=%d attacker=%s physics=%s zone=%s bodies=%s selected=%s" % [zone.living_counts(Teams.ALPHA), attacker.team, attacker.global_position, PhysicsServer2D.body_get_state(attacker.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM), zone.global_position, zone.get_overlapping_bodies(), mode.objective == zone])
+	for tick in range(20):
+		mode._clock_tick += 1
+		mode._tick_objective()
+	var saved := mode.objective_progress
+	defender.global_position = zone.global_position + Vector2(40, 0)
+	await _flush_area_monitoring()
+	check(zone.living_counts(Teams.ALPHA) == Vector2i(1, 1), "contested fixture missing a defender")
+	mode._tick_objective()
+	check(is_equal_approx(mode.objective_progress, saved), "contested objective advanced or decayed")
+	attacker.global_position += Vector2(500, 0)
+	defender.global_position += Vector2(500, 0)
+	await _flush_area_monitoring()
+	check(zone.living_counts(Teams.ALPHA) == Vector2i.ZERO, "unattended fixture retained players")
+	mode._tick_objective()
+	check(is_equal_approx(mode.objective_progress, saved), "unattended objective lost accumulated progress")
+	attacker.global_position = zone.global_position
+	await _flush_area_monitoring()
+	for tick in range(41):
+		if mode.phase != RoundGameMode.Phase.LIVE:
+			break
+		mode._clock_tick += 1
+		mode._tick_objective()
+	check(mode.phase == RoundGameMode.Phase.ROUND_END and mode.winner_team == Teams.ALPHA, "accumulated uncontested hold did not win for attackers")
+	await _free_round_fixture(fixture)
+
+func test_round_halftime_and_first_to_two_match_end() -> void:
+	var fixture := await _round_fixture()
+	var mode: RoundGameMode = fixture.mode
+	mode.rounds_to_win = 2
+	mode._publish_phase(RoundGameMode.Phase.LIVE, 100)
+	mode._finish_round(Teams.ALPHA)
+	mode._on_network_tick(mode.phase_end_tick)
+	for frame in range(60):
+		await get_tree().process_frame
+		if not mode._starting_round:
+			break
+	check(mode.phase == RoundGameMode.Phase.FREEZE and mode.attacking_team == Teams.BRAVO and mode.round_index == 1, "halftime did not swap roles after the first finished round")
+	check(mode.role_of(Teams.ALPHA) == RoundGameMode.Role.DEFEND, "fixed Alpha team did not become defender")
+	mode._on_network_tick(mode.phase_end_tick)
+	mode._finish_round(Teams.ALPHA)
+	mode._on_network_tick(mode.phase_end_tick)
+	check(mode.phase == RoundGameMode.Phase.MATCH_END and mode.team_scores[Teams.ALPHA] == 2, "first to two did not end match")
+	check(mode.match_result_label.text == "VICTORY", "winning host did not receive match result")
+	await _free_round_fixture(fixture)
+
+func test_host_round_clock_cycles_without_client_timer_rpcs() -> void:
+	var fixture := await _round_fixture()
+	var mode: RoundGameMode = fixture.mode
+	mode.rounds_to_win = 2
+	mode.freeze_seconds = 0.1
+	mode.round_seconds = 0.1
+	mode.round_end_seconds = 0.1
+	mode._clock_tick = NetworkTick.tick
+	mode._publish_phase(RoundGameMode.Phase.FREEZE, 0.1)
+	NetworkTick.tick_started.connect(mode._on_network_tick)
+	var deadline := NetworkTick.tick + 180
+	while mode.phase != RoundGameMode.Phase.MATCH_END and NetworkTick.tick < deadline:
+		await get_tree().process_frame
+	check(mode.phase == RoundGameMode.Phase.MATCH_END and mode.round_index == 3, "host clock failed to cycle through freeze/live/end phases")
+	check(mode.team_scores[Teams.ALPHA] == 2 and mode.team_scores[Teams.BRAVO] == 1, "defender timeout wins or halftime roles wrong during real host ticks")
+	await _free_round_fixture(fixture)
+
 func test_weapon_wall_damage_survives_pickups() -> void:
 	var weapon := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon
 	weapon.wall_damage = 17

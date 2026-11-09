@@ -59,6 +59,11 @@ var actions_locked := false:
 			if net_sync != null:
 				net_sync.cancel_locked_actions()
 
+var movement_locked: bool:
+	get:
+		var mode := MatchGameMode.current(get_tree())
+		return actions_locked and (mode == null or mode.is_movement_locked())
+
 var _death_sequence_id := 0
 var _fog_material: Material
 const DEATH_DESPAWN_DELAY_SECONDS := 5.0
