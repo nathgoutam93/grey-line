@@ -456,6 +456,87 @@ func test_spectating_uses_teammate_visibility_and_cycles_only_allies() -> void:
 	WorldSnapshots._last_visible_tick.clear()
 	await _free_round_fixture(fixture)
 
+func test_ascii_map_generator_rejects_invalid_layouts() -> void:
+	var builder := preload("res://tools/map_builder.gd")
+	var source := FileAccess.get_file_as_string("res://tests/fixtures/mini_layout.txt")
+	check(String(builder.parse(source).error).is_empty(), "valid mini layout rejected")
+	var invalid := {
+		"ragged": source.replace("################################", "###############################"),
+		"unknown": source.replace("c", "?"),
+		"door length": source.replace("----", "---."),
+		"no objective": source.replace("O", "."),
+		"split objective": source.replace("#..a", "#O.a"),
+		"spawn count": source.replace("a", "."),
+		"edge door": "----" + source.substr(4),
+		"wall overlap": source.replace("#.............----", "#............R----"),
+	}
+	# Place a wall directly in front of an existing horizontal doorway.
+	var rows := source.split("\n")
+	rows[6] = rows[6].substr(0, 14) + "#" + rows[6].substr(15)
+	invalid["wall overlap"] = "\n".join(rows)
+	for reason in invalid:
+		check(not String(builder.parse(invalid[reason]).error).is_empty(), "generator accepted " + reason)
+	var warned := builder.parse(source)
+	check(warned.warnings.is_empty(), "fixture has unexpected prop/wall overlap")
+	rows = source.replace("c", ".").split("\n")
+	rows[4] = rows[4].substr(0, 16) + "c" + rows[4].substr(17)
+	check(not builder.parse("\n".join(rows)).warnings.is_empty(), "overlapping prop did not warn")
+
+func test_map_generator_cli_returns_nonzero_for_invalid_input() -> void:
+	var file := FileAccess.open("user://invalid_layout.txt", FileAccess.WRITE)
+	file.store_string("?\n")
+	file.close()
+	var output: Array = []
+	var args := PackedStringArray(["--headless", "--path", ProjectSettings.globalize_path("res://"), "-s", "res://tools/build_map.gd", "--", "--ephemeral-profile", "--layout=user://invalid_layout.txt", "--out=user://invalid_map.tscn"])
+	var code := OS.execute(OS.get_executable_path(), args, output, true)
+	check(code != 0 and "\n".join(output).contains("Unknown character"), "CLI did not exit with a clear validation failure")
+
+func test_generated_mini_map_preserves_cells_instances_and_fog() -> void:
+	var builder := preload("res://tools/map_builder.gd")
+	var source := FileAccess.get_file_as_string("res://tests/fixtures/mini_layout.txt")
+	var data := builder.parse(source)
+	var packed := load("res://tests/fixtures/mini_map.tscn") as PackedScene
+	check(packed != null, "generated mini map failed to load")
+	if packed == null:
+		return
+	var saved_viewport := MaskViewProvider.viewport
+	var world := packed.instantiate()
+	add_child(world)
+	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
+	check(walls.get_used_cells().size() == data.walls.size() and is_instance_valid(walls.mirror), "saved walls or automatic fog mirror wrong")
+	for cell in data.walls:
+		check(walls.cell_material(cell) == data.walls[cell], "wrong wall material at %s" % cell)
+	check(world.get_node("Map/Doors").get_child_count() == 2, "door runs did not become two instances")
+	var vertical := world.get_node("Map/Doors/Door2") as Door
+	check_near(vertical.rotation, PI * 0.5, 0.0001, "vertical door rotation wrong")
+	check((world.get_node("Map/ObjectiveZone/CollisionShape2D") as CollisionShape2D).shape.size == Vector2(64, 64), "objective bounding box shape was not saved")
+	check((world.get_node("Map/ObjectiveZone") as Node2D).position == Vector2(256, 192), "objective centre omitted last row or column")
+	check(world.get_node("FowMaskView/Level").get_child_count() == 5, "prop or door fog occluder not derived from collision")
+	world.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(saved_viewport)
+	var generated := builder.build(data, "res://tests/fixtures/mini_layout.txt")
+	check(builder.save(generated, "user://mini_map_first.tscn") == OK and builder.save(generated, "user://mini_map_second.tscn") == OK, "could not save deterministic comparison")
+	check(FileAccess.get_file_as_string("user://mini_map_first.tscn") == FileAccess.get_file_as_string("user://mini_map_second.tscn"), "identical map generation changed bytes")
+	generated.free()
+
+func test_round_map_template_loads_without_legacy_level_geometry() -> void:
+	var saved_viewport := MaskViewProvider.viewport
+	var packed := load("res://scenes/maps/_template/round_map_template.tscn") as PackedScene
+	check(packed != null, "round template failed to load")
+	if packed == null:
+		return
+	var world := packed.instantiate()
+	add_child(world)
+	check(world.get_node("RoundGameMode") is RoundGameMode and world.get_node("DestructionService") is DestructionService, "template missing round services")
+	check(world.get_node("Map/DestructibleWalls") is DestructibleWalls, "template missing typed wall layer")
+	check(not world.has_node("FowMaskView/Level/GeneratedOccluders") and not world.has_node("Map/Level"), "template retained legacy geometry")
+	for path in ["Map/Floor", "Map/Doors", "Map/Props", "Map/SpawnPoints/AttackerSpawns", "Map/SpawnPoints/DefenderSpawns", "PlayerSpawner", "PickupSpawner", "ProjectileSpawner"]:
+		check(world.has_node(path), "template missing " + path)
+	world.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(saved_viewport)
+
 func test_rounds_dev_map_loads_role_spawns_and_clear_objective() -> void:
 	var saved_viewport := MaskViewProvider.viewport
 	var world := (load("res://scenes/maps/map_1/map_1_rounds.tscn") as PackedScene).instantiate()

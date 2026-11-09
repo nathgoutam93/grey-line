@@ -1,0 +1,97 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://components/round_mode/round_game_mode.tscn" id="3_mflnu"]
+[ext_resource type="Script" path="res://components/destruction/destruction_service.gd" id="12_destruction"]
+
+[ext_resource type="TileSet" path="res://resources/destruction/destructible_walls_tileset.tres" id="14_tiles"]
+[ext_resource type="Script" path="res://components/destruction/destructible_walls.gd" id="15_walls"]
+
+[ext_resource type="Material" uid="uid://bwlqofbrbiull" path="res://materials/all_white.tres" id="2_2nbmb"]
+[ext_resource type="Script" uid="uid://cn0nbsf4jbfxl" path="res://components/fog_of_war_mask_view/fow_viewport_controller.gd" id="4_2nbmb"]
+[ext_resource type="Material" uid="uid://d08tbb5ged8av" path="res://materials/los_material.tres" id="11_2nbmb"]
+[ext_resource type="Texture2D" uid="uid://dh43n43u8e186" path="res://assets/textures/110_deg_cone.png" id="11_mflnu"]
+
+[sub_resource type="Gradient" id="Gradient_fxymx"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.477912)
+colors = PackedColorArray(0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_bwbls"]
+gradient = SubResource("Gradient_fxymx")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_k00yj"]
+viewport_path = NodePath("FowMaskView")
+
+[node name="World" type="Node2D" unique_id=539019978]
+
+[node name="FowMaskView" type="SubViewport" parent="." unique_id=2145603682 node_paths=PackedStringArray("los")]
+transparent_bg = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+script = ExtResource("4_2nbmb")
+los = NodePath("LOS")
+
+[node name="Level" type="Node2D" parent="FowMaskView" unique_id=1976538564]
+
+[node name="Sprite2D" type="Sprite2D" parent="FowMaskView/Level" unique_id=639574458]
+material = ExtResource("2_2nbmb")
+scale = Vector2(100, 100)
+texture = SubResource("GradientTexture2D_bwbls")
+
+[node name="LOS" type="PointLight2D" parent="FowMaskView" unique_id=185645498]
+blend_mode = 1
+shadow_enabled = true
+texture = ExtResource("11_mflnu")
+
+[node name="Camera2D" type="Camera2D" parent="FowMaskView" unique_id=1215250904]
+
+[node name="Map" type="Node2D" parent="." unique_id=2023424144]
+
+[node name="Floor" type="ColorRect" parent="Map" unique_id=1872000361]
+offset_right = 3200.0
+offset_bottom = 2080.0
+mouse_filter = 2
+color = Color(0.16, 0.2, 0.22, 1)
+
+[node name="DestructibleWalls" type="TileMapLayer" parent="Map" unique_id=1872000362]
+tile_set = ExtResource("14_tiles")
+occlusion_enabled = false
+physics_quadrant_size = 1
+script = ExtResource("15_walls")
+
+[node name="Doors" type="Node2D" parent="Map" unique_id=1872000363]
+
+[node name="Props" type="Node2D" parent="Map" unique_id=1872000364]
+
+[node name="SpawnPoints" type="Node2D" parent="Map" unique_id=966192770]
+
+[node name="AttackerSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1730926471]
+
+[node name="DefenderSpawns" type="Node2D" parent="Map/SpawnPoints" unique_id=1647283901]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=83054388]
+
+[node name="FogOfWar" type="Sprite2D" parent="CanvasLayer" unique_id=1787375951]
+material = ExtResource("11_2nbmb")
+texture = SubResource("ViewportTexture_k00yj")
+centered = false
+
+[node name="DestructionService" type="Node" parent="." unique_id=1834057219]
+script = ExtResource("12_destruction")
+
+[node name="RoundGameMode" parent="." unique_id=1766349449 node_paths=PackedStringArray("map", "spawn_point_container") instance=ExtResource("3_mflnu")]
+map = NodePath("../Map")
+spawn_point_container = NodePath("../Map/SpawnPoints")
+
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=712465194]
+_spawnable_scenes = PackedStringArray("uid://ca4sffa83rp24")
+spawn_path = NodePath("../Map")
+
+[node name="PickupSpawner" type="MultiplayerSpawner" parent="." unique_id=108037772]
+_spawnable_scenes = PackedStringArray("uid://cy2enpfy31fdt", "uid://djd5057n31hec", "uid://bt7txyxfcccff")
+spawn_path = NodePath("../Map")
+
+[node name="ProjectileSpawner" type="MultiplayerSpawner" parent="." unique_id=1643962526]
+_spawnable_scenes = PackedStringArray("uid://c1crklx4b4c3c", "uid://dh2nskt0itnox", "uid://cpo2ct5tbyue3")
+spawn_path = NodePath("../Map")
+
