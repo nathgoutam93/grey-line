@@ -1428,7 +1428,7 @@ scale = Vector2(0.6, 0.6)
 position = Vector2(-875, 534)
 
 [node name="sp_2" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1558338208]
-position = Vector2(-877, 218)
+position = Vector2(-875, 300)
 
 [node name="sp_3" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=252392505]
 position = Vector2(-875, 391)
@@ -1441,6 +1441,18 @@ position = Vector2(1975, -895)
 
 [node name="sp_6" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=993248298]
 position = Vector2(1975, -775)
+
+[node name="sp_7" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1723019021]
+position = Vector2(-875, 660)
+
+[node name="sp_8" type="Node2D" parent="Map/SpawnPoints/AttackerSpawns" unique_id=1723019022]
+position = Vector2(-875, 800)
+
+[node name="sp_9" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1723019023]
+position = Vector2(1975, -520)
+
+[node name="sp_10" type="Node2D" parent="Map/SpawnPoints/DefenderSpawns" unique_id=1723019024]
+position = Vector2(1975, -1020)
 
 [node name="BG" type="AudioStreamPlayer" parent="Map" unique_id=711162239]
 stream = ExtResource("8_mflnu")

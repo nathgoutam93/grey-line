@@ -561,6 +561,72 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 	view.queue_free()
 	await get_tree().process_frame
 
+func test_every_lobby_round_map_satisfies_spawn_and_generation_contract() -> void:
+	var validator := preload("res://tests/unit/map_validation_tests.gd")
+	var saved_viewport := MaskViewProvider.viewport
+	var count := 0
+	for path in MultiplayerSession.MAPS:
+		var world := (load(path) as PackedScene).instantiate() as Node2D
+		if not world.has_node("RoundGameMode"):
+			world.free()
+			continue
+		count += 1
+		add_child(world)
+		await _flush_area_monitoring()
+		var errors := validator.validate(world)
+		check(errors.is_empty(), "%s: %s" % [path, errors])
+		world.queue_free()
+		await get_tree().process_frame
+		MaskViewProvider.set_viewport(saved_viewport)
+	check(count == 2, "did not validate the dev and CQC round maps")
+
+func test_map_validation_catches_blocked_spawns_and_stale_cells() -> void:
+	var validator := preload("res://tests/unit/map_validation_tests.gd")
+	var saved_viewport := MaskViewProvider.viewport
+	var world := (load("res://scenes/maps/cqc_1/cqc_1.tscn") as PackedScene).instantiate() as Node2D
+	add_child(world)
+	var point := world.get_node("Map/SpawnPoints/AttackerSpawns/Spawn1") as Node2D
+	var original := point.position
+	point.position = Vector2(8, 8)
+	await _flush_area_monitoring()
+	check("\n".join(validator.validate(world)).contains("Blocked spawn"), "validation accepted a spawn inside the boundary")
+	point.position = original
+	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
+	walls.destroy_cells([Vector2i(134, 50)])
+	check("\n".join(validator.validate(world)).contains("stale"), "validation accepted generated scene drift")
+	world.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(saved_viewport)
+
+func test_cqc_travel_time_open_sight_lines_and_spawn_privacy() -> void:
+	var builder := preload("res://tools/map_builder.gd")
+	var routes := preload("res://tests/helpers/map_route.gd")
+	var data := builder.parse(FileAccess.get_file_as_string("res://scenes/maps/cqc_1/layout.txt"))
+	var grid := routes.grid_for(data)
+	var target: Vector2i = data.objective.get_center()
+	var runner := PLAYER_SCENE.instantiate() as PlayerController
+	var running_speed := runner.speed
+	runner.free()
+	for spawn in data.attacks:
+		var path := grid.get_point_path(spawn, target)
+		var seconds := routes.length(path) / running_speed
+		check(not path.is_empty() and seconds >= 15.0 and seconds <= 20.0, "attacker %s route %.2f s outside target" % [spawn, seconds])
+	var saved_viewport := MaskViewProvider.viewport
+	var world := (load("res://scenes/maps/cqc_1/cqc_1.tscn") as PackedScene).instantiate() as Node2D
+	add_child(world)
+	for door in world.get_node("Map/Doors").get_children():
+		(door as Door).set_state_local(Door.State.OPEN)
+	await _flush_area_monitoring()
+	var sight := routes.longest_sight_line(world, data, grid)
+	check(float(sight.length) <= 1440.0, "open sight line exceeds 1440 px: %s" % [sight])
+	for attacker in data.attacks:
+		for defender in data.defends:
+			var query := PhysicsRayQueryParameters2D.create(builder.cell_center(attacker), builder.cell_center(defender), 1)
+			check(not world.get_world_2d().direct_space_state.intersect_ray(query).is_empty(), "spawns can see each other")
+	world.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(saved_viewport)
+
 func test_rounds_dev_map_loads_role_spawns_and_clear_objective() -> void:
 	var saved_viewport := MaskViewProvider.viewport
 	var world := (load("res://scenes/maps/map_1/map_1_rounds.tscn") as PackedScene).instantiate()
@@ -568,7 +634,7 @@ func test_rounds_dev_map_loads_role_spawns_and_clear_objective() -> void:
 	await _flush_area_monitoring()
 	var mode := world.get_node("RoundGameMode") as RoundGameMode
 	check(mode != null and world.get_node("DestructionService") is DestructionService, "round map missing mode or destruction service")
-	check(world.get_node("Map/SpawnPoints/AttackerSpawns").get_child_count() == 3 and world.get_node("Map/SpawnPoints/DefenderSpawns").get_child_count() == 3, "dev map did not split existing role spawns")
+	check(world.get_node("Map/SpawnPoints/AttackerSpawns").get_child_count() == 5 and world.get_node("Map/SpawnPoints/DefenderSpawns").get_child_count() == 5, "dev round map needs five spawns per role")
 	var zone := world.get_node("Map/ObjectiveZone") as ObjectiveZone
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = (zone.get_node("CollisionShape2D") as CollisionShape2D).shape
