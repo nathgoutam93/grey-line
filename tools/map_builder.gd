@@ -195,3 +195,20 @@ static func save(root: Node, path: String) -> Error:
 		return FileAccess.get_open_error()
 	file.store_string(text)
 	return OK
+
+static func preview(data: Dictionary) -> Image:
+	var image := Image.create(data.size.x * 4, data.size.y * 4, false, Image.FORMAT_RGBA8)
+	image.fill(Color("#29383b"))
+	var palette := {"#": Color("#11191f"), "R": Color("#65727d"), "S": Color("#d6c6a8"), "-": Color("#e4a35c"), "|": Color("#e4a35c"), "a": Color("#ffb347"), "d": Color("#3596ff"), "O": Color("#46c9ad")}
+	for y in range(data.size.y):
+		for x in range(data.size.x):
+			var ch: String = data.rows[y][x]
+			if palette.has(ch):
+				image.fill_rect(Rect2i(x * 4, y * 4, 4, 4), palette[ch])
+	for prop in data.props:
+		var bounds := prop_bounds(prop)
+		image.fill_rect(Rect2i(Vector2i(bounds.position / 4.0), Vector2i(bounds.size / 4.0)), Color("#8b9896"))
+	for role in ["attacks", "defends"]:
+		for cell in data[role]:
+			image.fill_rect(Rect2i(cell * 4 - Vector2i(2, 2), Vector2i(8, 8)), palette["a" if role == "attacks" else "d"])
+	return image

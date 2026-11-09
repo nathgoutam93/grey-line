@@ -7,9 +7,12 @@ func _build() -> void:
 	var builder: Script = load("res://tools/map_builder.gd")
 	var layout := ""
 	var output := ""
+	var preview := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--layout="):
 			layout = arg.trim_prefix("--layout=")
+		elif arg.begins_with("--preview="):
+			preview = arg.trim_prefix("--preview=")
 		elif arg.begins_with("--out="):
 			output = arg.trim_prefix("--out=")
 	if layout.is_empty() or output.is_empty() or not FileAccess.file_exists(layout):
@@ -30,5 +33,11 @@ func _build() -> void:
 		printerr("Could not save map: " + error_string(error))
 		quit(1)
 		return
+	if not preview.is_empty():
+		var image: Image = builder.preview(data)
+		if image.save_png(preview) != OK:
+			printerr("Could not save preview " + preview)
+			quit(1)
+			return
 	print("Generated %s (%dx%d cells, %d walls, %d doors)" % [output, data.size.x, data.size.y, data.walls.size(), data.doors.size()])
 	quit(0)

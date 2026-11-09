@@ -7,6 +7,7 @@ const TEXT := Color("#edf2f5")
 const MUTED := Color("#899ba9")
 const ACCENT := Color("#65df9a")
 const MAP_PREVIEW := preload("res://scenes/maps/map_1/_assets/map_f.png")
+const CQC_PREVIEW := preload("res://scenes/maps/cqc_1/preview.png")
 const DEFAULT_AVATAR_PATH := "res://assets/sprites/character/head.png"
 
 signal start_requested
@@ -20,6 +21,7 @@ var _counts: Dictionary = {}
 var _team_tags: Dictionary = {}
 var _avatar_cache: Dictionary = {}
 var _avatar_catalog: Dictionary = {}
+var _map_thumbnail: TextureRect
 var _map_name: Label
 var _connection: Label
 var _balance: Label
@@ -74,6 +76,8 @@ func _build() -> void:
 	map_row.add_theme_constant_override("separation", 14)
 	map_card.add_child(map_row)
 	var thumbnail := TextureRect.new()
+	_map_thumbnail = thumbnail
+	thumbnail.name = "MapPreview"
 	thumbnail.texture = MAP_PREVIEW
 	thumbnail.custom_minimum_size = Vector2(86, 64)
 	thumbnail.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -212,7 +216,11 @@ func render(payload: Dictionary) -> void:
 	_connection.text = "%d CONNECTED  /  %s" % [names.size(), "HOST LOBBY" if host else "PLAYER LOBBY"]
 	var scene_file := String(payload.get("map_scene_path", "")).get_file().trim_suffix(".tscn")
 	_map_name.text = scene_file.replace("_", " ").capitalize() if not scene_file.is_empty() else "No map"
-	var rounds := scene_file == "map_1_rounds"
+	if scene_file == "cqc_1":
+		_map_name.text = "CQC 1"
+	_map_thumbnail.texture = CQC_PREVIEW if scene_file == "cqc_1" else MAP_PREVIEW
+	_map_thumbnail.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED if scene_file == "cqc_1" else TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	var rounds := scene_file in ["map_1_rounds", "cqc_1"]
 	_mode_title.text = "ATTACK / DEFEND" if rounds else "TEAM DEATHMATCH"
 	_mode_name.text = "One life per round" if rounds else "Team deathmatch"
 	_map_cycle.visible = connected and host and not started

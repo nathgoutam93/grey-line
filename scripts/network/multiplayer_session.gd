@@ -35,7 +35,7 @@ const DEFAULT_AVATAR_ID := "avatar_01"
 const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu/main_menu.tscn"
 const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
 const RPC_CHANNEL_UI := 2
-const MAPS: Array[String] = ["res://scenes/maps/map_1/map_1.tscn", "res://scenes/maps/map_1/map_1_rounds.tscn"]
+const MAPS: Array[String] = ["res://scenes/maps/map_1/map_1.tscn", "res://scenes/maps/map_1/map_1_rounds.tscn", "res://scenes/maps/cqc_1/cqc_1.tscn"]
 
 static var persisted_player_names := {}
 static var persisted_player_avatar_ids := {}

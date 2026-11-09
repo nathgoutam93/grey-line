@@ -537,6 +537,30 @@ func test_round_map_template_loads_without_legacy_level_geometry() -> void:
 	await get_tree().process_frame
 	MaskViewProvider.set_viewport(saved_viewport)
 
+func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
+	var packed := load("res://scenes/maps/cqc_1/cqc_1.tscn") as PackedScene
+	check(packed != null, "CQC 1 scene failed to load")
+	if packed == null:
+		return
+	var saved_viewport := MaskViewProvider.viewport
+	var world := packed.instantiate()
+	add_child(world)
+	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
+	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(188, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(150, 50)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
+	check(world.get_node("Map/Doors").get_child_count() == 9, "expected three exterior and six interior doors")
+	check(world.get_node("Map/Props").get_child_count() == 15, "outdoor cover instances missing")
+	check(world.get_meta("layout_size") == Vector2i(200, 130), "CQC metrics metadata missing")
+	world.queue_free()
+	await get_tree().process_frame
+	MaskViewProvider.set_viewport(saved_viewport)
+	var view := LobbyView.new()
+	add_child(view)
+	view.render({"player_names": {}, "player_avatar_ids": {}, "player_teams": {}, "is_connected": false, "is_server": false, "local_peer_id": 1, "match_started": false, "map_scene_path": "res://scenes/maps/cqc_1/cqc_1.tscn"})
+	check((view.find_child("ModeTitle", true, false) as Label).text == "ATTACK / DEFEND", "CQC picker incorrectly shows deathmatch")
+	check((view.find_child("MapPreview", true, false) as TextureRect).texture == LobbyView.CQC_PREVIEW, "CQC picker uses the old map preview")
+	view.queue_free()
+	await get_tree().process_frame
+
 func test_rounds_dev_map_loads_role_spawns_and_clear_objective() -> void:
 	var saved_viewport := MaskViewProvider.viewport
 	var world := (load("res://scenes/maps/map_1/map_1_rounds.tscn") as PackedScene).instantiate()
