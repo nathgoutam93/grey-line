@@ -155,6 +155,21 @@ func _hard_timeout() -> void:
 func hold(seconds: float) -> void:
 	await get_tree().create_timer(seconds).timeout
 
+## Optional real-renderer captures when running a scenario without --headless.
+func capture_frame(label: String) -> void:
+	var output_dir := ""
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--capture-dir="):
+			output_dir = arg.trim_prefix("--capture-dir=")
+	if output_dir.is_empty() or DisplayServer.get_name() == "headless":
+		return
+	DirAccess.make_dir_recursive_absolute(output_dir)
+	await RenderingServer.frame_post_draw
+	var path := output_dir.path_join("%s-%s-%s.png" % [test_name, role, label])
+	var error := get_viewport().get_texture().get_image().save_png(path)
+	if error != OK:
+		results.fail("capture", "could not save %s: %s" % [path, error_string(error)])
+
 func tap(action: String, seconds: float = 0.1) -> void:
 	Input.action_press(action)
 	await hold(seconds)
