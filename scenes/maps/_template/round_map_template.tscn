@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://components/round_mode/round_game_mode.tscn" id="3_mflnu"]
+[ext_resource type="Script" uid="uid://de3jr1soicuyo" path="res://components/perspective_walls/perspective_walls.gd" id="16_perspective"]
 [ext_resource type="Script" path="res://components/destruction/destruction_service.gd" id="12_destruction"]
 
 [ext_resource type="TileSet" path="res://resources/destruction/destructible_walls_tileset.tres" id="14_tiles"]
@@ -58,6 +59,9 @@ tile_set = ExtResource("14_tiles")
 occlusion_enabled = false
 physics_quadrant_size = 1
 script = ExtResource("15_walls")
+
+[node name="PerspectiveWalls" type="MeshInstance2D" parent="Map" unique_id=1987654321]
+script = ExtResource("16_perspective")
 
 [node name="Doors" type="Node2D" parent="Map" unique_id=1872000363]
 
