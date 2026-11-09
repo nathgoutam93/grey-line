@@ -186,20 +186,22 @@ func _update_footstep_audio(delta: float) -> void:
 	if delta <= 0.0:
 		return
 
-	var is_moving_now := false
-	if net_sync != null and net_sync.is_proxy():
-		is_moving_now = _footstep_moving and net_sync.net_footsteps
-	else:
-		is_moving_now = (_footstep_moving or (movement_component != null and movement_component.is_moving)) and not is_slow_walking
-	if is_dead:
-		is_moving_now = false
-
-	if is_moving_now:
+	if should_play_footsteps():
 		if not footstep_player.playing:
 			footstep_player.play()
 		return
 	if footstep_player.playing:
 		footstep_player.stop()
+
+## Only the local player's own steps use local movement. Everyone else, on
+## clients and on the host alike, is heard only when the filtered world packet
+## carries their footstep bit, so walls and slow-walk hide steps equally.
+func should_play_footsteps() -> bool:
+	if is_dead:
+		return false
+	if net_sync != null and not net_sync.is_owner_role():
+		return _footstep_moving and net_sync.net_footsteps
+	return (_footstep_moving or (movement_component != null and movement_component.is_moving)) and not is_slow_walking
 
 func _on_network_tick(_tick: int) -> void:
 	if is_dead:

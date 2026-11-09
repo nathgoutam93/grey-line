@@ -373,6 +373,30 @@ func test_round_mutual_elimination_counts_every_death_and_defenders_win() -> voi
 	await _free_round_fixture(fixture)
 
 
+func test_host_footsteps_follow_its_filtered_packet() -> void:
+	var fixture := await _round_fixture()
+	var host := fixture.map.get_node("1") as PlayerController
+	var enemy := fixture.map.get_node("-2") as PlayerController
+	var players: Array[PlayerController] = [host, enemy]
+	host._footstep_moving = true
+	enemy._footstep_moving = true
+	var packet := []
+	packet.resize(WorldSnapshotService.PACKET_SIZE)
+	packet[WorldSnapshotService.P_IDS] = PackedInt32Array()
+	packet[WorldSnapshotService.P_FLAGS] = PackedByteArray()
+	WorldSnapshots._apply_host_presence(packet, players)
+	check(not enemy.should_play_footsteps(), "host heard a culled enemy's footsteps through cover")
+	check(host.should_play_footsteps(), "host lost its own footsteps")
+	packet[WorldSnapshotService.P_IDS] = PackedInt32Array([enemy.owner_peer_id])
+	packet[WorldSnapshotService.P_FLAGS] = PackedByteArray([0])
+	WorldSnapshots._apply_host_presence(packet, players)
+	check(not enemy.should_play_footsteps(), "host heard footsteps the packet marked silent")
+	packet[WorldSnapshotService.P_FLAGS] = PackedByteArray([WorldSnapshotService.FLAG_FOOTSTEPS])
+	WorldSnapshots._apply_host_presence(packet, players)
+	check(enemy.should_play_footsteps() and not enemy.visible, "audible enemy footsteps missing on the host, or the body was revealed")
+	await _free_round_fixture(fixture)
+
+
 func test_objective_counts_contest_pause_and_accumulated_capture() -> void:
 	var fixture := await _round_fixture()
 	var mode: RoundGameMode = fixture.mode

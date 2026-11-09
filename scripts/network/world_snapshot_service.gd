@@ -110,6 +110,8 @@ func _apply_host_presence(packet: Array, players: Array[PlayerController]) -> vo
 		if index >= 0:
 			presence = PlayerNetSync.NetPresence.VISIBLE if (flags[index] & FLAG_VISIBLE) != 0 else PlayerNetSync.NetPresence.AUDIBLE
 		player.net_sync.set_net_presence(presence)
+		# Same footstep gate a client applies, so the host hears no more than its packet.
+		player.net_sync.net_footsteps = index >= 0 and (flags[index] & FLAG_FOOTSTEPS) != 0
 
 ## Builds the packet a given peer would receive right now (also used by tooling).
 func build_packet(peer_id: int) -> Array:
