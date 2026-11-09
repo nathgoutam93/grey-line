@@ -334,6 +334,7 @@ func test_round_elimination_scores_once_and_blocks_round_end_damage() -> void:
 	mode._publish_phase(RoundGameMode.Phase.LIVE, 100)
 	var enemy := fixture.map.get_node("-2") as PlayerController
 	enemy.health_component.take_damage(500, 1)
+	await get_tree().process_frame # elimination resolves once the frame's deaths are in
 	check(mode.phase == RoundGameMode.Phase.ROUND_END and mode.winner_team == Teams.ALPHA, "elimination did not finish round for survivors")
 	check(mode.team_scores[Teams.ALPHA] == 1 and mode.scoreboard.player_stats[1]["kills"] == 1, "kill changed round score more than once or lost kill stats")
 	var survivor := fixture.map.get_node("1") as PlayerController
@@ -344,6 +345,33 @@ func test_round_elimination_scores_once_and_blocks_round_end_damage() -> void:
 	await get_tree().process_frame
 	check(not fixture.map.has_node("-2"), "eliminated player respawned during the round")
 	await _free_round_fixture(fixture)
+
+func test_round_mutual_elimination_counts_every_death_and_defenders_win() -> void:
+	var fixture := await _round_fixture()
+	var mode: RoundGameMode = fixture.mode
+	mode._publish_phase(RoundGameMode.Phase.LIVE, 100)
+	var attackers: Array[PlayerController] = []
+	var defenders: Array[PlayerController] = []
+	for node in fixture.map.get_children():
+		var player := node as PlayerController
+		if player == null:
+			continue
+		if player.team == mode.attacking_team:
+			attackers.append(player)
+		else:
+			defenders.append(player)
+	# One blast: the defender dies first, then every attacker in the same frame.
+	for victim in defenders + attackers:
+		victim.health_component.take_damage(500, 1)
+	var all_dead := true
+	for victim in defenders + attackers:
+		all_dead = all_dead and victim.is_dead
+	check(all_dead, "the first death ended the round and spared later victims of the same blast")
+	await get_tree().process_frame
+	check(mode.phase == RoundGameMode.Phase.ROUND_END and mode.winner_team == mode.defending_team(), "mutual elimination phase=%d winner=%d" % [mode.phase, mode.winner_team])
+	check(mode.team_scores[mode.defending_team()] == 1 and mode.team_scores[mode.attacking_team] == 0, "mutual elimination scored more than one round")
+	await _free_round_fixture(fixture)
+
 
 func test_objective_counts_contest_pause_and_accumulated_capture() -> void:
 	var fixture := await _round_fixture()

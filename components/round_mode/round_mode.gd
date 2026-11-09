@@ -34,6 +34,7 @@ var team_scores := {Teams.ALPHA: 0, Teams.BRAVO: 0}
 var _clock_tick := 0
 var _roles_swapped := false
 var _starting_round := false
+var _elimination_pending := false
 var _transition_requested := false
 var _stats_visible := false
 var _last_objective_send_tick := 0
@@ -193,6 +194,10 @@ func _living_counts() -> Vector2i:
 
 func _evaluate_elimination() -> bool:
 	var counts := _living_counts()
+	if counts == Vector2i.ZERO:
+		# Mutual elimination: the attackers did not complete the objective.
+		_finish_round(defending_team())
+		return true
 	if counts.x == 0 and counts.y > 0:
 		_finish_round(defending_team())
 		return true
@@ -371,9 +376,18 @@ func _on_player_setup(_id: int, player: PlayerController) -> void:
 	player.health_component.die_detailed.connect(_on_player_eliminated)
 
 func _on_player_eliminated(_killer: int, _headshot: bool) -> void:
+	# Defer to the end of the frame so every death from one blast counts:
+	# resolving on the first death would end the round, block the remaining
+	# damage and pick the winner by player iteration order.
+	if not _elimination_pending and not _starting_round and phase in [Phase.FREEZE, Phase.LIVE]:
+		_elimination_pending = true
+		_resolve_pending_elimination.call_deferred()
+	_refresh_spectators()
+
+func _resolve_pending_elimination() -> void:
+	_elimination_pending = false
 	if not _starting_round and phase in [Phase.FREEZE, Phase.LIVE]:
 		_evaluate_elimination()
-	_refresh_spectators()
 
 func _on_peer_disconnected(id: int) -> void:
 	scoreboard.remove_peer(id)
