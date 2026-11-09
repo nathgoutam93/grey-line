@@ -66,6 +66,13 @@ func remove_peer(peer_id: int) -> void:
 	player_stats.erase(peer_id)
 	broadcast_stats()
 
+## Server only: a dropped player rejoined under a new peer id; keep their stats.
+func rekey_peer(old_id: int, new_id: int) -> void:
+	if player_stats.has(old_id):
+		player_stats[new_id] = player_stats[old_id]
+		player_stats.erase(old_id)
+	broadcast_stats()
+
 func broadcast_stats(stats: Dictionary = player_stats) -> void:
 	_update_stats.rpc(stats, team_scores)
 
@@ -75,6 +82,9 @@ func send_stats_to(peer_id: int) -> void:
 func register_death(victim_id: int, killer_id: int, is_headshot: bool = false) -> void:
 	if not multiplayer.is_server() or not active:
 		return
+	# A dropped player's body keeps its old id after they rejoin.
+	victim_id = MultiplayerSession.current_id(victim_id)
+	killer_id = MultiplayerSession.current_id(killer_id)
 
 	var killer_name := player_identifier(killer_id) if player_stats.has(killer_id) else "Unknown"
 	var victim_name := player_identifier(victim_id)
@@ -203,8 +213,8 @@ func _report_client_ping(rtt_ms: int) -> void:
 	if not multiplayer.is_server():
 		return
 	var peer_id := multiplayer.get_remote_sender_id()
-	if peer_id <= 0:
-		return
+	if peer_id <= 0 or not MultiplayerSession.player_names.has(peer_id):
+		return # Not admitted (yet): a rejoining peer gets its old stats first.
 	if not player_stats.has(peer_id):
 		player_stats[peer_id] = _new_player_stats(peer_id)
 	var stats: Dictionary = player_stats[peer_id]

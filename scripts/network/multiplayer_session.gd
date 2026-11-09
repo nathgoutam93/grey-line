@@ -6,6 +6,13 @@ signal lobby_ui_visibility_requested(visible: bool)
 signal server_map_load_requested(map_scene_path: String)
 signal bot_added(bot_id: int)
 signal bot_removed(bot_id: int)
+## Server: a player dropped out of a running match without confirming Leave;
+## their slot (name, team, stats) is held until the match ends.
+signal player_dropped(peer_id: int)
+## Server: a slot was released (explicit Leave, or a disconnect outside a match).
+signal player_left(peer_id: int)
+## Server: a dropped player reconnected as `new_id` and took back `old_id`'s slot.
+signal player_rejoined(old_id: int, new_id: int)
 
 @export var port: int = 3000
 @export var max_players: int = 8
@@ -37,6 +44,39 @@ const LOBBY_SCENE_PATH := "res://scenes/lobby/lobby.tscn"
 const RPC_CHANNEL_UI := 2
 const MAPS: Array[String] = ["res://scenes/maps/map_1/map_1.tscn", "res://scenes/maps/map_1/map_1_rounds.tscn", "res://scenes/maps/cqc_1/cqc_1.tscn"]
 
+## Reconnect. Clients get a random server-issued token when they register; a
+## client that drops out of a running match presents it to take back its
+## slot under its new ENet peer id. Explicit Leave forfeits the slot.
+const REJOIN_TICKET_PATH := "user://rejoin_ticket.json"
+const REJOIN_TICKET_MAX_AGE_SECONDS := 6 * 3600
+const REJOIN_TOKEN_BYTES := 16
+const REJOIN_TOKEN_LENGTH := REJOIN_TOKEN_BYTES * 2 # hex
+## Server: a peer that connects mid-match must present a valid token this fast.
+const REJOIN_ADMIT_TIMEOUT_SECONDS := 10.0
+## Client: automatic attempts after a drop, before falling back to the menu button.
+const AUTO_REJOIN_WINDOW_SECONDS := 60.0
+const MANUAL_REJOIN_WINDOW_SECONDS := 8.0
+const REJOIN_RETRY_SECONDS := 2.0
+const LEAVE_DISCONNECT_WAIT_SECONDS := 1.0
+
+# Server state
+var _slot_tokens := {} # peer id -> token
+var dropped_ids: Array[int] = [] # held slots whose player is disconnected
+var _peer_aliases := {} # previous peer id of a rejoined slot -> its current id
+var _forfeited := {} # peers that confirmed Leave
+
+# Client state
+var _rejoin_ticket := {} # { address, port, token, saved_unix }
+var _rejoin_pending := false
+var _rejoin_deadline_msec := 0
+var _rejoin_attempt := 0
+var _match_closed := false
+var _leaving := false
+var _last_server_address := ""
+var _last_server_port := 0
+var rejoin_status := ""
+var _menu_notice := "" # shown once by the next main menu
+
 static var persisted_player_names := {}
 static var persisted_player_avatar_ids := {}
 static var persisted_player_teams := {}
@@ -44,6 +84,7 @@ static var persisted_match_started := false
 static var persisted_map_scene_path := ""
 
 func _ready() -> void:
+	_load_rejoin_ticket()
 	_apply_persisted_map_scene_path()
 	_apply_default_player_name()
 	_connect_multiplayer_signals()
@@ -76,6 +117,9 @@ func enter_main_menu() -> void:
 	_release_mouse_capture()
 	_reset_network_session()
 	_stop_lan_discovery_listener()
+	_rejoin_pending = false
+	rejoin_status = ""
+	_clear_slot_state()
 	player_names.clear()
 	player_avatar_ids.clear()
 	player_teams.clear()
@@ -85,7 +129,8 @@ func enter_main_menu() -> void:
 	persisted_player_teams.clear()
 	persisted_match_started = false
 	manual_join_visible = false
-	discovery_status_text = "Auto-discover LAN host"
+	discovery_status_text = _menu_notice if not _menu_notice.is_empty() else "Auto-discover LAN host"
+	_menu_notice = ""
 	_emit_main_menu_state()
 
 func enter_lobby() -> void:
@@ -104,6 +149,9 @@ func enter_lobby() -> void:
 	if multiplayer.multiplayer_peer != null and not multiplayer.is_server():
 		call_deferred("request_lobby_sync_from_server")
 
+	if _rejoin_pending and multiplayer.multiplayer_peer == null:
+		_attempt_rejoin.call_deferred()
+
 	_emit_lobby_sync()
 
 func host_game() -> Dictionary:
@@ -111,6 +159,9 @@ func host_game() -> Dictionary:
 		_set_discovery_status("Complete profile in Settings.")
 		return {"ok": false, "message": "Profile incomplete."}
 
+	clear_rejoin_ticket()
+	_leaving = false
+	_clear_slot_state()
 	var peer := ENetMultiplayerPeer.new()
 	var error := peer.create_server(port, max_players)
 	if error != OK:
@@ -138,6 +189,8 @@ func join_game(manual_host: String = "", manual_mode: bool = false) -> Dictionar
 	local_player_name = _resolve_local_player_name()
 	_set_profile_username(local_player_name)
 	_stop_lan_discovery_listener()
+	clear_rejoin_ticket()
+	_rejoin_pending = false
 
 	var target_address := manual_host.strip_edges()
 	var target_port := port
@@ -179,9 +232,16 @@ func start_match() -> void:
 	_emit_server_map_load_requested()
 
 func return_to_lobby_after_match() -> void:
+	if _rejoin_pending:
+		return # A dropped client is already on its way back (see _begin_rejoin).
 	_stop_lan_discovery_listener()
 	_release_mouse_capture()
+	if NetUtil.has_active_peer(multiplayer) and multiplayer.is_server() and not multiplayer.get_peers().is_empty():
+		# Ending the match or the host leaving closes it: nobody can rejoin.
+		_match_closed_event.rpc()
+		_flush_peer()
 	_reset_network_session()
+	_clear_slot_state()
 
 	player_names.clear()
 	player_avatar_ids.clear()
@@ -227,16 +287,19 @@ func get_lobby_sync_payload() -> Dictionary:
 		"is_connected": multiplayer.multiplayer_peer != null,
 		"is_server": multiplayer.multiplayer_peer != null and multiplayer.is_server(),
 		"local_peer_id": multiplayer.get_unique_id() if multiplayer.multiplayer_peer != null else -1,
+		"rejoin_status": rejoin_status,
+		"rejoining": _rejoin_pending,
 	}
 
 func get_player_name(peer_id: int) -> String:
+	peer_id = current_id(peer_id)
 	return String(player_names.get(peer_id, "Player %d" % peer_id))
 
 func get_team(peer_id: int) -> int:
 	var mode := MatchGameMode.current(get_tree())
 	if mode != null and not mode.teams_enabled:
 		return Teams.NONE
-	return int(player_teams.get(peer_id, Teams.NONE))
+	return int(player_teams.get(current_id(peer_id), Teams.NONE))
 
 ## Authoritative assignment; test scenarios may also use this during a match.
 func set_team(peer_id: int, team: int) -> void:
@@ -299,6 +362,284 @@ func remove_bot(bot_id: int) -> void:
 func is_bot(peer_id: int) -> bool:
 	return peer_id < 0
 
+## Server: the id that now owns `peer_id`'s slot (a rejoined player's new peer
+## id; otherwise `peer_id` itself). A dropped player's body keeps its old id.
+func current_id(peer_id: int) -> int:
+	return int(_peer_aliases.get(peer_id, peer_id))
+
+## Server: true while `peer_id`'s slot belongs to the match: connected,
+## dropped and held, or rejoined under a new id.
+func holds_slot(peer_id: int) -> bool:
+	return player_names.has(current_id(peer_id))
+
+func is_dropped(peer_id: int) -> bool:
+	return peer_id in dropped_ids
+
+# --- reconnect: server ------------------------------------------------------
+
+func _clear_slot_state() -> void:
+	_slot_tokens.clear()
+	dropped_ids.clear()
+	_peer_aliases.clear()
+	_forfeited.clear()
+
+func _issue_rejoin_token(peer_id: int) -> void:
+	if not _slot_tokens.has(peer_id):
+		_slot_tokens[peer_id] = Crypto.new().generate_random_bytes(REJOIN_TOKEN_BYTES).hex_encode()
+	_receive_rejoin_token.rpc_id(peer_id, String(_slot_tokens[peer_id]))
+
+func _slot_for_token(token: String) -> int:
+	if token.length() != REJOIN_TOKEN_LENGTH:
+		return 0
+	for id in _slot_tokens:
+		if String(_slot_tokens[id]) == token:
+			return int(id)
+	return 0
+
+func _hold_slot(peer_id: int) -> void:
+	if peer_id in dropped_ids:
+		return
+	dropped_ids.append(peer_id)
+	print("Holding slot of dropped peer %d" % peer_id)
+	player_dropped.emit(peer_id)
+
+func _release_slot(peer_id: int) -> void:
+	player_names.erase(peer_id)
+	player_avatar_ids.erase(peer_id)
+	player_teams.erase(peer_id)
+	_slot_tokens.erase(peer_id)
+	_forfeited.erase(peer_id)
+	dropped_ids.erase(peer_id)
+	player_left.emit(peer_id)
+	if multiplayer.multiplayer_peer != null:
+		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
+	_persist_runtime_state()
+
+func _rekey_slot(old_id: int, new_id: int) -> void:
+	for data: Dictionary in [player_names, player_avatar_ids, player_teams, _slot_tokens]:
+		if data.has(old_id):
+			data[new_id] = data[old_id]
+			data.erase(old_id)
+	dropped_ids.erase(old_id)
+	_forfeited.erase(old_id)
+	for alias in _peer_aliases.keys():
+		if int(_peer_aliases[alias]) == old_id:
+			_peer_aliases[alias] = new_id
+	_peer_aliases[old_id] = new_id
+
+## Client -> server: take back a held slot with the token issued at registration.
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
+func _request_rejoin(token: String) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender <= 1 or not multiplayer.get_peers().has(sender) or player_names.has(sender):
+		return
+	var old_id := _slot_for_token(token)
+	if not match_started or old_id == 0 or old_id == sender:
+		_rejoin_rejected.rpc_id(sender, "The match is over." if not match_started else "Your slot is no longer held.")
+		_flush_peer()
+		multiplayer.multiplayer_peer.disconnect_peer(sender)
+		return
+	if old_id not in dropped_ids:
+		# Back before the old connection timed out: drop it now.
+		_hold_slot(old_id)
+		_rekey_slot(old_id, sender)
+		multiplayer.multiplayer_peer.disconnect_peer(old_id)
+	else:
+		_rekey_slot(old_id, sender)
+	print("Peer %d rejoined the slot of %d" % [sender, old_id])
+	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
+	_selected_map_event.rpc_id(sender, map_scene_path)
+	_rejoin_accepted.rpc_id(sender)
+	_persist_runtime_state()
+	player_rejoined.emit(old_id, sender)
+
+## Client -> server: the player confirmed Leave; release the slot for good.
+@rpc("any_peer", "call_remote", "reliable", RPC_CHANNEL_UI)
+func forfeit_match() -> void:
+	if not multiplayer.is_server():
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender <= 1 or not multiplayer.get_peers().has(sender) or not player_names.has(sender):
+		return
+	_forfeited[sender] = true
+	multiplayer.multiplayer_peer.disconnect_peer(sender)
+
+func _expire_unadmitted_peer(peer_id: int) -> void:
+	await get_tree().create_timer(REJOIN_ADMIT_TIMEOUT_SECONDS).timeout
+	if NetUtil.has_active_peer(multiplayer) and multiplayer.is_server() and multiplayer.get_peers().has(peer_id) and not player_names.has(peer_id):
+		multiplayer.multiplayer_peer.disconnect_peer(peer_id)
+
+## Sends queued packets now (an RPC right before closing would be lost).
+func _flush_peer() -> void:
+	var enet := multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if enet != null and enet.host != null:
+		enet.host.flush()
+
+# --- reconnect: client ------------------------------------------------------
+
+## A ticket counts once its match has started (saved_unix is set then).
+func has_rejoin_ticket() -> bool:
+	return String(_rejoin_ticket.get("token", "")).length() == REJOIN_TOKEN_LENGTH and _rejoin_ticket.has("saved_unix")
+
+func is_rejoining() -> bool:
+	return _rejoin_pending
+
+func clear_rejoin_ticket() -> void:
+	_rejoin_ticket.clear()
+	if _ticket_persistence_enabled() and FileAccess.file_exists(REJOIN_TICKET_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(REJOIN_TICKET_PATH))
+
+## Client: called by game modes when the match result is known.
+func mark_match_over() -> void:
+	_match_closed = true
+	clear_rejoin_ticket()
+
+## Main menu "Rejoin match": a few quick attempts with the saved ticket.
+func rejoin_match() -> void:
+	if not has_rejoin_ticket():
+		return
+	_begin_rejoin(MANUAL_REJOIN_WINDOW_SECONDS, "Rejoining match...")
+
+func cancel_rejoin() -> void:
+	if not _rejoin_pending:
+		return
+	_rejoin_pending = false
+	rejoin_status = ""
+	_reset_network_session()
+	_menu_notice = "Rejoin cancelled."
+	get_tree().change_scene_to_file.call_deferred(MAIN_MENU_SCENE_PATH)
+
+## Confirmed Leave: forfeit the slot (no rejoin) and go back to the menu.
+func leave_match() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	clear_rejoin_ticket()
+	if NetUtil.has_active_peer(multiplayer) and not multiplayer.is_server():
+		forfeit_match.rpc_id(1)
+		_flush_peer()
+		# The server releases the slot and disconnects us; do not outrun the RPC.
+		var deadline := Time.get_ticks_msec() + int(LEAVE_DISCONNECT_WAIT_SECONDS * 1000.0)
+		while NetUtil.has_active_peer(multiplayer) and Time.get_ticks_msec() < deadline:
+			await get_tree().process_frame
+	return_to_lobby_after_match()
+
+func _should_rejoin_after_drop() -> bool:
+	return match_started and not _match_closed and not _leaving and has_rejoin_ticket()
+
+func _begin_rejoin(window_seconds: float, status: String) -> void:
+	_rejoin_pending = true
+	_rejoin_attempt = 0
+	_rejoin_deadline_msec = Time.get_ticks_msec() + int(window_seconds * 1000.0)
+	rejoin_status = status
+	_match_closed = false
+	_leaving = false
+	_release_mouse_capture()
+	_reset_network_session()
+	player_names.clear()
+	player_avatar_ids.clear()
+	player_teams.clear()
+	match_started = false
+	_persist_runtime_state()
+	if is_instance_valid(MaskViewProvider.viewport):
+		MaskViewProvider.viewport.player_camera = null
+		MaskViewProvider.viewport.player = null
+	# A fresh lobby scene: the server replicates the map into an empty Level as
+	# soon as we connect, so it must be loaded before the connection.
+	get_tree().change_scene_to_file.call_deferred(LOBBY_SCENE_PATH)
+
+func _attempt_rejoin() -> void:
+	if not _rejoin_pending or multiplayer.multiplayer_peer != null:
+		return
+	_rejoin_attempt += 1
+	var address := String(_rejoin_ticket.get("address", ""))
+	var target_port := int(_rejoin_ticket.get("port", port))
+	rejoin_status = "Reconnecting to %s (attempt %d)..." % [address, _rejoin_attempt]
+	_emit_lobby_sync()
+	var peer := ENetMultiplayerPeer.new()
+	if address.is_empty() or peer.create_client(address, target_port) != OK:
+		_on_rejoin_attempt_failed()
+		return
+	_last_server_address = address
+	_last_server_port = target_port
+	multiplayer.multiplayer_peer = peer
+
+func _on_rejoin_attempt_failed() -> void:
+	if not _rejoin_pending:
+		return
+	multiplayer.multiplayer_peer = null
+	if Time.get_ticks_msec() < _rejoin_deadline_msec:
+		rejoin_status = "Host not reachable. Retrying..."
+		_emit_lobby_sync()
+		await get_tree().create_timer(REJOIN_RETRY_SECONDS).timeout
+		_attempt_rejoin()
+		return
+	_rejoin_pending = false
+	rejoin_status = ""
+	_menu_notice = "Could not rejoin. Try Rejoin match again."
+	get_tree().change_scene_to_file.call_deferred(MAIN_MENU_SCENE_PATH)
+
+@rpc("authority", "call_remote", "reliable", RPC_CHANNEL_UI)
+func _receive_rejoin_token(token: String) -> void:
+	if token.length() != REJOIN_TOKEN_LENGTH:
+		return
+	_rejoin_ticket = {"address": _last_server_address, "port": _last_server_port, "token": token}
+	if match_started:
+		_save_rejoin_ticket()
+
+@rpc("authority", "call_remote", "reliable", RPC_CHANNEL_UI)
+func _rejoin_accepted() -> void:
+	_rejoin_pending = false
+	rejoin_status = ""
+	match_started = true
+	_match_closed = false
+	_save_rejoin_ticket()
+	_persist_runtime_state()
+	lobby_ui_visibility_requested.emit(false)
+	_emit_lobby_sync()
+
+@rpc("authority", "call_remote", "reliable", RPC_CHANNEL_UI)
+func _rejoin_rejected(reason: String) -> void:
+	clear_rejoin_ticket()
+	_rejoin_pending = false
+	rejoin_status = ""
+	_reset_network_session()
+	_menu_notice = "Could not rejoin: %s" % reason.substr(0, 80)
+	get_tree().change_scene_to_file.call_deferred(MAIN_MENU_SCENE_PATH)
+
+@rpc("authority", "call_remote", "reliable", RPC_CHANNEL_UI)
+func _match_closed_event() -> void:
+	mark_match_over()
+
+func _ticket_persistence_enabled() -> bool:
+	return not OS.get_cmdline_user_args().has(PlayerProfileStore.EPHEMERAL_ARG)
+
+func _save_rejoin_ticket() -> void:
+	if String(_rejoin_ticket.get("token", "")).length() != REJOIN_TOKEN_LENGTH:
+		return
+	_rejoin_ticket["saved_unix"] = int(Time.get_unix_time_from_system())
+	if not _ticket_persistence_enabled():
+		return
+	var file := FileAccess.open(REJOIN_TICKET_PATH, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(_rejoin_ticket))
+
+func _load_rejoin_ticket() -> void:
+	if not _ticket_persistence_enabled() or not FileAccess.file_exists(REJOIN_TICKET_PATH):
+		return
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(REJOIN_TICKET_PATH))
+	if not (parsed is Dictionary):
+		clear_rejoin_ticket()
+		return
+	var data: Dictionary = parsed
+	var age := int(Time.get_unix_time_from_system()) - int(data.get("saved_unix", 0))
+	if age < 0 or age > REJOIN_TICKET_MAX_AGE_SECONDS or String(data.get("token", "")).length() != REJOIN_TOKEN_LENGTH:
+		clear_rejoin_ticket()
+		return
+	_rejoin_ticket = {"address": String(data.get("address", "")), "port": int(data.get("port", port)), "token": String(data["token"]), "saved_unix": int(data["saved_unix"])}
+
 func get_discovery_status_text() -> String:
 	return discovery_status_text
 
@@ -315,6 +656,9 @@ func request_lobby_sync_from_server() -> void:
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
 func _start_match_ui() -> void:
+	if not multiplayer.is_server():
+		match_started = true
+		_save_rejoin_ticket()
 	lobby_ui_visibility_requested.emit(false)
 
 @rpc("authority", "call_local", "reliable", RPC_CHANNEL_UI)
@@ -326,7 +670,9 @@ func _sync_lobby_data_to_all(names: Dictionary, avatars: Dictionary, teams: Dict
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player != null:
-			player.team = get_team(player.owner_peer_id)
+			# A dropped player's body keeps its old id after they rejoin.
+			if player_names.has(current_id(player.owner_peer_id)):
+				player.team = get_team(player.owner_peer_id)
 			player.apply_team_visuals(get_team(multiplayer.get_unique_id()))
 	_persist_runtime_state()
 	_emit_lobby_sync()
@@ -350,6 +696,7 @@ func _register_player_profile(raw_name: String, raw_avatar_id: String) -> void:
 	var resolved_name := _sanitize_player_name(raw_name, peer_id)
 	_set_player_name_for_peer(peer_id, resolved_name)
 	_set_player_avatar_for_peer(peer_id, raw_avatar_id)
+	_issue_rejoin_token(peer_id)
 	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 	_persist_runtime_state()
 
@@ -401,6 +748,10 @@ func _connect_to_server(target_address: String, target_port: int) -> Dictionary:
 		return {"ok": false, "manual_required": true}
 
 	multiplayer.multiplayer_peer = peer
+	_last_server_address = target_address
+	_last_server_port = target_port
+	_match_closed = false
+	_leaving = false
 	_set_discovery_status("Connecting to %s:%d..." % [target_address, target_port])
 	return {"ok": true, "manual_required": false}
 
@@ -418,6 +769,11 @@ func _connect_multiplayer_signals() -> void:
 
 func _on_connected_to_server() -> void:
 	_disable_packet_throttle(1)
+	if _rejoin_pending:
+		rejoin_status = "Connected. Rejoining match..."
+		_emit_lobby_sync()
+		_request_rejoin.rpc_id(1, String(_rejoin_ticket.get("token", "")))
+		return
 	rpc_id(1, "_register_player_profile", local_player_name, _resolve_local_avatar_id())
 	_open_lobby_scene()
 
@@ -438,11 +794,20 @@ func _disable_packet_throttle(peer_id: int) -> void:
 		packet_peer.throttle_configure(ENET_THROTTLE_INTERVAL_MS, ENetPacketPeer.PACKET_THROTTLE_SCALE, 0)
 
 func _on_connection_failed() -> void:
+	if _rejoin_pending:
+		_on_rejoin_attempt_failed()
+		return
 	_set_manual_join_visible(true)
 	_set_discovery_status("Connection failed. Enter host/IP manually.")
 	_release_mouse_capture()
 
 func _on_server_disconnected() -> void:
+	if _rejoin_pending:
+		_on_rejoin_attempt_failed()
+		return
+	if _should_rejoin_after_drop():
+		_begin_rejoin(AUTO_REJOIN_WINDOW_SECONDS, "Connection lost. Reconnecting...")
+		return
 	_set_manual_join_visible(true)
 	_set_discovery_status("Disconnected from server.")
 	_release_mouse_capture()
@@ -452,9 +817,8 @@ func _on_peer_connected(id: int) -> void:
 		return
 	_disable_packet_throttle(id)
 	if match_started:
-		var peer := multiplayer.multiplayer_peer
-		if peer != null:
-			peer.disconnect_peer(id)
+		# Only a dropped player with a valid token gets in (see _request_rejoin).
+		_expire_unadmitted_peer(id)
 		return
 	_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
 	_persist_runtime_state()
@@ -462,11 +826,12 @@ func _on_peer_connected(id: int) -> void:
 
 func _on_peer_disconnected(id: int) -> void:
 	if multiplayer.is_server():
-		player_names.erase(id)
-		player_avatar_ids.erase(id)
-		player_teams.erase(id)
-		_sync_lobby_data_to_all.rpc(player_names, player_avatar_ids, player_teams, match_started)
-		_persist_runtime_state()
+		if _peer_aliases.has(id):
+			pass # The old connection of a slot that has already been rejoined.
+		elif match_started and player_names.has(id) and _slot_tokens.has(id) and not _forfeited.has(id):
+			_hold_slot(id)
+		elif player_names.has(id):
+			_release_slot(id)
 	_emit_lobby_sync()
 
 func _set_player_name_for_peer(peer_id: int, raw_name: String) -> void:

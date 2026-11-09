@@ -55,7 +55,7 @@ func _ready() -> void:
 	if timer_touch_toggle_button != null:
 		timer_touch_toggle_button.pressed.connect(_toggle_stats)
 	if leave_game_button != null:
-		leave_game_button.pressed.connect(_return_to_lobby)
+		leave_game_button.pressed.connect(_confirm_leave)
 	if map == null or spawn_point_container == null:
 		return
 	spawning.setup(map, spawn_point_container, player_scene)
@@ -72,7 +72,9 @@ func _ready() -> void:
 			break
 	if multiplayer.is_server():
 		NetworkTick.tick_started.connect(_on_network_tick)
-		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+		MultiplayerSession.player_left.connect(_on_peer_disconnected)
+		MultiplayerSession.player_dropped.connect(_on_player_dropped)
+		MultiplayerSession.player_rejoined.connect(_on_player_rejoined)
 		MultiplayerSession.bot_removed.connect(_on_peer_disconnected)
 	else:
 		multiplayer.server_disconnected.connect(_return_to_lobby)
@@ -184,7 +186,8 @@ func _living_counts() -> Vector2i:
 		var player := node as PlayerController
 		if player == null or player.is_dead or not map.is_ancestor_of(player):
 			continue
-		if not MultiplayerSession.is_peer_connected(player.owner_peer_id):
+		# A dropped player's body stays in the round (frozen, killable).
+		if not MultiplayerSession.holds_slot(player.owner_peer_id):
 			continue
 		if player.team == attacking_team:
 			counts.x += 1
@@ -244,6 +247,7 @@ func _phase_event(next: int, server_tick: int, end_tick: int, index: int, attack
 		if player != null:
 			configure_player(player)
 	if phase == Phase.MATCH_END:
+		MultiplayerSession.mark_match_over()
 		spawning.spawning_enabled = false
 		scoreboard.active = false
 		_stats_visible = false
@@ -389,11 +393,34 @@ func _resolve_pending_elimination() -> void:
 	if not _starting_round and phase in [Phase.FREEZE, Phase.LIVE]:
 		_evaluate_elimination()
 
+func _confirm_leave() -> void:
+	LeaveMatchDialog.confirm(self, func():
+		_transition_requested = true
+		if is_instance_valid(MaskViewProvider.viewport):
+			MaskViewProvider.viewport.player_camera = null
+			MaskViewProvider.viewport.player = null
+		MultiplayerSession.leave_match())
+
 func _on_peer_disconnected(id: int) -> void:
 	scoreboard.remove_peer(id)
+	spectate_target.erase(id)
 	var player := map.get_node_or_null(str(id)) as PlayerController
 	if player != null:
 		player.queue_free()
+
+## The body stays where it is for the rest of this round: frozen, killable and
+## counted as alive. The player gets no new body until they rejoin.
+func _on_player_dropped(id: int) -> void:
+	spectate_target.erase(id)
+	var player := _living_player(id)
+	if player != null:
+		player.net_sync.owner_dropped = true
+
+## Back mid-round: spectate teammates and play from the next round.
+func _on_player_rejoined(old_id: int, new_id: int) -> void:
+	scoreboard.rekey_peer(old_id, new_id)
+	spectate_target.erase(old_id)
+	_refresh_spectators()
 
 func _request_initial_state() -> void:
 	await get_tree().create_timer(0.75).timeout
@@ -406,7 +433,7 @@ func request_state() -> void:
 	if not multiplayer.is_server():
 		return
 	var sender := multiplayer.get_remote_sender_id()
-	if sender <= 1 or not multiplayer.get_peers().has(sender):
+	if sender <= 1 or not multiplayer.get_peers().has(sender) or not MultiplayerSession.player_names.has(sender):
 		return
 	_phase_event.rpc_id(sender, phase, NetworkTick.tick, phase_end_tick, round_index, attacking_team, team_scores, winner_team)
 	_objective_progress_event.rpc_id(sender, objective_progress)
