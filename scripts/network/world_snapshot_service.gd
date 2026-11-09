@@ -61,8 +61,13 @@ func _physics_process(_delta: float) -> void:
 	if players.is_empty():
 		return # lobby / between matches
 	var smoke := VisibilityQuery.collect_smoke_blockers(get_tree())
+	var active_views: Dictionary = {}
+	for peer_id in peers:
+		var viewer := _find_player_node(peer_id)
+		if viewer != null:
+			active_views[viewer.owner_peer_id] = true
 	for key in _last_visible_tick.keys():
-		if not peers.has(key):
+		if not active_views.has(key):
 			_last_visible_tick.erase(key)
 	for peer_id in peers:
 		_receive_world_snapshot.rpc_id(peer_id, _packet_for_peer(tick, players, peer_id, smoke))
@@ -89,9 +94,11 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 	# hears from where it fell. With no player node at all, nothing is sent.
 	var viewer := _find_player_node(peer_id)
 	if viewer != null:
-		if not _last_visible_tick.has(peer_id):
-			_last_visible_tick[peer_id] = {}
-		var seen: Dictionary = _last_visible_tick[peer_id]
+		# Spectators share the target's visibility history, including grace, rather than retaining corpse sight.
+		var view_id := viewer.owner_peer_id
+		if not _last_visible_tick.has(view_id):
+			_last_visible_tick[view_id] = {}
+		var seen: Dictionary = _last_visible_tick[view_id]
 		for target in players:
 			var flag := -1
 			if target == viewer:
@@ -126,11 +133,14 @@ func _packet_for_peer(tick: int, players: Array[PlayerController], peer_id: int,
 	return [tick, ids, positions, velocities, rotations, ack_tick, lead_tick, input_lead, flags, weapon_slot, weapon_ammo]
 
 func _find_player_node(peer_id: int) -> PlayerController:
+	var mode := MatchGameMode.current(get_tree()) as RoundGameMode
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as PlayerController
 		if player != null and player.is_inside_tree() and player.owner_peer_id == peer_id:
+			if mode != null and player.is_dead:
+				return mode.spectator_player_for(peer_id)
 			return player
-	return null
+	return mode.spectator_player_for(peer_id) if mode != null else null
 
 func _live_players() -> Array[PlayerController]:
 	var result: Array[PlayerController] = []

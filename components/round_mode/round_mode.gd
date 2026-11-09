@@ -38,6 +38,9 @@ var _transition_requested := false
 var _stats_visible := false
 var _last_objective_send_tick := 0
 var objective: ObjectiveZone
+var spectate_target: Dictionary = {}
+var local_spectate_target := 0
+var _view_instance_id := 0
 
 func _ready() -> void:
 	add_to_group("game_mode")
@@ -109,6 +112,7 @@ func _on_network_tick(tick: int) -> void:
 	if not multiplayer.is_server() or _starting_round:
 		return
 	_clock_tick = tick
+	_refresh_spectators()
 	match phase:
 		Phase.WAITING:
 			if _roster_ready():
@@ -141,6 +145,9 @@ func _start_round() -> void:
 		attacking_team = defending_team()
 		_roles_swapped = true
 	objective_progress = 0.0
+	for peer in spectate_target.keys():
+		_send_spectate_target(int(peer), int(peer))
+	spectate_target.clear()
 	_starting_round = true
 	var destruction := DestructionService.current(get_tree())
 	if destruction != null:
@@ -244,6 +251,7 @@ func displayed_seconds() -> int:
 
 func _process(_delta: float) -> void:
 	_refresh_hud()
+	_update_spectate_view()
 	if phase == Phase.MATCH_END and displayed_seconds() == 0:
 		_return_to_lobby()
 
@@ -257,6 +265,12 @@ func _refresh_hud() -> void:
 		leave_game_button.visible = _stats_visible and phase != Phase.MATCH_END
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pickup") and _living_player(multiplayer.get_unique_id()) == null:
+		if multiplayer.is_server():
+			cycle_spectate(multiplayer.get_unique_id())
+		else:
+			request_spectate_next.rpc_id(1)
+		get_viewport().set_input_as_handled()
 	if event.is_action_pressed("stats"):
 		_toggle_stats()
 		get_viewport().set_input_as_handled()
@@ -280,6 +294,7 @@ func _on_player_setup(_id: int, player: PlayerController) -> void:
 func _on_player_eliminated(_killer: int, _headshot: bool) -> void:
 	if not _starting_round and phase in [Phase.FREEZE, Phase.LIVE]:
 		_evaluate_elimination()
+	_refresh_spectators()
 
 func _on_peer_disconnected(id: int) -> void:
 	scoreboard.remove_peer(id)
@@ -303,3 +318,111 @@ func request_state() -> void:
 	_phase_event.rpc_id(sender, phase, NetworkTick.tick, phase_end_tick, round_index, attacking_team, team_scores, winner_team)
 	_objective_progress_event.rpc_id(sender, objective_progress)
 	scoreboard.send_stats_to(sender)
+	if spectate_target.has(sender):
+		_send_spectate_target(sender, int(spectate_target[sender]))
+
+func _living_player(peer: int) -> PlayerController:
+	if not is_instance_valid(map):
+		return null
+	var player := map.get_node_or_null(str(peer)) as PlayerController
+	return player if player != null and not player.is_dead else null
+
+func spectator_player_for(peer: int) -> PlayerController:
+	return _living_player(int(spectate_target.get(peer, 0)))
+
+func _spectate_candidates(peer: int) -> Array[int]:
+	var candidates: Array[int] = []
+	var team := MultiplayerSession.get_team(peer)
+	if team == Teams.NONE:
+		return candidates
+	for node in map.get_children():
+		var player := node as PlayerController
+		if player != null and not player.is_dead and player.team == team and player.owner_peer_id != peer:
+			if MultiplayerSession.is_peer_connected(player.owner_peer_id):
+				candidates.append(player.owner_peer_id)
+	candidates.sort()
+	return candidates
+
+func _refresh_spectators() -> void:
+	if not multiplayer.is_server() or not is_instance_valid(map) or phase == Phase.WAITING:
+		return
+	var viewers: Array[int] = [1]
+	viewers.append_array(multiplayer.get_peers())
+	for peer in viewers:
+		if _living_player(peer) != null:
+			if spectate_target.has(peer):
+				spectate_target.erase(peer)
+				_send_spectate_target(peer, peer)
+			continue
+		var candidates := _spectate_candidates(peer)
+		var target := int(spectate_target.get(peer, 0))
+		if candidates.has(target):
+			continue
+		var next := candidates[0] if not candidates.is_empty() else 0
+		if not spectate_target.has(peer) or target != next:
+			spectate_target[peer] = next
+			_send_spectate_target(peer, next)
+
+func cycle_spectate(peer: int) -> void:
+	if not multiplayer.is_server() or _living_player(peer) != null:
+		return
+	var candidates := _spectate_candidates(peer)
+	if candidates.is_empty():
+		return
+	var current := candidates.find(int(spectate_target.get(peer, 0)))
+	var target := candidates[(current + 1) % candidates.size()]
+	spectate_target[peer] = target
+	_send_spectate_target(peer, target)
+
+@rpc("any_peer", "call_remote", "reliable", 2)
+func request_spectate_next() -> void:
+	if not multiplayer.is_server():
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender <= 1 or not multiplayer.get_peers().has(sender):
+		return
+	cycle_spectate(sender)
+
+func _send_spectate_target(peer: int, target: int) -> void:
+	if peer == multiplayer.get_unique_id():
+		_spectate_event(target)
+	elif multiplayer.get_peers().has(peer):
+		_spectate_event.rpc_id(peer, target)
+
+@rpc("authority", "call_remote", "reliable", 2)
+func _spectate_event(target: int) -> void:
+	local_spectate_target = target
+	_view_instance_id = 0
+	_update_spectate_view()
+
+func _update_spectate_view() -> void:
+	if map == null:
+		return
+	var own := map.get_node_or_null(str(multiplayer.get_unique_id())) as PlayerController
+	if own != null and not own.is_dead:
+		local_spectate_target = 0
+		_view_instance_id = 0
+		if is_instance_valid(MaskViewProvider.viewport) and is_instance_valid(MaskViewProvider.viewport.los):
+			MaskViewProvider.viewport.los.enabled = true
+		return
+	if own != null:
+		own.hud.hide()
+	var target := _living_player(local_spectate_target)
+	if target == null:
+		if is_instance_valid(MaskViewProvider.viewport):
+			MaskViewProvider.viewport.player = null
+			MaskViewProvider.viewport.player_camera = null
+			if is_instance_valid(MaskViewProvider.viewport.los):
+				MaskViewProvider.viewport.los.enabled = false
+		return
+	if target.get_instance_id() == _view_instance_id:
+		return
+	_view_instance_id = target.get_instance_id()
+	target.camera.enabled = true
+	target.camera.make_current()
+	target.audio_listner.make_current()
+	if is_instance_valid(MaskViewProvider.viewport):
+		MaskViewProvider.viewport.player = target
+		MaskViewProvider.viewport.player_camera = target.camera
+		if is_instance_valid(MaskViewProvider.viewport.los):
+			MaskViewProvider.viewport.los.enabled = true

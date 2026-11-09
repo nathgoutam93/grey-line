@@ -392,6 +392,42 @@ func test_host_round_clock_cycles_without_client_timer_rpcs() -> void:
 	check(mode.team_scores[Teams.ALPHA] == 2 and mode.team_scores[Teams.BRAVO] == 1, "defender timeout wins or halftime roles wrong during real host ticks")
 	await _free_round_fixture(fixture)
 
+func test_spectating_uses_teammate_visibility_and_cycles_only_allies() -> void:
+	var fixture := await _round_fixture()
+	var mode: RoundGameMode = fixture.mode
+	mode._publish_phase(RoundGameMode.Phase.LIVE, 100)
+	var me := fixture.map.get_node("1") as PlayerController
+	var ally := fixture.map.get_node("-1") as PlayerController
+	var enemy := fixture.map.get_node("-2") as PlayerController
+	me.global_position = Vector2(-2400, -2400)
+	ally.global_position = Vector2(-2000, -2400)
+	ally.rotation = 0.0
+	enemy.global_position = Vector2(-2450, -2400)
+	me.health_component.take_damage(500, -2)
+	check(mode.spectate_target.get(1) == -1 and WorldSnapshots._find_player_node(1) == ally, "dead viewer did not switch to living ally")
+	WorldSnapshots._last_visible_tick[1] = {-2: NetworkTick.tick}
+	var hidden := WorldSnapshots.build_packet(1)
+	check(not (hidden[WorldSnapshotService.P_IDS] as PackedInt32Array).has(-2), "spectator retained enemy information from corpse sight or grace")
+	enemy.global_position = Vector2(-1600, -2400)
+	var spectated := WorldSnapshots.build_packet(1)
+	var teammate := WorldSnapshots.build_packet(-1)
+	check(spectated[WorldSnapshotService.P_IDS] == teammate[WorldSnapshotService.P_IDS] and spectated[WorldSnapshotService.P_FLAGS] == teammate[WorldSnapshotService.P_FLAGS], "spectator packet reveals a different set of players from teammate view")
+	check(ally.camera.is_current(), "spectator camera did not follow teammate")
+	MultiplayerSession.player_names[-3] = "Second ally"
+	MultiplayerSession.player_teams[-3] = Teams.ALPHA
+	MultiplayerSession.bot_ids.append(-3)
+	mode.spawning.spawning_enabled = true
+	mode.spawning.spawn_player(-3)
+	mode.spawning.spawning_enabled = false
+	await get_tree().process_frame
+	await get_tree().process_frame
+	mode.cycle_spectate(1)
+	check(mode.spectate_target.get(1) == -3, "spectate-next did not cycle to another living ally")
+	mode.cycle_spectate(-2)
+	check(not mode.spectate_target.has(-2), "living opponent could request spectator information")
+	WorldSnapshots._last_visible_tick.clear()
+	await _free_round_fixture(fixture)
+
 func test_weapon_wall_damage_survives_pickups() -> void:
 	var weapon := (load("res://resources/weapons/rifle.tres") as Weapon).duplicate() as Weapon
 	weapon.wall_damage = 17
