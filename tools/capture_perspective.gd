@@ -6,7 +6,7 @@ extends Node
 
 const MAP := "res://scenes/maps/cqc_1/cqc_1.tscn"
 const CHARACTER := "res://components/skeletal_mesh/character_skeletal.tscn"
-const SHOTS := [["lounge", Vector2(1640, 830)], ["kitchen", Vector2(1800, 1250)], ["objective", Vector2(2700, 820)], ["street", Vector2(420, 1000)]]
+const SHOTS := [["west-rooms", Vector2(1000, 760)], ["junction", Vector2(1780, 1080)], ["objective", Vector2(2720, 1060)], ["south-rooms", Vector2(1000, 1500)]]
 
 func _ready() -> void:
 	_run.call_deferred()

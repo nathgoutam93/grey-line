@@ -189,6 +189,28 @@ func test_props_and_round_maps_use_perspective_visuals() -> void:
 	var runs := PerspectiveWalls.runs(cells, Vector2i(1, 0), func(_cell: Vector2i) -> bool: return true)
 	check(runs == [[Vector2i(0, 0), Vector2i(1, 0), 0], [Vector2i(2, 0), Vector2i(2, 0), 1], [Vector2i(0, 1), Vector2i(0, 1), 0]], "wall runs did not merge by row and material: %s" % [runs])
 
+func test_rotated_furniture_letters_place_rotated_props() -> void:
+	var builder := preload("res://tools/map_builder.gd")
+	var sofa := {"kind": "h", "cell": Vector2i(10, 10), "rotation": 90}
+	check(builder.prop_bounds(sofa).size == Vector2(57.5, 128) and builder.prop_bounds({"kind": "h", "cell": Vector2i(10, 10), "rotation": 180}).size == Vector2(128, 57.5), "rotated furniture footprint did not swap for quarter turns")
+	var rows: Array[String] = []
+	for y in range(40):
+		var row := ""
+		for x in range(60):
+			row += "#" if x == 0 or y == 0 or x == 59 or y == 39 else "."
+		rows.append(row)
+	rows[5] = rows[5].substr(0, 3) + "aaaaa" + rows[5].substr(8)
+	rows[34] = rows[34].substr(0, 50) + "ddddd" + rows[34].substr(55)
+	rows[20] = rows[20].substr(0, 28) + "OO" + rows[20].substr(30)
+	rows[12] = rows[12].substr(0, 10) + "j" + rows[12].substr(11)
+	rows[28] = rows[28].substr(0, 40) + "K" + rows[28].substr(41)
+	var data := builder.parse("\n".join(rows))
+	check(data.error == "" and data.props.size() == 2 and data.props[0].kind == "h" and data.props[0].rotation == 90 and data.props[1].kind == "k" and data.props[1].rotation == 180, "rotated letters not parsed: %s" % [data.get("props", data.error)])
+	var world := builder.build(data)
+	var placed := world.get_node("Map/Props").get_children()
+	check(placed.size() == 2 and is_equal_approx((placed[0] as Node2D).rotation_degrees, 90.0) and is_equal_approx((placed[1] as Node2D).rotation_degrees, 180.0), "rotated furniture placed without rotation")
+	world.free()
+
 func test_furniture_blocks_movement_but_not_sight_or_bullets() -> void:
 	var sofa := (load("res://scenes/props/furniture/sofa.tscn") as PackedScene).instantiate() as StaticBody2D
 	sofa.position = Vector2(-2600, -2600)
@@ -690,13 +712,13 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 	var world := packed.instantiate()
 	add_child(world)
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
-	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(190, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(65, 50)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
+	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(190, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(60, 20)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
 	var exterior := 0
 	for door in world.get_node("Map/Doors").get_children():
 		var cell := walls.local_to_map(walls.to_local((door as Node2D).global_position))
 		if cell.y in [12, 118] or cell.x in [40, 190]:
 			exterior += 1
-	check(world.get_node("Map/Doors").get_child_count() == 30 and exterior == 4, "expected four exterior and 26 interior doors (%d exterior)" % exterior)
+	check(world.get_node("Map/Doors").get_child_count() == 36 and exterior == 4, "expected four exterior and 32 interior doors (%d exterior)" % exterior)
 	var cover := 0
 	var furniture := 0
 	for prop in world.get_node("Map/Props").get_children():
@@ -706,7 +728,7 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 		elif body != null and body.collision_layer == 2 and body.get_node_or_null("FogOccluder") == null:
 			furniture += 1 # blocks movement only: no bullets, sight or fog occlusion
 	check(cover == 17, "outdoor cover instances missing")
-	check(furniture == 13, "house furniture missing or blocking sight (%d)" % furniture)
+	check(furniture == 39, "house furniture missing or blocking sight (%d)" % furniture)
 	check(world.get_meta("layout_size") == Vector2i(200, 130), "CQC metrics metadata missing")
 	world.queue_free()
 	await get_tree().process_frame
@@ -750,7 +772,7 @@ func test_map_validation_catches_blocked_spawns_and_stale_cells() -> void:
 	check("\n".join(validator.validate(world)).contains("Blocked spawn"), "validation accepted a spawn inside the boundary")
 	point.position = original
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
-	walls.destroy_cells([Vector2i(65, 50)])
+	walls.destroy_cells([Vector2i(60, 20)])
 	check("\n".join(validator.validate(world)).contains("stale"), "validation accepted generated scene drift")
 	world.queue_free()
 	await get_tree().process_frame

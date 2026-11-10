@@ -17,13 +17,13 @@ The generator uses `round_map_template.tscn` and normalizes generated resource/n
 The 200×130-cell map is 3200×2080 px and plays as an indoor fight. Dark walls are hard, slate walls reinforced, light walls soft, tan gaps doors, orange markers attacker spawns, blue markers defender spawns, teal the objective and grey blocks props.
 
 - **Attackers** spawn on the street along the west edge, behind cars, a truck, crates and fences, and must flank to the house's four exterior doors (two on the north face, two on the south face; the west facade has none).
-- **The house** (x 40–190, y 12–118) is a 6×4 grid of rooms about 24×25 cells, joined by 26 interior doors placed so that no straight line runs through a chain of doorways. Every room is reachable, with several loops.
-- **Defenders** spawn in the east rooms around the **objective room** (east column, second row; 15×15-cell zone), which has three approaches.
-- **Furniture** (sofas, coffee tables, TV stands, dining sets, kitchen counters; 13 pieces) blocks movement only. **Cover** (12 crates, 3 cars, 2 trucks) and hard fence segments break up the street and the yards round the house.
+- **The house** (x 40–190, y 12–118) is built round a **dog-legged central hallway** (7 cells wide): the west half runs along rows 58–64, the east half along rows 73–79, and they join at x 109–115, so no straight line runs the length of the house. Twenty-five rooms of roughly 15–28 cells per side sit north and south of it; rooms on the hallway open onto it and the outer rooms open through them, with extra side doors for loops (36 doors in all).
+- **Defenders** spawn in the east wing and the rooms next to it. The **objective room** (east wing, middle; 15×15-cell zone) has two approaches: the east hallway and the room to its north. The south wing room connects west instead, because doors stacked down the wing lined up into one long sight line.
+- **Furniture** (39 pieces: lounges with sofa, coffee table and TV; dining rooms; kitchens) blocks movement only and faces whichever wall is clear of doors, using the rotated layout letters. **Cover** (12 crates, 3 cars, 2 trucks) and hard fence segments break up the street and the yards round the house.
 
 Wall materials only affect how much sound passes; no wall can be destroyed. All structural walls use one tile layer and its automatic fog mirror.
 
-The layout was tuned against the same rules as the tests: a collision-clear grid route from every attacker spawn, a sampled open-door sight scan and spawn privacy. Door positions in parallel walls are offset (one near each end of a room) because aligned doorways create the long lines.
+The layout was generated from a room plan with random door positions and chosen by searching seeds against the same rules as the tests: a collision-clear grid route from every attacker spawn, a sampled open-door sight scan and spawn privacy. Long lines come from doorways that line up across rooms or along a hallway; the dog-leg, keeping west rooms off the east hallway's axis, and the single east-wing door into the objective remove the structural ones.
 
 ## Measured tuning
 
@@ -31,9 +31,9 @@ The player scene overrides the controller's base speed: normal running is **250 
 
 | Measurement | Result |
 |---|---|
-| Collision-clear grid routes, five attacker spawns to objective centre, doors open | 16.45 / 16.75 / 16.37 / 15.98 / 15.60 s |
-| Actual normal puppet input through the server movement/collision pipeline, from spawn `(5, 59)` | **17.17 s** in the headless host/client run |
-| Longest sampled open-door sight line (2-cell grid, 128 directions, 3 px ray steps) | about **1350 px**, below the 1440 px target |
+| Collision-clear grid routes, five attacker spawns to objective centre, doors open | 18.27 / 18.60 / 18.22 / 17.83 / 17.45 s |
+| Actual normal puppet input through the server movement/collision pipeline, from spawn `(5, 59)` | **18.90 s** in the headless host/client run |
+| Longest sampled open-door sight line (2-cell grid, 128 directions, 3 px ray steps) | about **1392 px**, below the 1440 px target |
 | Opposing spawn visibility | Every attacker/defender spawn pair has blocking Environment cover |
 
 Fence gaps in the yards are 4 cells (64 px): a 3-cell gap stopped the route puppet on the player capsule.

@@ -19,6 +19,15 @@ const PROP_SIZES := {
 	"h": Vector2(128, 57.5), "x": Vector2(70.5, 38.5), "n": Vector2(102.5, 29), "g": Vector2(153.5, 115), "k": Vector2(166.5, 41.5),
 }
 const PROP_SCALES := {"c": 0.19, "v": 0.45, "t": 1.0, "h": 0.5, "x": 0.5, "n": 0.5, "g": 0.5, "k": 0.5}
+## Rotated furniture: letter -> [base letter, clockwise degrees]. Base
+## orientations: sofa back north, TV stand and counter backs south.
+const PROP_VARIANTS := {
+	"H": ["h", 180], "j": ["h", 90], "J": ["h", 270],
+	"X": ["x", 90],
+	"N": ["n", 180], "m": ["n", 90], "M": ["n", 270],
+	"G": ["g", 90],
+	"K": ["k", 180], "q": ["k", 90], "Q": ["k", 270],
+}
 const LAYOUT_CHARACTERS := ".#RS-|adO"
 const FOG_SCRIPT := preload("res://components/fog_of_war_mask_view/prop_fog_occluder.gd")
 
@@ -42,7 +51,7 @@ static func parse(text: String) -> Dictionary:
 		for x in range(width):
 			var ch := rows[y][x]
 			var cell := Vector2i(x, y)
-			if not (ch in LAYOUT_CHARACTERS or PROP_SCENES.has(ch)):
+			if not (ch in LAYOUT_CHARACTERS or PROP_SCENES.has(ch) or PROP_VARIANTS.has(ch)):
 				return {"error": "Unknown character '%s' at %s" % [ch, cell]}
 			if MATERIALS.has(ch):
 				walls[cell] = MATERIALS[ch]
@@ -51,7 +60,9 @@ static func parse(text: String) -> Dictionary:
 				"d": defends.append(cell)
 				"O": objective[cell] = true
 			if PROP_SCENES.has(ch):
-				props.append({"kind": ch, "cell": cell})
+				props.append({"kind": ch, "cell": cell, "rotation": 0})
+			elif PROP_VARIANTS.has(ch):
+				props.append({"kind": PROP_VARIANTS[ch][0], "cell": cell, "rotation": int(PROP_VARIANTS[ch][1])})
 	if attacks.size() < 5 or defends.size() < 5:
 		return {"error": "Need at least 5 spawns per role (attacker=%d defender=%d)" % [attacks.size(), defends.size()]}
 	if objective.is_empty():
@@ -114,6 +125,8 @@ static func cell_center(cell: Vector2i) -> Vector2:
 
 static func prop_bounds(prop: Dictionary) -> Rect2:
 	var size: Vector2 = PROP_SIZES[prop.kind]
+	if int(prop.get("rotation", 0)) % 180 != 0:
+		size = Vector2(size.y, size.x)
 	var origin := Vector2(prop.cell) * CELL if prop.kind == "t" else cell_center(prop.cell) - size * 0.5
 	return Rect2(origin, size)
 
@@ -147,6 +160,7 @@ static func build(data: Dictionary, layout_path: String = "") -> Node2D:
 		var prop := (load(PROP_SCENES[entry.kind]) as PackedScene).instantiate() as Node2D
 		prop.position = prop_bounds(entry).get_center()
 		prop.scale = Vector2.ONE * float(PROP_SCALES[entry.kind])
+		prop.rotation_degrees = float(entry.get("rotation", 0))
 		_add(root, root.get_node("Map/Props"), prop, "Prop%d" % (i + 1))
 		# Only props on the Environment layer block sight; furniture does not.
 		var body := prop as CollisionObject2D
