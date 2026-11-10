@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/props/furniture/tv_stand/top.png" id="1_top"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="2_perspective"]
+[ext_resource type="Resource" path="res://resources/perspective/tv_stand_slices.tres" id="3_profile"]
+
+[sub_resource type="RectangleShape2D" id="Footprint"]
+size = Vector2(205, 58)
+
+[node name="TvStand" type="StaticBody2D" unique_id=620767578]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1113614123]
+shape = SubResource("Footprint")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1159308855]
+texture = ExtResource("1_top")
+
+[node name="Perspective" type="MeshInstance2D" parent="Sprite2D" unique_id=884029494]
+script = ExtResource("2_perspective")
+profile = ExtResource("3_profile")

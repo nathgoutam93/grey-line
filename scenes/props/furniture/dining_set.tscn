@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/props/furniture/dining_set/top.png" id="1_top"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="2_perspective"]
+[ext_resource type="Resource" path="res://resources/perspective/dining_set_slices.tres" id="3_profile"]
+
+[sub_resource type="RectangleShape2D" id="Footprint"]
+size = Vector2(307, 230)
+
+[node name="DiningSet" type="StaticBody2D" unique_id=838146885]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2086035093]
+shape = SubResource("Footprint")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=727647838]
+texture = ExtResource("1_top")
+
+[node name="Perspective" type="MeshInstance2D" parent="Sprite2D" unique_id=1459322366]
+script = ExtResource("2_perspective")
+profile = ExtResource("3_profile")

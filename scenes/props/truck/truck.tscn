@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://socdrphm8n2i"]
+[gd_scene format=3 uid="uid://socdrphm8n2i"]
 
 [ext_resource type="Texture2D" uid="uid://bim5ojnkswl10" path="res://scenes/props/truck/truck.png" id="1_52fh8"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="pp_script"]
+[ext_resource type="Resource" path="res://resources/perspective/truck_stack.tres" id="pp_profile"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_r1x2k"]
 size = Vector2(61, 426)
@@ -12,3 +14,7 @@ texture = ExtResource("1_52fh8")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_r1x2k")
+
+[node name="Perspective" type="MeshInstance2D" parent="Sprite2D" unique_id=1842852254]
+script = ExtResource("pp_script")
+profile = ExtResource("pp_profile")

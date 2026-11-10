@@ -123,6 +123,110 @@ func test_game_mode_lookup_uses_group() -> void:
 	mode.queue_free()
 	await get_tree().process_frame
 
+func _mesh_custom(mesh: ArrayMesh) -> PackedFloat32Array:
+	return mesh.surface_get_arrays(0)[Mesh.ARRAY_CUSTOM0]
+
+func test_height_mesh_sides_face_outward_for_either_winding() -> void:
+	for square in [PackedVector2Array([Vector2(0, 0), Vector2(10, 0), Vector2(10, 10), Vector2(0, 10)]), PackedVector2Array([Vector2(0, 0), Vector2(0, 10), Vector2(10, 10), Vector2(10, 0)])]:
+		var builder := HeightMeshBuilder.new()
+		builder.add_prism_sides(square, 30.0, Color.GRAY)
+		var mesh := builder.build()
+		var vertices: PackedVector2Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var custom := _mesh_custom(mesh)
+		check(vertices.size() == 24, "prism of 4 edges did not make 4 quads")
+		for face in 4:
+			var first := face * 6
+			var midpoint := (vertices[first] + vertices[first + 1]) * 0.5
+			var normal := Vector2(custom[first * 4 + 1], custom[first * 4 + 2])
+			check(normal.dot(midpoint - Vector2(5, 5)) > 0.0 and custom[first * 4 + 3] == 0.0, "side face normal points inward or is textured")
+		var heights: Array[float] = []
+		for i in vertices.size():
+			heights.append(custom[i * 4])
+		check(heights.min() == 0.0 and heights.max() == 30.0, "side faces do not span floor to height")
+
+func _profile(kind: PerspectiveProfile.Kind, height: float) -> PerspectiveProfile:
+	var profile := PerspectiveProfile.new()
+	profile.kind = kind
+	profile.height = height
+	return profile
+
+func test_perspective_sprite_profiles_build_boxes_stacks_and_slices() -> void:
+	var image := Image.create(32, 16, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.2, 0.4, 0.6, 1.0))
+	var sprite := Sprite2D.new()
+	sprite.texture = ImageTexture.create_from_image(image)
+	var box := _mesh_custom(PerspectiveSprite.build_mesh(sprite, _profile(PerspectiveProfile.Kind.BOX, 30.0)))
+	check(box.size() == 30 * 4, "box is not 4 sides and a roof")
+	var roof_textured := true
+	for i in range(24, 30):
+		roof_textured = roof_textured and box[i * 4] == 30.0 and box[i * 4 + 3] == 1.0
+	check(roof_textured and box[3] == 0.0, "box roof is not the textured sprite at full height")
+	check(PerspectiveSprite.average_color(sprite.texture).is_equal_approx(Color(0.2, 0.4, 0.6, 1.0)), "side colour is not the sprite's average")
+	var stack_profile := _profile(PerspectiveProfile.Kind.STACK, 40.0)
+	stack_profile.layers = 5
+	var stack := PerspectiveSprite.build_mesh(sprite, stack_profile)
+	var stack_custom := _mesh_custom(stack)
+	var colors: PackedColorArray = stack.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	check(stack_custom.size() == 5 * 6 * 4 and stack_custom[0] == 0.0 and stack_custom[(5 * 6 - 1) * 4] == 40.0, "stack layers do not run from the floor to the top")
+	check(colors[0].r < colors[colors.size() - 1].r and colors[colors.size() - 1].is_equal_approx(Color.WHITE), "stack does not darken towards the floor")
+	var slices := _profile(PerspectiveProfile.Kind.SLICES, 24.0)
+	slices.slice_count = 4
+	var uvs: PackedVector2Array = PerspectiveSprite.build_mesh(sprite, slices).surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+	check(uvs.size() == 24 and is_equal_approx(uvs[0].x, 0.0) and is_equal_approx(uvs[18].x, 0.75), "slices do not map one strip frame per layer")
+	sprite.free()
+
+func test_props_and_round_maps_use_perspective_visuals() -> void:
+	for path in ["res://scenes/props/crates/crate.tscn", "res://scenes/props/crates/sci_fi_crate.tscn", "res://scenes/props/container/container.tscn", "res://scenes/props/door/door.tscn", "res://scenes/props/car/car.tscn", "res://scenes/props/truck/truck.tscn"]:
+		var prop := (load(path) as PackedScene).instantiate()
+		var lifted := prop.find_children("*", "MeshInstance2D", true, false).filter(func(node: Node): return node is PerspectiveSprite)
+		var visual := lifted[0] as PerspectiveSprite if not lifted.is_empty() else null
+		check(visual != null and visual.profile != null and visual.profile.height > 0.0 and (visual.get_parent() as Sprite2D) != null and (visual.get_parent() as Sprite2D).texture != null, "%s has no PerspectiveSprite under a textured sprite" % path)
+		prop.free()
+	var map := (load("res://scenes/maps/cqc_1/cqc_1.tscn") as PackedScene).instantiate()
+	check(map.get_node_or_null("Map/PerspectiveWalls") is PerspectiveWalls, "cqc_1 walls are not drawn in perspective")
+	map.free()
+	var cells := {Vector2i(0, 0): 0, Vector2i(1, 0): 0, Vector2i(2, 0): 1, Vector2i(0, 1): 0}
+	var runs := PerspectiveWalls.runs(cells, Vector2i(1, 0), func(_cell: Vector2i) -> bool: return true)
+	check(runs == [[Vector2i(0, 0), Vector2i(1, 0), 0], [Vector2i(2, 0), Vector2i(2, 0), 1], [Vector2i(0, 1), Vector2i(0, 1), 0]], "wall runs did not merge by row and material: %s" % [runs])
+
+func test_rotated_furniture_letters_place_rotated_props() -> void:
+	var builder := preload("res://tools/map_builder.gd")
+	var sofa := {"kind": "h", "cell": Vector2i(10, 10), "rotation": 90}
+	check(builder.prop_bounds(sofa).size == Vector2(57.5, 128) and builder.prop_bounds({"kind": "h", "cell": Vector2i(10, 10), "rotation": 180}).size == Vector2(128, 57.5), "rotated furniture footprint did not swap for quarter turns")
+	var rows: Array[String] = []
+	for y in range(40):
+		var row := ""
+		for x in range(60):
+			row += "#" if x == 0 or y == 0 or x == 59 or y == 39 else "."
+		rows.append(row)
+	rows[5] = rows[5].substr(0, 3) + "aaaaa" + rows[5].substr(8)
+	rows[34] = rows[34].substr(0, 50) + "ddddd" + rows[34].substr(55)
+	rows[20] = rows[20].substr(0, 28) + "OO" + rows[20].substr(30)
+	rows[12] = rows[12].substr(0, 10) + "j" + rows[12].substr(11)
+	rows[28] = rows[28].substr(0, 40) + "K" + rows[28].substr(41)
+	var data := builder.parse("\n".join(rows))
+	check(data.error == "" and data.props.size() == 2 and data.props[0].kind == "h" and data.props[0].rotation == 90 and data.props[1].kind == "k" and data.props[1].rotation == 180, "rotated letters not parsed: %s" % [data.get("props", data.error)])
+	var world := builder.build(data)
+	var placed := world.get_node("Map/Props").get_children()
+	check(placed.size() == 2 and is_equal_approx((placed[0] as Node2D).rotation_degrees, 90.0) and is_equal_approx((placed[1] as Node2D).rotation_degrees, 180.0), "rotated furniture placed without rotation")
+	world.free()
+
+func test_furniture_blocks_movement_but_not_sight_or_bullets() -> void:
+	var sofa := (load("res://scenes/props/furniture/sofa.tscn") as PackedScene).instantiate() as StaticBody2D
+	sofa.position = Vector2(-2600, -2600)
+	sofa.scale = Vector2(0.5, 0.5)
+	add_child(sofa)
+	var player := await _spawn_player(Vector2(-2600, -2700))
+	await get_tree().physics_frame
+	for tick in range(90):
+		PlayerSimulation.simulate(player, player.movement_component, _move_frame(NetworkTick.tick + tick, Vector2.DOWN))
+	check(player.global_position.y < -2600 - 28.0, "player walked into the sofa (y=%.1f)" % player.global_position.y)
+	var ray := PhysicsRayQueryParameters2D.create(Vector2(-2600, -2700), Vector2(-2600, -2500), 1)
+	check(get_viewport().world_2d.direct_space_state.intersect_ray(ray).is_empty(), "sofa blocks Environment rays (sight, bullets, hearing)")
+	player.queue_free()
+	sofa.queue_free()
+	await get_tree().process_frame
+
 func test_dropped_slot_is_held_rekeyed_on_rejoin_and_released_on_leave() -> void:
 	var session := MultiplayerSession
 	var saved := [session.player_names.duplicate(), session.player_teams.duplicate(), session.match_started]
@@ -649,9 +753,23 @@ func test_cqc_map_loads_and_lobby_shows_its_mode_and_preview() -> void:
 	var world := packed.instantiate()
 	add_child(world)
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
-	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(188, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(150, 50)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
-	check(world.get_node("Map/Doors").get_child_count() == 9, "expected three exterior and six interior doors")
-	check(world.get_node("Map/Props").get_child_count() == 15, "outdoor cover instances missing")
+	check(walls.cell_material(Vector2i.ZERO) == DestructionMaterial.HARD and walls.cell_material(Vector2i(190, 64)) == DestructionMaterial.REINFORCED and walls.cell_material(Vector2i(60, 20)) == DestructionMaterial.SOFT, "CQC boundary, exterior and interior material rules wrong")
+	var exterior := 0
+	for door in world.get_node("Map/Doors").get_children():
+		var cell := walls.local_to_map(walls.to_local((door as Node2D).global_position))
+		if cell.y in [12, 118] or cell.x in [40, 190]:
+			exterior += 1
+	check(world.get_node("Map/Doors").get_child_count() == 36 and exterior == 4, "expected four exterior and 32 interior doors (%d exterior)" % exterior)
+	var cover := 0
+	var furniture := 0
+	for prop in world.get_node("Map/Props").get_children():
+		var body := prop as CollisionObject2D
+		if body != null and body.collision_layer & 1 != 0:
+			cover += 1
+		elif body != null and body.collision_layer == 2 and body.get_node_or_null("FogOccluder") == null:
+			furniture += 1 # blocks movement only: no bullets, sight or fog occlusion
+	check(cover == 17, "outdoor cover instances missing")
+	check(furniture == 39, "house furniture missing or blocking sight (%d)" % furniture)
 	check(world.get_meta("layout_size") == Vector2i(200, 130), "CQC metrics metadata missing")
 	world.queue_free()
 	await get_tree().process_frame
@@ -695,7 +813,7 @@ func test_map_validation_catches_blocked_spawns_and_stale_cells() -> void:
 	check("\n".join(validator.validate(world)).contains("Blocked spawn"), "validation accepted a spawn inside the boundary")
 	point.position = original
 	var walls := world.get_node("Map/DestructibleWalls") as DestructibleWalls
-	walls.destroy_cells([Vector2i(134, 50)])
+	walls.destroy_cells([Vector2i(60, 20)])
 	check("\n".join(validator.validate(world)).contains("stale"), "validation accepted generated scene drift")
 	world.queue_free()
 	await get_tree().process_frame

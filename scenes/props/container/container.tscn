@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://b1wihqlewmt7"]
+[gd_scene format=3 uid="uid://b1wihqlewmt7"]
 
 [ext_resource type="Texture2D" uid="uid://c1w3ylxnxwkka" path="res://scenes/props/container/container.png" id="1_t1ygv"]
+[ext_resource type="Script" path="res://components/perspective/perspective_sprite.gd" id="pp_script"]
+[ext_resource type="Resource" path="res://resources/perspective/container_box.tres" id="pp_profile"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jj3iw"]
 size = Vector2(496, 236)
@@ -13,3 +15,7 @@ texture = ExtResource("1_t1ygv")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 1)
 shape = SubResource("RectangleShape2D_jj3iw")
+
+[node name="Perspective" type="MeshInstance2D" parent="Sprite2D" unique_id=2110012662]
+script = ExtResource("pp_script")
+profile = ExtResource("pp_profile")

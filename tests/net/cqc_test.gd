@@ -103,8 +103,8 @@ func run_host() -> void:
 		finish_with_failure("phase", "CQC did not unlock")
 		return
 	var service := DestructionService.current(get_tree())
-	var soft := Vector2i(134, 50)
-	var reinforced := Vector2i(188, 64)
+	var soft := Vector2i(60, 20)
+	var reinforced := Vector2i(190, 64)
 	for cell in [soft, reinforced, Vector2i.ZERO]:
 		for kind in [DestructionMaterial.KIND_BULLET, DestructionMaterial.KIND_MELEE, DestructionMaterial.KIND_EXPLOSIVE]:
 			service.apply_cell_damage(_walls(), cell, 1000, kind)
@@ -120,7 +120,7 @@ func run_host() -> void:
 		(door as Door).on_interact(player(1))
 	var opened := await _sample("doors-open")
 	var states: Array = opened.get("doors", [])
-	check("cqc_doors_replicate", states.size() == 9 and states.all(func(value): return value == Door.State.OPEN), "all authored door instances open on the client")
+	check("cqc_doors_replicate", states.size() == 36 and states.all(func(value): return value == Door.State.OPEN), "all authored door instances open on the client")
 	player(1).health_component.take_damage(500, client_peer())
 	await hold(0.1)
 	check("cqc_host_spectates_runner", mode.spectate_target.get(1) == _bot_id and player(_bot_id).camera.is_current(), "dead host follows the moving teammate's camera")
@@ -151,4 +151,4 @@ func run_host() -> void:
 	for id in [1, client_peer(), _bot_id]:
 		restored = restored and player(id) != null and player(id).health_component.current_health == 100
 	var reset_props: Dictionary = reset.get("props", {})
-	check("cqc_round_restores_map", restored and reset.get("cells") == _baseline and reset.get("fog") == _baseline and reset_props.get("broken") == 0 and reset_props.get("fog_blocking") == crates.size() and states.size() == 9 and states.all(func(value): return value == Door.State.CLOSED), "fresh lives, walls, crates with fog, and closed doors reset together: %s" % [reset])
+	check("cqc_round_restores_map", restored and reset.get("cells") == _baseline and reset.get("fog") == _baseline and reset_props.get("broken") == 0 and reset_props.get("fog_blocking") == crates.size() and states.size() == 36 and states.all(func(value): return value == Door.State.CLOSED), "fresh lives, walls, crates with fog, and closed doors reset together: %s" % [reset])
