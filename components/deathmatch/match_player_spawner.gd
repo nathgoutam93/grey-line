@@ -74,7 +74,9 @@ func spawn_initial_connected_players() -> void:
 	if not OS.has_feature("dedicated_server"):
 		spawn_player(1)
 	for peer_id in multiplayer.get_peers():
-		spawn_player(peer_id)
+		# Mid-match connections only play once their rejoin is accepted.
+		if MultiplayerSession.player_names.has(peer_id):
+			spawn_player(peer_id)
 	spawn_bots()
 
 func spawn_bots() -> void:
